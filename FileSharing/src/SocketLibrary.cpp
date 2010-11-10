@@ -74,16 +74,3 @@ void WinSockErrExcep::Print( void )
   printf( msg_.c_str() );
   printf( "  with error code - %d\n", eCode_ );
 }
-
-u32 MessageHeader::WriteMessageHeader( char *buffer )
-{
-  memcpy( buffer, cSize_, sizeof( u32 ) );
-  return sizeof( u32 );
-}
-
-u32 MessageHeader::ReadMessageHeader( char *buffer )
-{
-  size_ = 0;
-  memcpy( cSize_, buffer, sizeof( u32 ) );
-  return sizeof( u32 );
-}

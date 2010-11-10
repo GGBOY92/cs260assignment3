@@ -34,21 +34,37 @@ struct BaseErrExcep
 
 class DataBuffer
 {
-  u32 const static MAX_BUFFER_LEN = 1000;
-  char bytes_[ MAX_BUFFER_LEN ];
-  u32 len_;
 
 public:
   DataBuffer();
   DataBuffer( char const *bytes, u32 len );
 
-  void Assign( char const *bytes, u32 count );
-  void Append( char const *bytes, u32 count );
+  u32 Assign( char const *bytes, u32 count );
+  u32 Append( char const *bytes, u32 count );
+  void Allign( u32 pos );
+
   void Zero( void );
   u32 Size( void ) const { return len_; }
+  void SetSize( u32 len ) { len_ = len; }
+  u32 Slack( void ) const { return MAX_BUFFER_LEN - len_; }
+
+  char *Bytes( void ) { return bytes_; }
+  char *Bytes( u32 offset ) { return bytes_ + offset; }
+  char *End( void ) { return bytes_ + len_; }
+
   char const *Bytes( void ) const { return bytes_; }
   char const *Bytes( u32 offset ) const { return bytes_ + offset; }
   void operator <<( NetworkMessage const &netMsg );
+
+public: // members
+
+  u32 const static MAX_BUFFER_LEN = 1000;
+
+private: // members
+  
+  char bytes_[ MAX_BUFFER_LEN ];
+  u32 len_;
+
 };
 
 template< typename T >

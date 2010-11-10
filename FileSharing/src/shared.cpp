@@ -79,31 +79,39 @@ DataBuffer::DataBuffer( char const *bytes, u32 len )
   Assign( bytes, len );
 }
 
-void DataBuffer::Assign( char const *bytes, u32 count )
+u32 DataBuffer::Assign( char const *bytes, u32 count )
 {
   if( count < MAX_BUFFER_LEN )
   {
     memcpy( bytes_, bytes, count );
     len_ = count;
+
+    // there was no overflow, all bytes were assigned
+    return 0;
   }
   else
   {
+    u32 overFlow = count - MAX_BUFFER_LEN;
     memcpy( bytes_, bytes, MAX_BUFFER_LEN );
     len_ = MAX_BUFFER_LEN;
 
 #ifdef _DEBUG
-    printf( "Data truncated in DataBuffer::Assign\n" );
+    printf( "Data truncated by %d in DataBuffer::Assign\n", overFlow );
 #endif
 
+    return overFlow;
   }
 }
 
-void DataBuffer::Append( char const *bytes, u32 count )
+u32 DataBuffer::Append( char const *bytes, u32 count )
 {
   if( len_ + count < MAX_BUFFER_LEN )
   {
     memcpy( bytes_ + len_, bytes, count );
     len_ += count;
+
+    // there was no overflow, all bytes were appended
+    return 0;
   }
   else
   {
@@ -112,9 +120,10 @@ void DataBuffer::Append( char const *bytes, u32 count )
     len_ += count;
 
 #ifdef _DEBUG
-    printf( "Data truncated in DataBuffer::Append\n" );
+    printf( "Data truncated by %d bytes in DataBuffer::Append\n", count );
 #endif
-
+  
+    return count;
   }
 }
 
@@ -130,3 +139,13 @@ void DataBuffer::operator <<( NetworkMessage const &netMsg )
   Assign( (char *) &netMsg.type_, typeSize );
   Append( netMsg.msg_.Bytes(), netMsg.msg_.Size() );
 }
+
+void DataBuffer::Allign( u32 pos )
+{
+  if( pos >= len_ )
+    // to do: error, attempt to copy unassigned memory
+    return;
+
+  memmove( bytes_, bytes_ + pos, len_ - pos );
+}
+
