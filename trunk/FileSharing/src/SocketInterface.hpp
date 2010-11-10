@@ -36,14 +36,12 @@ public: // methods
 
   virtual void Init( void ) = 0;
   virtual void InitBlocking( void ) = 0;
-  virtual bool Connect( SocketAddress const &remoteSock ) = 0;
-  virtual void Close( void ) = 0;
 
-  virtual bool Accept( iSocket &endPoint ) = 0;
-  virtual void Listen( void ) = 0;
   virtual bool Receive( DataBuffer &data ) = 0;
   virtual void Send( DataBuffer const &data ) = 0;
+  
   virtual void Shutdown( void ) = 0;
+  virtual void Close( void ) = 0;
 
 
 private: // methods
@@ -64,7 +62,4 @@ protected: // members
   u32 const static SEND_BUFFER_SIZE = 1000;
   u32 const static RECV_BUFFER_SIZE = 1000;
 
-private: // members
-
-  friend class Socket;
 };

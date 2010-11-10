@@ -18,12 +18,12 @@ class SocketHandler;
 class Server
 {
 private:
-  Socket listener_;
+  TCPSocket listener_;
 
-  Socket WaitForNewClient( void );
-  bool CheckForNewClient( Socket &client );
+  TCPSocket *WaitForNewClient( void );
+  TCPSocket *CheckForNewClient( void );
   
-  void AddNewHandler( Socket const &sock );
+  void AddNewHandler( TCPSocket *sock );
   typedef std::vector< SocketHandler * > ConnectionList;
   ConnectionList connections_;
   u32 conCount_;
@@ -46,7 +46,7 @@ public:
   void Update( void );
   void Close( void );
 
-  Socket &GetListener( void ) { return listener_; }
+  TCPSocket &GetListener( void ) { return listener_; }
   void GetMessages( std::deque< NetworkMessage > &messages );
   
   bool GetMessage( NetworkMessage &msg );
