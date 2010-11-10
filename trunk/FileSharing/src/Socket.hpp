@@ -8,10 +8,15 @@
 #pragma once
 
 #include "SocketInterface.hpp"
+#include "SecureObject.hpp"
 #include <string>
+#include <deque>
 
 class TCPSocket : public iSocket
 {
+private:
+  typedef std::deque< DataBuffer > MessageQueue;
+
 public:
   TCPSocket();
   TCPSocket( std::string const &name );
@@ -26,9 +31,15 @@ public:
 
   // data functions
   virtual bool Receive( DataBuffer &data );
+  void Receive( char const *initData = NULL, u32 dataSize = 0 );
   virtual void Send( DataBuffer const &data );
   
   // clean up functions
   virtual void Shutdown( void );
   virtual void Close( void );
+  u32 TCPSocket:: ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 bufferOffset = 0 );
+
+private: // members
+
+  SecureObject< MessageQueue > inQueue_;
 };

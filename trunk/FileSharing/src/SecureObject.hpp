@@ -8,6 +8,8 @@
 
 #include "Mutex.hpp"
 
+#pragma once
+
 template < typename T >
 class SecureObject
 {
@@ -15,6 +17,7 @@ class SecureObject
   Mutex mutex_;
 public:
 
+  SecureObject( void ) {}
   SecureObject( T const &object ) : object_( object ) {}
 
   /*

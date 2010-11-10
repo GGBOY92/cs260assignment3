@@ -144,16 +144,62 @@ void TCPSocket::Listen( void )
   }
 }
 
-void TCPSocket::ReadMessageHeader( DataBuffer &data, char *buffer, u32 size )
+void TCPSocket::Receive( char const *initData, u32 dataSize )
 {
+  char buffer [ RECV_BUFFER_SIZE ];
+  
+  if( initData )
+  {
+    if( dataSize > RECV_BUFFER_SIZE )
+    {
+      printf( "Initial data was too large for receive buffer.\n" );
+      return;
+    }
+
+    memcpy( buffer, initData, dataSize );
+  }
+
+
+  u32 offset;
+
+  try
+  {
+    offset = ReceiveUntil( buffer, MsgHdr::GetSize(), RECV_BUFFER_SIZE, dataSize );
+  }
+  catch( SockErr e )
+  {
+    if( e.eCode_ == WSAEWOULDBLOCK )
+      return;
+
+    throw e;
+  }
+
   MsgHdr header;
-  ReadUntil( data, buffer, header.GetSize() )
+  header.ReadMessageHeader( buffer );
+
+  memmove( buffer, buffer + MsgHdr::GetSize(), offset );
+
+  offset = ReceiveUntil( buffer, header.msgSize_ - offset, RECV_BUFFER_SIZE, offset );
+  
+  DataBuffer data;
+  data.Append( buffer, header.msgSize_ );
+
+  inQueue_.Lock();
+  MessageQueue &inQ( inQueue_.Access() );
+  inQ.push_back( data );
+  inQueue_.Unlock();
+
+  if( offset > 0 )
+  {
+    memmove( buffer, buffer + header.msgSize_, offset );
+    Receive( buffer, offset );
+  }
 }
 
 bool TCPSocket::Receive( DataBuffer &data )
 {
   char buffer [ RECV_BUFFER_SIZE ];
-  
+   
   data.Zero();
   int eCode;
 
@@ -185,7 +231,7 @@ bool TCPSocket::Receive( DataBuffer &data )
   bytesRead = totalBytesRead - hdrSize;
   data.Append( buffer + hdrSize, bytesRead );
 
-  while( totalBytesRead < hdrSize + hdr.size_ )
+  while( totalBytesRead < hdrSize + hdr.msgSize_ )
   {
     eCode = recv( socket_, buffer, sizeof( buffer ), 0 );
   
@@ -216,7 +262,7 @@ void TCPSocket::Send( DataBuffer const &data )
   u32 dataSize = data.Size();
   char sendBuffer [ SEND_BUFFER_SIZE ];
   MsgHdr hdr;
-  hdr.size_ = dataSize;
+  hdr.msgSize_ = dataSize;
 
   u32 headerSize =  hdr.WriteMessageHeader( sendBuffer );
   char *dataStart = sendBuffer + headerSize;
@@ -264,4 +310,102 @@ void TCPSocket::Shutdown( void )
   {
     throw( SockErr( WSAGetLastError(), "Failed to shutdown on sending socket." ) );
   }
+}
+
+/*
+void TCPSocket::ReceiveUntil( u32 recvCount )
+{
+  if( recvBuffer_.Size() >= recvCount )
+    return;
+
+  u32 writeCount = recvBuffer_.Slack();
+  if( recvCount > writeCount )
+    // to do:  throw something
+    return 0;
+
+  u32 totalBytesRead = recvBuffer_.Size();
+  u32 bytesRead = 0;
+  
+  while( totalBytesRead < recvCount )
+  {
+    int eCode = recv( socket_, recvBuffer_.End(), recvBuffer_.Slack(), 0 );
+
+    if( eCode == 0 )
+    {
+      disconnect_ = true;
+      throw( SockErr( 0, "Remote end point has shutdown the connection." ) );
+    }
+
+    if( eCode == SOCKET_ERROR )
+    {
+      eCode = WSAGetLastError();
+
+
+      throw( SockErr( WSAGetLastError(), "Failure to receive." ) );
+    }
+
+    bytesRead = eCode;
+    totalBytesRead += bytesRead;
+    buffer += bytesRead;
+    writeCount -= bytesRead;
+  }
+
+  if( totalBytesRead > recvCount )
+    return totalBytesRead - recvCount;
+  else if( totalBytesRead < recvCount )
+    // to do: this is bad, throw something
+    return 0;
+  else
+    return 0;
+}
+*/
+
+u32 TCPSocket::ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 bufferOffset /*= 0 */ )
+{
+  u32 writeCount = bufferSize - bufferOffset;
+  if( recvCount > writeCount )
+    // to do: throw something
+    return 0;
+
+  buffer += bufferOffset;
+  u32 totalBytesRead = 0;
+  u32 bytesRead = 0;
+
+  while( totalBytesRead < recvCount )
+  {
+    int eCode = recv( socket_, buffer, writeCount, 0 );
+  
+    if( eCode == 0 )
+      disconnect_ = true;
+
+    if( eCode == 0 )
+    {
+      throw( SockErr( 0, "Remote end point has shutdown the connection." ) );
+    }
+
+    if( eCode == SOCKET_ERROR )
+    {
+      eCode = WSAGetLastError();
+
+      /*
+      if( eCode == WSAEWOULDBLOCK )
+        continue;
+      */
+
+      throw( SockErr( WSAGetLastError(), "Failure to receive." ) );
+    }
+
+    bytesRead = eCode;
+    totalBytesRead += bytesRead;
+    buffer += bytesRead;
+    writeCount -= bytesRead;
+  }
+
+  if( totalBytesRead > recvCount )
+    return totalBytesRead - recvCount;
+  else if( totalBytesRead < recvCount )
+    // to do: this is bad, throw something
+    return 0;
+  else
+    return 0;
 }
