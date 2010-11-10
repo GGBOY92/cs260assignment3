@@ -13,17 +13,17 @@ u32 const Socket::SEND_BUFFER_SIZE = 1000;
 u32 const Socket::RECV_BUFFER_SIZE = 1000;
 */
 
-Socket::Socket() : iSocket()
+TCPSocket::TCPSocket() : iSocket()
 {
   socketAddress_.sin_family = AF_INET;
 }
 
-Socket::Socket( std::string const &name ) : iSocket( name )
+TCPSocket::TCPSocket( std::string const &name ) : iSocket( name )
 {
   socketAddress_.sin_family = AF_INET;
 }
 
-void Socket::Init( void )
+void TCPSocket::Init( void )
 {
   socket_ = WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0 );
   
@@ -48,7 +48,7 @@ void Socket::Init( void )
   }
 }
 
-void Socket::InitBlocking( void )
+void TCPSocket::InitBlocking( void )
 {
   socket_ = WSASocket( AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, 0 );
   
@@ -64,12 +64,12 @@ void Socket::InitBlocking( void )
   }
 }
 
-bool Socket::Connect( Socket const &remoteSock )
+bool TCPSocket::Connect( TCPSocket const &remoteSock )
 {
   return Connect( remoteSock.socketAddress_ );
 }
 
-bool Socket::Connect( SocketAddress const &remoteSock )
+bool TCPSocket::Connect( SocketAddress const &remoteSock )
 {
   bool connected = false;
   while( !connected )
@@ -99,7 +99,7 @@ bool Socket::Connect( SocketAddress const &remoteSock )
   return false;
 }
 
-void Socket::Close( void )
+void TCPSocket::Close( void )
 {
   int eCode = closesocket( socket_ );
 
@@ -109,26 +109,33 @@ void Socket::Close( void )
   }
 }
 
-bool Socket::Accept( iSocket &endPoint )
+TCPSocket *TCPSocket::Accept( void )
 {
-//  endPoint.disconnect_ = false;
+  sockaddr_in tempAddress;
+  SOCKET tempSocket;
+  
   int addrSize = sizeof( sockaddr_in );
-  sockaddr *endAddress = (sockaddr *) &endPoint.socketAddress_;
-  endPoint.socket_ = accept( socket_, endAddress, &addrSize );
-  if( endPoint.socket_ == INVALID_SOCKET )
+  sockaddr *endAddress = (sockaddr *) &tempAddress;
+
+
+  tempSocket = accept( socket_, endAddress, &addrSize );
+  if( tempSocket == INVALID_SOCKET )
   {
     int eCode = WSAGetLastError();
     
     if( eCode == WSAEWOULDBLOCK )
-      return false;
+      return NULL;
 
     throw( SockErr( eCode, "Failure to accept connection." ) );
   }
 
-  return true;
+  TCPSocket *endSocket = new TCPSocket();
+  endSocket->socket_ = tempSocket;
+  endSocket->socketAddress_ = tempAddress;
+  return endSocket;
 }
 
-void Socket::Listen( void )
+void TCPSocket::Listen( void )
 {
   int eCode = listen( socket_, MAX_CONN_QUEUE );
   if( eCode == SOCKET_ERROR )
@@ -137,7 +144,13 @@ void Socket::Listen( void )
   }
 }
 
-bool Socket::Receive( DataBuffer &data )
+void TCPSocket::ReadMessageHeader( DataBuffer &data, char *buffer, u32 size )
+{
+  MsgHdr header;
+  ReadUntil( data, buffer, header.GetSize() )
+}
+
+bool TCPSocket::Receive( DataBuffer &data )
 {
   char buffer [ RECV_BUFFER_SIZE ];
   
@@ -149,7 +162,6 @@ bool Socket::Receive( DataBuffer &data )
   if( eCode == 0 )
   {
     throw( SockErr( 0, "Remote end point has shutdown the connection." ) );
-//    disconnect_ = true;
   }
 
   u32 totalBytesRead = 0;
@@ -199,7 +211,7 @@ bool Socket::Receive( DataBuffer &data )
 }
 
 
-void Socket::Send( DataBuffer const &data )
+void TCPSocket::Send( DataBuffer const &data )
 {
   u32 dataSize = data.Size();
   char sendBuffer [ SEND_BUFFER_SIZE ];
@@ -243,7 +255,7 @@ void Socket::Send( DataBuffer const &data )
   }
 }
 
-void Socket::Shutdown( void )
+void TCPSocket::Shutdown( void )
 {
   Sleep( 100 );
   int eCode = shutdown( socket_, SD_BOTH );

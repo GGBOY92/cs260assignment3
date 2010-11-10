@@ -183,19 +183,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\src\SocketHandler.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\SocketHandler.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\src\SocketInterface.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\src\SocketInterface.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\UDPSocket.hpp"
 				>
 			</File>
 		</Filter>
@@ -207,6 +203,26 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="SocketHandler"
+			>
+			<File
+				RelativePath="..\src\SocketHandler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\SocketHandler.hpp"
+				>
+			</File>
+		</Filter>
+		<File
+			RelativePath="..\src\Server.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\src\Server.hpp"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

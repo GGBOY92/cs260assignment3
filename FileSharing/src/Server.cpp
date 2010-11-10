@@ -35,7 +35,7 @@ void Server::Init( void )
   {
     listener_.Init();
   }
-  catch( Socket::SockErr e )
+  catch( iSocket::SockErr e )
   {
     CloseWinSock();
 
@@ -47,7 +47,7 @@ void Server::Init( void )
   {
     listener_.Listen();
   }
-  catch( Socket::SockErr e )
+  catch( iSocket::SockErr e )
   {
     e.Print();
   }
@@ -55,10 +55,10 @@ void Server::Init( void )
 
 void Server::Update( void )
 {
-  Socket client;
-  if( CheckForNewClient( client ) )
+  TCPSocket *pClient;
+  if( pClient = CheckForNewClient( ) )
   {
-    AddNewHandler( client );
+    AddNewHandler( pClient );
   }
 
   PullAllMessages();
@@ -91,7 +91,7 @@ void Server::Close( void )
   {
     listener_.Shutdown();
   }
-  catch ( Socket::SockErr e )
+  catch ( iSocket::SockErr e )
   {
     e.Print();
     printf( "listener socket could not be shutdown\n" );
@@ -101,7 +101,7 @@ void Server::Close( void )
   {
     listener_.Close();
   }
-  catch( Socket::SockErr e )
+  catch( iSocket::SockErr e )
   {
     e.Print();
   } 
@@ -117,42 +117,43 @@ void Server::Close( void )
   }
 }
 
-bool Server::CheckForNewClient( Socket &client )
+TCPSocket *Server::CheckForNewClient( )
 {
   try
   {
-    return listener_.Accept( client );
+    return listener_.Accept();
   }
-  catch( Socket::SockErr e )
+  catch( iSocket::SockErr e )
   {
     e.Print();
     throw( BaseErrExcep( "Listener could not accept a client.\n" ) );
   }
 }
 
-Socket Server::WaitForNewClient( void )
+TCPSocket *Server::WaitForNewClient( void )
 {
   try
   {
-    Socket client;
+    TCPSocket *pClient;
 
     bool noConnect = true;
 
     while( noConnect )
     {
-      noConnect = !listener_.Accept( client );
+      pClient = listener_.Accept();
+      noConnect = ( pClient == NULL ) ? true : false;
     }
 
-    return client;
+    return pClient;
   }
-  catch( Socket::SockErr e )
+  catch( iSocket::SockErr e )
   {
     e.Print();
     throw( BaseErrExcep( "Listener could not accept the client.\n" ) );
   }
 }
 
-void Server::AddNewHandler( Socket const &sock )
+void Server::AddNewHandler( TCPSocket *sock )
 {
   SocketHandler *handler = new SocketHandler( sock, conCount_ );
   ++conCount_;

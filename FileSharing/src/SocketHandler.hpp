@@ -20,7 +20,7 @@ public:
   typedef std::deque< DataBuffer > MessageQueue; 
 
 private:
-  Socket socket_;
+  iSocket *socket_;
   u32 conID_;
 
   SecureObject< MessageQueue > inQueue_;
@@ -28,7 +28,7 @@ private:
 
 public:
 
-  SocketHandler( Socket const &socket, u32 conID ) :
+  SocketHandler( iSocket *socket, u32 conID ) :
       ActiveObject(), socket_( socket ), conID_( conID ), inQueue_( MessageQueue() ), outQueue_( MessageQueue() )
   {}
 	
@@ -39,12 +39,15 @@ public:
   u32 GetConID( void ) const { return conID_; }
   void SetConID( u32 conID ) { conID_ = conID; }
   
-  void SendAll( void );
-  void CollectAll( void );
   SocketHandler::MessageQueue PullMessages( void );
   void PushMessages( SocketHandler::MessageQueue const &messages );
   
   bool PullMessage( DataBuffer &msg );
   void PushMessage( DataBuffer const &msg );
   bool IsDying( void ) { return isDying; }
+
+private:
+  void SendAll( void );
+  void CollectAll( void );
+
 };

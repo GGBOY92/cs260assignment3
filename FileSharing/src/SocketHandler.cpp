@@ -23,9 +23,9 @@ void SocketHandler::Run( void )
 
   try
   {
-    socket_.Shutdown();
+    socket_->Shutdown();
   }
-  catch ( Socket::SockErr e )
+  catch ( iSocket::SockErr e )
   {
     e.Print();
     printf( "client socket could not be shutdown\n" );
@@ -33,9 +33,9 @@ void SocketHandler::Run( void )
 
   try
   {
-    socket_.Close();
+    socket_->Close();
   }
-  catch( Socket::SockErr e )
+  catch( iSocket::SockErr e )
   {
     e.Print();
     printf( "Client socket could not be close.\n" );
@@ -54,11 +54,11 @@ void SocketHandler::SendAll( void )
 
     try
     {
-      socket_.Send( data );
+      socket_->Send( data );
       out.pop_front();
       Sleep( 100 );
     }
-    catch( Socket::SockErr e )
+    catch( iSocket::SockErr e )
     {
       e.Print();
     }
@@ -75,12 +75,12 @@ void SocketHandler::CollectAll( void )
   try
   {
     DataBuffer data;
-    while( socket_.Receive( data ) )
+    while( socket_->Receive( data ) )
     {
       in.push_back( data );
     }
   }
-  catch( Socket::SockErr e )
+  catch( iSocket::SockErr e )
   {
     if( e.eCode_ == 0 || e.eCode_ == WSAECONNRESET )
       isDying = true;

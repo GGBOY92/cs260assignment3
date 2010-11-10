@@ -42,6 +42,8 @@ struct MessageHeader
     u32 size_;
   };
 
+  u32 GetSize( void ) { return 4; }
+
   u32 WriteMessageHeader( char *buffer );
   u32 ReadMessageHeader( char *buffer );
 };
