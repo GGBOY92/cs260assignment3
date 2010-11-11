@@ -18,29 +18,6 @@ public: // classes
 
   typedef SocketErrExcep SockErr;
 
-private: // classes
-
-  struct TCPMessageHeader
-  {
-    TCPMessageHeader()
-    {
-      msgSize_ = 0;
-    }
-
-    union
-    {
-      char cSize_ [4];
-      u32 msgSize_;
-    };
-
-    static u32 GetSize( void ) { return 4; }
-
-    u32 WriteMessageHeader( char *buffer );
-    u32 ReadMessageHeader( char *buffer );
-  };
-
-  typedef TCPMessageHeader MsgHdr;
-
 public: // methods
 
   iSocket( void )

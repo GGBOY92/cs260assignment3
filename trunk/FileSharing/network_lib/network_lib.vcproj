@@ -151,6 +151,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\FileTransfer.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\shared.cpp"
 				>
 			</File>
