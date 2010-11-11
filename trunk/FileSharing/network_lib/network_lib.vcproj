@@ -163,6 +163,10 @@
 			Name="SocketLibrary"
 			>
 			<File
+				RelativePath="..\src\SocketHandler.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\SocketLibrary.cpp"
 				>
 			</File>
@@ -208,10 +212,6 @@
 			>
 			<File
 				RelativePath="..\src\SocketHandler.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\SocketHandler.hpp"
 				>
 			</File>
 		</Filter>

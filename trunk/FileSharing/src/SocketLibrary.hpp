@@ -54,10 +54,16 @@ struct SocketAddress
 
 typedef SocketAddress SockAddr;
 
+
 struct NetworkMessage
 {
   enum{
     DISCON = 1000,
+    JOIN,
+    QUIT,
+    TRANSFER,
+    INFORM_SENDER,
+    INFORM_RECEIVER,
 	ERR
   };
 
@@ -71,12 +77,11 @@ struct NetworkMessage
 
   void operator<<( DataBuffer const &data )
   {
-    u32 sizeType = sizeof( MsgType );
-    memcpy( &( type_ ), data.Bytes(), sizeType );
-    msg_.Assign( data.Bytes( sizeType ), data.Size() - sizeType );
+      u32 sizeType = sizeof( MsgType );
+      memcpy( &( type_ ), data.Bytes(), sizeType );
+      msg_.Assign( data.Bytes( sizeType ), data.Size() - sizeType );
   }
 
-  /*
   template < typename T >
   void operator<<( T const &t )
   {
@@ -84,10 +89,54 @@ struct NetworkMessage
     type_ = t.type_;
     msg_.Assign( ( char * ) t.data_, sizeof( T::Data ) );
   }
-  */
 };
 
 typedef NetworkMessage NetMsg;
+
+struct MsgJoin
+{
+    MsgJoin(void) : type_(NetworkMessage::JOIN) { }
+    struct Data { };
+
+    Data data_;
+    MsgType type_;
+};
+
+struct MsgQuit
+{
+    MsgQuit(void) : type_(NetworkMessage::QUIT) { }
+    struct Data { };
+
+    Data data_;
+    MsgType type_;
+};
+
+struct MsgTransfer
+{
+    MsgTransfer(void) : type_(NetworkMessage::TRANSFER) { }
+    struct Data { };
+
+    Data data_;
+    MsgType type_;
+};
+
+struct MsgInformSender
+{
+    MsgInformSender(void) : type_(NetworkMessage::INFORM_SENDER) { }
+    struct Data { };
+
+    Data data_;
+    MsgType type_;
+};
+
+struct MsgInformReceiver
+{
+    MsgInformReceiver(void) : type_(NetworkMessage::INFORM_RECEIVER) { }
+    struct Data { };
+
+    Data data_;
+    MsgType type_;
+};
 
 void StartWinSock( void );
 void CloseWinSock( void );
