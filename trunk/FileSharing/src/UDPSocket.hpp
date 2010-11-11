@@ -1,4 +1,5 @@
-#pragman once
+
+#pragma once
 
 #include "SocketInterface.hpp"
 
@@ -40,6 +41,7 @@ protected: // classes
 
   virtual bool Receive( DataBuffer &data );
   virtual void Send( DataBuffer const &data );
+  void SendTo( DataBuffer const &data, SocketAddress const &address );
   
   virtual void Shutdown( void );
   virtual void Close( void );

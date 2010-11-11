@@ -53,12 +53,13 @@ void Server::Init( void )
   }
 }
 
+
 void Server::Update( void )
 {
-  TCPSocket *pClient;
-  if( pClient = CheckForNewClient( ) )
+  TCPSocket client;
+  if( CheckForNewClient( client ) )
   {
-    AddNewHandler( pClient );
+    AddNewHandler( client );
   }
 
   PullAllMessages();
@@ -66,6 +67,7 @@ void Server::Update( void )
 
   RemoveDeadHandlers();
 }
+
 
 void Server::Run( void )
 {
@@ -84,6 +86,7 @@ void Server::Run( void )
     wait = PromptYesNo( "The server encountered an error while running, would you like to continue?\n" );
   }
 }
+
 
 void Server::Close( void )
 {
@@ -117,6 +120,22 @@ void Server::Close( void )
   }
 }
 
+
+bool Server::CheckForNewClient( TCPSocket &rSocket )
+{
+  try
+  {
+    return listener_.Accept( rSocket );
+  }
+  catch( iSocket::SockErr e )
+  {
+    e.Print();
+    throw( BaseErrExcep( "Listener could not accept a client.\n" ) );
+  }
+}
+
+
+/*
 TCPSocket *Server::CheckForNewClient( )
 {
   try
@@ -129,22 +148,18 @@ TCPSocket *Server::CheckForNewClient( )
     throw( BaseErrExcep( "Listener could not accept a client.\n" ) );
   }
 }
+*/
 
-TCPSocket *Server::WaitForNewClient( void )
+void Server::WaitForNewClient( TCPSocket &rSocket )
 {
   try
   {
-    TCPSocket *pClient;
-
     bool noConnect = true;
 
     while( noConnect )
     {
-      pClient = listener_.Accept();
-      noConnect = ( pClient == NULL ) ? true : false;
+      noConnect = listener_.Accept( rSocket );
     }
-
-    return pClient;
   }
   catch( iSocket::SockErr e )
   {
@@ -153,19 +168,21 @@ TCPSocket *Server::WaitForNewClient( void )
   }
 }
 
-void Server::AddNewHandler( TCPSocket *sock )
+
+void Server::AddNewHandler( TCPSocket &sock )
 {
-  SocketHandler *handler = new SocketHandler( sock, conCount_ );
+  TCPSocketHandler *handler = new TCPSocketHandler( sock, conCount_ );
   ++conCount_;
   connections_.push_back( handler );
   handler->Wake();
 }
 
+
 void Server::RemoveDeadHandlers( void )
 {
   for( ConnectionList::iterator conIt = connections_.begin(); conIt != connections_.end(); )
   {
-    SocketHandler *sock = *conIt;
+    TCPSocketHandler *sock = *conIt;
     if( sock->IsDying() )
     {
       sock->Kill();
@@ -183,11 +200,12 @@ void Server::RemoveDeadHandlers( void )
   }
 }
 
+
 void Server::PullAllMessages( void )
 {
   for( u32 i = 0; i < connections_.size(); ++i )
   {
-    SocketHandler *clientHandler = connections_[ i ];
+    TCPSocketHandler *clientHandler = connections_[ i ];
 
     if( clientHandler->IsDying() )
       continue;
@@ -206,6 +224,7 @@ void Server::PullAllMessages( void )
   }
 }
 
+
 void Server::PushAllMessages( void )
 {
   while( outQueue_.size() )
@@ -213,7 +232,7 @@ void Server::PushAllMessages( void )
     NetworkMessage nMsg = outQueue_.front();
     outQueue_.pop_front();
 
-    SocketHandler *clientHandler = GetHandler( nMsg.conID_ );
+    TCPSocketHandler *clientHandler = GetHandler( nMsg.conID_ );
     
     if( clientHandler )
     {
@@ -225,6 +244,7 @@ void Server::PushAllMessages( void )
   }
 }
 
+
 void Server::GetMessages( std::deque< NetworkMessage > &messages )
 {
   while( inQueue_.size() )
@@ -232,6 +252,7 @@ void Server::GetMessages( std::deque< NetworkMessage > &messages )
     messages.push_back( PopInQueue() );
   }
 }
+
 
 bool Server::GetMessage( NetworkMessage &msg )
 {
@@ -242,6 +263,7 @@ bool Server::GetMessage( NetworkMessage &msg )
   return true;
 }
 
+
 NetworkMessage Server::PopInQueue()
 {
   NetworkMessage netMsg = inQueue_.front();
@@ -249,16 +271,18 @@ NetworkMessage Server::PopInQueue()
   return netMsg;
 }
 
+
 void Server::SendMessage( NetworkMessage const &msg )
 {
   outQueue_.push_back( msg );
 }
 
-SocketHandler *Server::GetHandler( u32 conID )
+
+TCPSocketHandler *Server::GetHandler( u32 conID )
 {
   for( u32 i = 0; i < connections_.size(); ++i )
   {
-    SocketHandler *pSockHndlr = connections_[ i ];
+    TCPSocketHandler *pSockHndlr = connections_[ i ];
     if( pSockHndlr->GetConID() == conID )
     {
       return pSockHndlr;

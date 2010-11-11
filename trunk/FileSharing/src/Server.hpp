@@ -13,30 +13,30 @@
 #include <deque>
 #include <vector>
 
-class SocketHandler;
+class TCPSocketHandler;
 
 class Server
 {
 private: // classes
 
-  typedef std::vector< SocketHandler * > ConnectionList;
+  typedef std::vector< TCPSocketHandler * > ConnectionList;
 
 private:
 
   /*
    *  Wait for a new client to connect.  This function blocks until a new client connects
    */
-  TCPSocket *WaitForNewClient( void );
+  void WaitForNewClient( TCPSocket &rSocket );
   
   /*
    *  Check for a new client trying to connect.  This function does not block.
    */
-  TCPSocket *CheckForNewClient( void );
+  bool CheckForNewClient( TCPSocket &rSocket );
   
   /*
    *  Create a new handler for the socket pointed by sock
    */
-  void AddNewHandler( TCPSocket *sock );
+  void AddNewHandler( TCPSocket &sock );
 
   /*
    *  Collect all the inbound messages currently held by all handlers
@@ -74,7 +74,7 @@ public:
   /*
    *  find a socket handler by it's server assigned connection ID
    */
-  SocketHandler *GetHandler( u32 conID );
+  TCPSocketHandler *GetHandler( u32 conID );
 
   /*
    *  start up winsock, load the server ip/port data, and initialize the listener socket

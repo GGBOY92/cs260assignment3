@@ -64,7 +64,7 @@ struct NetworkMessage
     TRANSFER,
     INFORM_SENDER,
     INFORM_RECEIVER,
-	ERR
+	  ERR
   };
 
   NetworkMessage() :
