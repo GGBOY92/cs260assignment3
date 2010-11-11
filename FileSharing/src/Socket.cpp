@@ -13,6 +13,19 @@ u32 const Socket::SEND_BUFFER_SIZE = 1000;
 u32 const Socket::RECV_BUFFER_SIZE = 1000;
 */
 
+u32 TCPSocket::TCPMessageHeader::WriteMessageHeader( char *buffer )
+{
+    memcpy( buffer, cSize_, sizeof( u32 ) );
+    return sizeof( u32 );
+}
+
+u32 TCPSocket::TCPMessageHeader::ReadMessageHeader( char *buffer )
+{
+    msgSize_ = 0;
+    memcpy( cSize_, buffer, sizeof( u32 ) );
+    return sizeof( u32 );
+}
+
 TCPSocket::TCPSocket() : iSocket()
 {
   socketAddress_.sin_family = AF_INET;
