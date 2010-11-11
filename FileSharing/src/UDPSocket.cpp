@@ -1,6 +1,8 @@
 
 #include "UDPSocket.hpp"
 
+#include <algorithm>
+
 
 UDPSocket::UDPSocket() : iSocket()
 {}
@@ -47,6 +49,9 @@ bool UDPSocket::Receive( DataBuffer &data )
 }
 
 void UDPSocket::SendTo( DataBuffer const &data, SocketAddress const &address )
+{
+
+}
 
 void UDPSocket::Send( DataBuffer const &data )
 {
@@ -63,4 +68,19 @@ void UDPSocket::Shutdown( void )
 void UDPSocket::Close( void )
 {
 
+}
+
+void UDPSocket::ExpectFrom( SocketAddress const & address )
+{
+  senders.push_back( address );
+}
+
+bool UDPSocket::ValidSender( SocketAddress const &address )
+{
+  AddressList::iterator addIt = std::find( senders.begin(), senders.end(), address );
+
+  if( addIt == senders.end() )
+    return false;
+  else
+    return true;
 }
