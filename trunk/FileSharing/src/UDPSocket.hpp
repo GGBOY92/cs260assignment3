@@ -3,6 +3,8 @@
 
 #include "SocketInterface.hpp"
 
+#include <list>
+
 class UDPSocket : public iSocket
 {
 protected: // classes
@@ -33,6 +35,10 @@ protected: // classes
 
   typedef UDPMessageHeader MsgHdr;
 
+  typedef std::list< SocketAddress > AddressList;
+
+public: // methods
+
   UDPSocket();
   UDPSocket( std::string const &name );
 
@@ -45,4 +51,15 @@ protected: // classes
   
   virtual void Shutdown( void );
   virtual void Close( void );
+
+  void ExpectFrom( SocketAddress const & address );
+
+private: // methods
+
+  bool ValidSender( SocketAddress const &address );
+
+private: // members
+
+  // a list of senders that this socket can receive from
+  AddressList senders;
 };

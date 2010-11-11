@@ -49,6 +49,17 @@ struct SocketAddress
     adr_.sin_addr.s_addr = inet_addr( IP );
   }
 
+  bool operator ==( SocketAddress const &rhs )
+  {
+    if( adr_.sin_port != rhs.adr_.sin_port )
+      return false;
+
+    if( adr_.sin_addr.s_addr != rhs.adr_.sin_addr.s_addr )
+      return false;
+
+    return true;
+  }
+
   sockaddr_in adr_;
 };
 
