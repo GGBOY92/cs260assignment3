@@ -18,7 +18,7 @@ public: // classes
 
   typedef SocketErrExcep SockErr;
 
-protected: // classes
+private: // classes
 
   struct TCPMessageHeader
   {
