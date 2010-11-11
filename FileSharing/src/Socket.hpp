@@ -17,6 +17,29 @@ class TCPSocket : public iSocket
 private:
   typedef std::deque< DataBuffer > MessageQueue;
 
+protected: // classes
+
+    struct TCPMessageHeader
+    {
+        TCPMessageHeader()
+        {
+            msgSize_ = 0;
+        }
+
+        union
+        {
+            char cSize_ [4];
+            u32 msgSize_;
+        };
+
+        static u32 GetSize( void ) { return 4; }
+
+        u32 WriteMessageHeader( char *buffer );
+        u32 ReadMessageHeader( char *buffer );
+    };
+
+    typedef TCPMessageHeader MsgHdr;
+
 public:
   TCPSocket();
   TCPSocket( std::string const &name );

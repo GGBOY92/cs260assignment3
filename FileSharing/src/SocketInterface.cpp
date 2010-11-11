@@ -36,13 +36,13 @@ void iSocket::SocketErrExcep::Print( void )
   WinSockErrExcep::Print();
 }
 
-u32 iSocket::MessageHeader::WriteMessageHeader( char *buffer )
+u32 iSocket::TCPMessageHeader::WriteMessageHeader( char *buffer )
 {
   memcpy( buffer, cSize_, sizeof( u32 ) );
   return sizeof( u32 );
 }
 
-u32 iSocket::MessageHeader::ReadMessageHeader( char *buffer )
+u32 iSocket::TCPMessageHeader::ReadMessageHeader( char *buffer )
 {
   msgSize_ = 0;
   memcpy( cSize_, buffer, sizeof( u32 ) );

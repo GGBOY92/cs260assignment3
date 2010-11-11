@@ -20,9 +20,9 @@ public: // classes
 
 protected: // classes
 
-  struct MessageHeader
+  struct TCPMessageHeader
   {
-    MessageHeader()
+    TCPMessageHeader()
     {
       msgSize_ = 0;
     }
@@ -39,7 +39,7 @@ protected: // classes
     u32 ReadMessageHeader( char *buffer );
   };
 
-  typedef MessageHeader MsgHdr;
+  typedef TCPMessageHeader MsgHdr;
 
 public: // methods
 

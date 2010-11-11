@@ -174,7 +174,7 @@ void TCPSocket::Receive( char const *initData, u32 dataSize )
     throw e;
   }
 
-  MsgHdr header;
+  MsgHdr header; 
   header.ReadMessageHeader( buffer );
 
   memmove( buffer, buffer + MsgHdr::GetSize(), offset );
