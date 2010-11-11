@@ -14,21 +14,14 @@
 #include "ActiveObject.hpp"
 #include "SecureObject.hpp"
 
-class SocketHandler : public ActiveObject
+class TCPSocketHandler : public ActiveObject
 {
-public:
+public: // classes
   typedef std::deque< DataBuffer > MessageQueue; 
 
-private:
-  iSocket *socket_;
-  u32 conID_;
+public: // methods
 
-  SecureObject< MessageQueue > inQueue_;
-  SecureObject< MessageQueue > outQueue_;
-
-public:
-
-  SocketHandler( iSocket *socket, u32 conID ) :
+  TCPSocketHandler( TCPSocket &socket, u32 conID ) :
       ActiveObject(), socket_( socket ), conID_( conID ), inQueue_( MessageQueue() ), outQueue_( MessageQueue() )
   {}
 	
@@ -39,15 +32,24 @@ public:
   u32 GetConID( void ) const { return conID_; }
   void SetConID( u32 conID ) { conID_ = conID; }
   
-  SocketHandler::MessageQueue PullMessages( void );
-  void PushMessages( SocketHandler::MessageQueue const &messages );
+  TCPSocketHandler::MessageQueue PullMessages( void );
+  void PushMessages( TCPSocketHandler::MessageQueue const &messages );
   
   bool PullMessage( DataBuffer &msg );
   void PushMessage( DataBuffer const &msg );
   bool IsDying( void ) { return isDying; }
 
-private:
+private: // methods
+
   void SendAll( void );
   void CollectAll( void );
+
+private: // members
+
+  TCPSocket socket_;
+  u32 conID_;
+
+  SecureObject< MessageQueue > inQueue_;
+  SecureObject< MessageQueue > outQueue_;
 
 };

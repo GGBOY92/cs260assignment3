@@ -40,7 +40,8 @@ protected: // classes
 
     typedef TCPMessageHeader MsgHdr;
 
-public:
+public: // methods
+
   TCPSocket();
   TCPSocket( std::string const &name );
 
@@ -48,7 +49,7 @@ public:
   virtual void InitBlocking( void );
 
   void Listen( void );
-  TCPSocket *Accept( void );
+  bool Accept( TCPSocket &rSocket );
   bool Connect( TCPSocket const &remoteSock );
   bool Connect( SocketAddress const &remoteSock );
 
@@ -65,4 +66,6 @@ public:
 private: // members
 
   SecureObject< MessageQueue > inQueue_;
+  
+  u32 const static MAX_CONN_QUEUE = 10;
 };

@@ -8,12 +8,12 @@
 #include "SocketHandler.hpp"
 
 
-void SocketHandler::InitThread( void )
+void TCPSocketHandler::InitThread( void )
 {
 
 }
 
-void SocketHandler::Run( void )
+void TCPSocketHandler::Run( void )
 {
   while( !isDying )
   {
@@ -23,7 +23,7 @@ void SocketHandler::Run( void )
 
   try
   {
-    socket_->Shutdown();
+    socket_.Shutdown();
   }
   catch ( iSocket::SockErr e )
   {
@@ -33,7 +33,7 @@ void SocketHandler::Run( void )
 
   try
   {
-    socket_->Close();
+    socket_.Close();
   }
   catch( iSocket::SockErr e )
   {
@@ -43,7 +43,7 @@ void SocketHandler::Run( void )
 
 }
 
-void SocketHandler::SendAll( void )
+void TCPSocketHandler::SendAll( void )
 {
   outQueue_.Lock();
   MessageQueue &out( outQueue_.Access() );
@@ -54,7 +54,7 @@ void SocketHandler::SendAll( void )
 
     try
     {
-      socket_->Send( data );
+      socket_.Send( data );
       out.pop_front();
       Sleep( 100 );
     }
@@ -67,7 +67,7 @@ void SocketHandler::SendAll( void )
   outQueue_.Unlock();
 }
 
-void SocketHandler::CollectAll( void )
+void TCPSocketHandler::CollectAll( void )
 {
   inQueue_.Lock();
   MessageQueue &in( inQueue_.Access() );
@@ -75,7 +75,7 @@ void SocketHandler::CollectAll( void )
   try
   {
     DataBuffer data;
-    while( socket_->Receive( data ) )
+    while( socket_.Receive( data ) )
     {
       in.push_back( data );
     }
@@ -91,12 +91,12 @@ void SocketHandler::CollectAll( void )
   inQueue_.Unlock();
 }
 
-void SocketHandler::FlushThread( void )
+void TCPSocketHandler::FlushThread( void )
 {
 
 }
 
-SocketHandler::MessageQueue SocketHandler::PullMessages( void )
+TCPSocketHandler::MessageQueue TCPSocketHandler::PullMessages( void )
 {
   inQueue_.Lock();
   MessageQueue &in( inQueue_.Access() );
@@ -109,7 +109,7 @@ SocketHandler::MessageQueue SocketHandler::PullMessages( void )
   return messages;
 }
 
-void SocketHandler::PushMessages( SocketHandler::MessageQueue const &messages )
+void TCPSocketHandler::PushMessages( TCPSocketHandler::MessageQueue const &messages )
 {
   outQueue_.Lock();
   MessageQueue &out( outQueue_.Access() );
@@ -118,7 +118,7 @@ void SocketHandler::PushMessages( SocketHandler::MessageQueue const &messages )
   outQueue_.Unlock();
 }
 
-bool SocketHandler::PullMessage( DataBuffer &msg )
+bool TCPSocketHandler::PullMessage( DataBuffer &msg )
 {
   inQueue_.Lock();
   MessageQueue &in( inQueue_.Access() );
@@ -136,7 +136,7 @@ bool SocketHandler::PullMessage( DataBuffer &msg )
   return true;
 }
 
-void SocketHandler::PushMessage( DataBuffer const &msg )
+void TCPSocketHandler::PushMessage( DataBuffer const &msg )
 {
   outQueue_.Lock();
   MessageQueue &out( outQueue_.Access() );

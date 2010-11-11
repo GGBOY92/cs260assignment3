@@ -44,9 +44,11 @@ public: // methods
 
 
 private: // methods
+
   void PrepareSocket( void )
   {
     SecureZeroMemory( &socketAddress_, sizeof( socketAddress_ ) );
+    socketAddress_.sin_family = AF_INET;
   }
 
 public: // members
@@ -57,7 +59,6 @@ protected: // members
   std::string name_;
   bool disconnect_;
   
-  u32 const static MAX_CONN_QUEUE = 10;
   u32 const static SEND_BUFFER_SIZE = 1000;
   u32 const static RECV_BUFFER_SIZE = 1000;
 

@@ -7,11 +7,6 @@
 
 #include "Socket.hpp"
 
-/*
-u32 const Socket::MAX_CONN_QUEUE = 10;
-u32 const Socket::SEND_BUFFER_SIZE = 1000;
-u32 const Socket::RECV_BUFFER_SIZE = 1000;
-*/
 
 u32 TCPSocket::TCPMessageHeader::WriteMessageHeader( char *buffer )
 {
@@ -27,14 +22,10 @@ u32 TCPSocket::TCPMessageHeader::ReadMessageHeader( char *buffer )
 }
 
 TCPSocket::TCPSocket() : iSocket()
-{
-  socketAddress_.sin_family = AF_INET;
-}
+{}
 
 TCPSocket::TCPSocket( std::string const &name ) : iSocket( name )
-{
-  socketAddress_.sin_family = AF_INET;
-}
+{}
 
 void TCPSocket::Init( void )
 {
@@ -122,7 +113,7 @@ void TCPSocket::Close( void )
   }
 }
 
-TCPSocket *TCPSocket::Accept( void )
+bool TCPSocket::Accept( TCPSocket &rSocket )
 {
   sockaddr_in tempAddress;
   SOCKET tempSocket;
@@ -137,15 +128,15 @@ TCPSocket *TCPSocket::Accept( void )
     int eCode = WSAGetLastError();
     
     if( eCode == WSAEWOULDBLOCK )
-      return NULL;
+      return false;
 
     throw( SockErr( eCode, "Failure to accept connection." ) );
   }
 
-  TCPSocket *endSocket = new TCPSocket();
-  endSocket->socket_ = tempSocket;
-  endSocket->socketAddress_ = tempAddress;
-  return endSocket;
+  rSocket.socket_ = tempSocket;
+  rSocket.socketAddress_ = tempAddress;
+
+  return true;
 }
 
 void TCPSocket::Listen( void )
