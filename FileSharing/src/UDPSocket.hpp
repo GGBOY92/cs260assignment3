@@ -11,26 +11,21 @@ protected: // classes
 
   struct UDPMessageHeader
   {
-      UDPMessageHeader()
-      {
-          msgSize_ = 0;
-          transID_ = 0;
-          seqID_ = 0;
-      }
+    UDPMessageHeader()
+    {
+      msgSize_ = 0;
+    }
 
-      union
-      {
-          char cSize_ [12];
-          u32 msgSize_;
-      };
+    union
+    {
+      char cData_ [ 4 ];
+      u32 msgSize_;
+    };
 
-      static u32 GetSize( void ) { return 12; }
+    static u32 GetSize( void ) { return 4; }
 
-      u32 WriteMessageHeader( char *buffer );
-      u32 ReadMessageHeader( char *buffer );
-
-      u32 transID_;
-      u32 seqID_;
+    void WriteMessageHeader( char *buffer );
+    void ReadMessageHeader( char const *buffer );
   };
 
   typedef UDPMessageHeader MsgHdr;
@@ -54,7 +49,7 @@ public: // methods
 
   void ExpectFrom( SocketAddress const & address );
 
-private: // methods
+private: // members
 
   bool ValidSender( SocketAddress const &address );
 
@@ -62,4 +57,6 @@ private: // members
 
   // a list of senders that this socket can receive from
   AddressList senders;
+  
+  u32 const static UDP_PACKET_SIZE = 1400;
 };

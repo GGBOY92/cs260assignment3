@@ -8,7 +8,7 @@
 //#include "GameClient.hpp"
 #include <iostream>
 
-u32 const READ_BUFFER_SIZE = 256;
+u32 const static READ_BUFFER_SIZE = 256;
 
 int main( int argc, char *argv[] )
 {
