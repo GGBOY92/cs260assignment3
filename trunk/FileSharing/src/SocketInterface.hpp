@@ -39,9 +39,12 @@ public: // methods
   virtual bool Receive( DataBuffer &data ) = 0;
   virtual void Send( DataBuffer const &data ) = 0;
   
-  virtual void Shutdown( void ) = 0;
-  virtual void Close( void ) = 0;
+  void Shutdown( void );
+  void Close( void );
 
+protected: // methods
+
+  u32 ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 bufferOffset = 0 );
 
 private: // methods
 

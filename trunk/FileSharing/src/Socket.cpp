@@ -103,16 +103,6 @@ bool TCPSocket::Connect( SocketAddress const &remoteSock )
   return false;
 }
 
-void TCPSocket::Close( void )
-{
-  int eCode = closesocket( socket_ );
-
-  if( eCode == SOCKET_ERROR )
-  {
-    throw( SockErr( WSAGetLastError(), "Failure to close socket" ) );
-  }
-}
-
 bool TCPSocket::Accept( TCPSocket &rSocket )
 {
   sockaddr_in tempAddress;
@@ -305,16 +295,6 @@ void TCPSocket::Send( DataBuffer const &data )
   }
 }
 
-void TCPSocket::Shutdown( void )
-{
-  Sleep( 100 );
-  int eCode = shutdown( socket_, SD_BOTH );
-
-  if( eCode == SOCKET_ERROR )
-  {
-    throw( SockErr( WSAGetLastError(), "Failed to shutdown on sending socket." ) );
-  }
-}
 
 /*
 void TCPSocket::ReceiveUntil( u32 recvCount )
@@ -363,53 +343,3 @@ void TCPSocket::ReceiveUntil( u32 recvCount )
     return 0;
 }
 */
-
-u32 TCPSocket::ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 bufferOffset /*= 0 */ )
-{
-  u32 writeCount = bufferSize - bufferOffset;
-  if( recvCount > writeCount )
-    // to do: throw something
-    return 0;
-
-  buffer += bufferOffset;
-  u32 totalBytesRead = 0;
-  u32 bytesRead = 0;
-
-  while( totalBytesRead < recvCount )
-  {
-    int eCode = recv( socket_, buffer, writeCount, 0 );
-  
-    if( eCode == 0 )
-      disconnect_ = true;
-
-    if( eCode == 0 )
-    {
-      throw( SockErr( 0, "Remote end point has shutdown the connection." ) );
-    }
-
-    if( eCode == SOCKET_ERROR )
-    {
-      eCode = WSAGetLastError();
-
-      /*
-      if( eCode == WSAEWOULDBLOCK )
-        continue;
-      */
-
-      throw( SockErr( WSAGetLastError(), "Failure to receive." ) );
-    }
-
-    bytesRead = eCode;
-    totalBytesRead += bytesRead;
-    buffer += bytesRead;
-    writeCount -= bytesRead;
-  }
-
-  if( totalBytesRead > recvCount )
-    return totalBytesRead - recvCount;
-  else if( totalBytesRead < recvCount )
-    // to do: this is bad, throw something
-    return 0;
-  else
-    return 0;
-}
