@@ -17,17 +17,17 @@
 class IOObject : public ActiveObject
 {
 public:
+
   typedef std::deque< std::string > MessageQueue; 
   bool IsPrompting( void ) { return prompting_; }
 
 private:
+
   SecureObject< MessageQueue > inQueue_;
   SecureObject< bool > wait_;
   SecureObject< bool > prompt_;
 
   bool prompting_;
-
-//  void Wait( void );
 
 public:
 

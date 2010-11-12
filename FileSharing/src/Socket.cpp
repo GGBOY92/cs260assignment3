@@ -87,14 +87,16 @@ bool TCPSocket::Connect( SocketAddress const &remoteSock )
       eCode = WSAGetLastError();
 
 	  if( eCode == WSAEWOULDBLOCK )
-		Sleep( 100 );  
-      else 
-	  if( eCode == WSAEALREADY )
-        continue;
-      else if( eCode == WSAEINVAL )
-        continue;
-      else if( eCode == WSAEISCONN )
-        return true;
+    {
+		  Sleep( 100 );
+      return true;
+    }
+    else if( eCode == WSAEALREADY )
+      continue;
+    else if( eCode == WSAEINVAL )
+      continue;
+    else if( eCode == WSAEISCONN )
+      return true;
 
       throw( SockErr( eCode, "Failure to connect sockets." ) );
     }
