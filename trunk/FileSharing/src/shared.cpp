@@ -21,7 +21,7 @@ void WaitForInput( void )
 
 void LoadConfigFile( u32 &port, char *ip )
 {
-  FILE *f = fopen( "config.ini", "rt" );
+  FILE *f = fopen( "../config.ini", "rt" );
 
   if( f )
   {
