@@ -101,7 +101,7 @@ void UDPSocket::SendTo( DataBuffer const &data, SocketAddress const &address )
   header.msgSize_ = data.Size();
 
   header.WriteMessageHeader( buffer );
-  memcpy( buffer + MsgHdr.GetSize(), data.Bytes(), data.Size() );
+  memcpy( buffer + MsgHdr::GetSize(), data.Bytes(), data.Size() );
 
   while( totalBytesSent < UDP_PACKET_SIZE )
   {
