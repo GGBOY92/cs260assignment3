@@ -101,12 +101,13 @@ void UDPSocket::SendTo( DataBuffer const &data, SocketAddress const &address )
   header.msgSize_ = data.Size();
 
   header.WriteMessageHeader( buffer );
+  memcpy( buffer + MsgHdr.GetSize(), data.Bytes(), data.Size() );
 
   while( totalBytesSent < UDP_PACKET_SIZE )
   {
     sockaddr *pSAddr = ( sockaddr * ) &address.adr_;
     int size = sizeof( address.adr_ );
-    int eCode = sendto( socket_, data.Bytes(), UDP_PACKET_SIZE, 0, pSAddr, size );
+    int eCode = sendto( socket_, buffer, UDP_PACKET_SIZE, 0, pSAddr, size );
 
     if( eCode == SOCKET_ERROR )
     {
