@@ -85,7 +85,7 @@ struct NetworkMessage
   DataBuffer msg_;
   int conID_;
   MsgType type_;
-
+  SocketAddress receiverAddress_;
   void operator<<( DataBuffer const &data )
   {
       u32 sizeType = sizeof( MsgType );

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Socket.hpp"
+#include "TCPSocket.hpp"
 
 #include <string>
 #include <deque>

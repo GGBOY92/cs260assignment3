@@ -179,19 +179,19 @@
 			Name="Socket"
 			>
 			<File
-				RelativePath="..\src\Socket.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\src\Socket.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\src\SocketInterface.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\src\SocketInterface.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\TCPSocket.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\TCPSocket.hpp"
 				>
 			</File>
 			<File
@@ -216,6 +216,22 @@
 			>
 			<File
 				RelativePath="..\src\SocketHandler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\SocketHandler.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\TCPSocketHandler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\TCPSocketHandler.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\src\UDPSocketHandler.cpp"
 				>
 			</File>
 			<File

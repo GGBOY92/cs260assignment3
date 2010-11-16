@@ -14,7 +14,7 @@ UDPSocket::UDPSocket( std::string const &name ) : iSocket( name )
 
 void UDPSocket::Init( void )
 {
-  socket_ = WSASocket( AF_INET, SOCK_STREAM, IPPROTO_UDP, NULL, 0, 0 );
+  socket_ = WSASocket( AF_INET, SOCK_DGRAM, IPPROTO_UDP, NULL, 0, 0 );
   if( socket_ == INVALID_SOCKET )
   {
     throw( SockErr( WSAGetLastError(), "Failure to create UDP socket." ) );
@@ -43,6 +43,18 @@ void UDPSocket::InitBlocking( void )
 }
 
 
+bool UDPSocket::Receive( NetworkMessage &rMessage )
+{
+  DataBuffer messageBuffer;
+  bool status = Receive( messageBuffer );
+
+  if( status )
+    rMessage << messageBuffer;
+
+  return status;
+}
+
+
 bool UDPSocket::Receive( DataBuffer &data )
 {
   char buffer[ UDP_PACKET_SIZE ];
@@ -50,12 +62,26 @@ bool UDPSocket::Receive( DataBuffer &data )
   SocketAddress address;
   int size = sizeof( address.adr_ );
   int eCode = recvfrom( socket_, buffer, UDP_PACKET_SIZE, 0, ( sockaddr * ) &address.adr_, &size );
-  ReceiveUntil( buffer, UDP_PACKET_SIZE, UDP_PACKET_SIZE, 0 );
+  
+  if( eCode == SOCKET_ERROR )
+  {
+    eCode = WSAGetLastError();
+
+    if( eCode == WSAEWOULDBLOCK )
+      return false;
+    else if( eCode == WSAECONNRESET )
+      return false;
+
+    throw( SockErr( eCode, "Error in UDPSocket::Receive\n" ) );
+  }
+
+  if( !ValidSender( address ) )
+    return false;
 
   MsgHdr header;
   header.ReadMessageHeader( buffer );
   
-
+  data.Assign( buffer + MsgHdr::GetSize(), header.msgSize_ );
   
   return true;
 }
@@ -105,22 +131,20 @@ void UDPSocket::Send( DataBuffer const &data )
 
 }
 
-
-void UDPSocket::Shutdown( void )
+void UDPSocket::Send( NetworkMessage const &message )
 {
+  DataBuffer messageBuffer;
+  messageBuffer << message;
+  SocketAddress receiverAddress = message.receiverAddress_;
 
+  SendTo( messageBuffer, receiverAddress );
 }
 
-
-void UDPSocket::Close( void )
-{
-
-}
-
-void UDPSocket::ExpectFrom( SocketAddress const & address )
+void UDPSocket::AcceptFrom( SocketAddress const & address )
 {
   senders.push_back( address );
 }
+
 
 bool UDPSocket::ValidSender( SocketAddress const &address )
 {
@@ -132,10 +156,12 @@ bool UDPSocket::ValidSender( SocketAddress const &address )
     return true;
 }
 
+
 void UDPSocket::UDPMessageHeader::WriteMessageHeader( char *buffer )
 {
   memcpy( buffer, cData_, GetSize() );
 }
+
 
 void UDPSocket::UDPMessageHeader::ReadMessageHeader( char const *buffer )
 {

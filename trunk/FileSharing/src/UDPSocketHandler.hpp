@@ -2,23 +2,19 @@
 #pragma once
 
 #include "UDPSocket.hpp"
-#include "ActiveObject.hpp"
+#include "SocketHandler.hpp"
 
-class UDPSocketHandler
+#include <deque>
+
+class UDPSocketHandler : public SocketHandler
 {
 public: // methods
 
+  UDPSocketHandler( UDPSocket &socket ) :
+      SocketHandler( &socket_ ), socket_( socket )
+  {}
+	
   void AddTransfer( SocketAddress const &address );
-
-private: // members
-
+  
   UDPSocket socket_;
-
 };
-
-
-void UDPSocketHandler::AddTransfer( SocketAddress const &address )
-{
-  socket_.ExpectFrom( address );
-}
-

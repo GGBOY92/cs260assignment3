@@ -37,14 +37,16 @@ public: // methods
   virtual void InitBlocking( void ) = 0;
 
   virtual bool Receive( DataBuffer &data ) = 0;
+  virtual bool Receive( NetworkMessage &message ) = 0;
   virtual void Send( DataBuffer const &data ) = 0;
+  virtual void Send( NetworkMessage const &message ) = 0;
   
   void Shutdown( void );
   void Close( void );
 
 protected: // methods
 
-  u32 ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 bufferOffset = 0 );
+  bool ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 bufferOffset = 0 );
 
 private: // methods
 
