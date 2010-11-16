@@ -1,19 +1,18 @@
-/*!
- *   @File   SocketHandler.hpp
- *   @Author Steven Liss
- *   @Date   20 Oct 2010
- *   @Brief  Thread object for managing a socket.
- */
-
 #include "SocketHandler.hpp"
 
-
-void TCPSocketHandler::InitThread( void )
+SocketHandler::SocketHandler( iSocket *pSocket ) : pSocket_( pSocket ), inQueue_( MessageQueue() ), outQueue_( MessageQueue() )
 {
 
 }
 
-void TCPSocketHandler::Run( void )
+
+void SocketHandler::InitThread( void )
+{
+
+}
+
+
+void SocketHandler::Run( void )
 {
   while( !isDying )
   {
@@ -23,7 +22,7 @@ void TCPSocketHandler::Run( void )
 
   try
   {
-    socket_.Shutdown();
+    pSocket_->Shutdown();
   }
   catch ( iSocket::SockErr e )
   {
@@ -33,7 +32,7 @@ void TCPSocketHandler::Run( void )
 
   try
   {
-    socket_.Close();
+    pSocket_->Close();
   }
   catch( iSocket::SockErr e )
   {
@@ -43,18 +42,19 @@ void TCPSocketHandler::Run( void )
 
 }
 
-void TCPSocketHandler::SendAll( void )
+
+void SocketHandler::SendAll( void )
 {
   outQueue_.Lock();
   MessageQueue &out( outQueue_.Access() );
 
   while( out.size() > 0 )
   {
-    DataBuffer &data = out.front();
+    NetworkMessage &netMessage = out.front();
 
     try
     {
-      socket_.Send( data );
+      pSocket_->Send( netMessage );
       out.pop_front();
       Sleep( 100 );
     }
@@ -67,17 +67,18 @@ void TCPSocketHandler::SendAll( void )
   outQueue_.Unlock();
 }
 
-void TCPSocketHandler::CollectAll( void )
+
+void SocketHandler::CollectAll( void )
 {
   inQueue_.Lock();
   MessageQueue &in( inQueue_.Access() );
 
   try
   {
-    DataBuffer data;
-    while( socket_.Receive( data ) )
+    NetworkMessage netMessage;
+    while( pSocket_->Receive( netMessage ) )
     {
-      in.push_back( data );
+      in.push_back( netMessage );
     }
   }
   catch( iSocket::SockErr e )
@@ -91,34 +92,14 @@ void TCPSocketHandler::CollectAll( void )
   inQueue_.Unlock();
 }
 
-void TCPSocketHandler::FlushThread( void )
+
+void SocketHandler::FlushThread( void )
 {
 
 }
 
-TCPSocketHandler::MessageQueue TCPSocketHandler::PullMessages( void )
-{
-  inQueue_.Lock();
-  MessageQueue &in( inQueue_.Access() );
 
-  MessageQueue messages = in;
-  in.clear();
-
-  inQueue_.Unlock();
-
-  return messages;
-}
-
-void TCPSocketHandler::PushMessages( TCPSocketHandler::MessageQueue const &messages )
-{
-  outQueue_.Lock();
-  MessageQueue &out( outQueue_.Access() );
-
-  out.insert( out.end(), messages.begin(), messages.end() );
-  outQueue_.Unlock();
-}
-
-bool TCPSocketHandler::PullMessage( DataBuffer &msg )
+bool SocketHandler::PullMessage( NetworkMessage &msg )
 {
   inQueue_.Lock();
   MessageQueue &in( inQueue_.Access() );
@@ -136,10 +117,44 @@ bool TCPSocketHandler::PullMessage( DataBuffer &msg )
   return true;
 }
 
-void TCPSocketHandler::PushMessage( DataBuffer const &msg )
+
+void SocketHandler::PushMessage( NetworkMessage const &msg )
 {
   outQueue_.Lock();
   MessageQueue &out( outQueue_.Access() );
   out.push_back( msg );
   outQueue_.Unlock();
 }
+
+//
+// not supported
+//
+///*
+// *  same as PullMessage but returns all messages at once
+// */
+//SocketHandler::MessageQueue SocketHandler::PullMessages( void )
+//{
+//  inQueue_.Lock();
+//  MessageQueue &in( inQueue_.Access() );
+//
+//  MessageQueue messages = in;
+//  in.clear();
+//
+//  inQueue_.Unlock();
+//
+//  return messages;
+//}
+//
+//
+///*
+// *  same as PushMessage but pushes all messages in messages
+// */
+//void SocketHandler::PushMessages( SocketHandler::MessageQueue const &messages )
+//{
+//  outQueue_.Lock();
+//  MessageQueue &out( outQueue_.Access() );
+//
+//  out.insert( out.end(), messages.begin(), messages.end() );
+//  outQueue_.Unlock();
+//}
+//

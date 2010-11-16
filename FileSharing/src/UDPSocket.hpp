@@ -41,13 +41,12 @@ public: // methods
   virtual void InitBlocking( void );
 
   virtual bool Receive( DataBuffer &data );
+  virtual bool Receive( NetworkMessage &rMessage );
   virtual void Send( DataBuffer const &data );
+  virtual void Send( NetworkMessage const &message );
   void SendTo( DataBuffer const &data, SocketAddress const &address );
   
-  virtual void Shutdown( void );
-  virtual void Close( void );
-
-  void ExpectFrom( SocketAddress const & address );
+  void AcceptFrom( SocketAddress const & address );
 
 private: // members
 

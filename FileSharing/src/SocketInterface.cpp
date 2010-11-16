@@ -36,12 +36,12 @@ void iSocket::Close( void )
 }
 
 
-u32 iSocket::ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 bufferOffset /*= 0 */ )
+bool iSocket::ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 bufferOffset /*= 0 */ )
 {
   u32 writeCount = bufferSize - bufferOffset;
   if( recvCount > writeCount )
     // to do: throw something
-    return 0;
+    return false;
 
   buffer += bufferOffset;
   u32 totalBytesRead = 0;
@@ -52,21 +52,16 @@ u32 iSocket::ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 buff
     int eCode = recv( socket_, buffer, writeCount, 0 );
   
     if( eCode == 0 )
-      disconnect_ = true;
-
-    if( eCode == 0 )
     {
+      disconnect_ = true;
       throw( SockErr( 0, "Remote end point has shutdown the connection." ) );
     }
-
-    if( eCode == SOCKET_ERROR )
+    else if( eCode == SOCKET_ERROR )
     {
       eCode = WSAGetLastError();
 
-      /*
       if( eCode == WSAEWOULDBLOCK )
-        continue;
-      */
+        return false;
 
       throw( SockErr( WSAGetLastError(), "Failure to receive." ) );
     }
@@ -81,9 +76,9 @@ u32 iSocket::ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 buff
     return totalBytesRead - recvCount;
   else if( totalBytesRead < recvCount )
     // to do: this is bad, throw something
-    return 0;
+    return false;
   else
-    return 0;
+    return true;
 }
 
 

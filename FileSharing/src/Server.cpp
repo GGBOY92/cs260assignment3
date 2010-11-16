@@ -6,7 +6,7 @@
  */
 
 #include "Server.hpp"
-#include "SocketHandler.hpp"
+#include "TCPSocketHandler.hpp"
 
 void Server::Init( void )
 {
@@ -210,13 +210,9 @@ void Server::PullAllMessages( void )
     if( clientHandler->IsDying() )
       continue;
 
-    DataBuffer data;
-    while( clientHandler->PullMessage( data ) )
+    NetworkMessage msg;
+    while( clientHandler->PullMessage( msg ) )
     {
-//      printf( "%s \n", str.c_str() );
-      NetworkMessage msg;
-      
-      msg << data;
       msg.conID_ = clientHandler->GetConID();
 
       inQueue_.push_back( msg );
@@ -236,10 +232,7 @@ void Server::PushAllMessages( void )
     
     if( clientHandler )
     {
-      DataBuffer data;
-      data << nMsg;
-	  Sleep( 100 );
-      clientHandler->PushMessage( data );
+      clientHandler->PushMessage( nMsg );
     }
   }
 }

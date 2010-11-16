@@ -6,11 +6,52 @@
  */
 
 #include "shared.hpp"
-
+#include "Server.hpp"
 //#include "GameControl.hpp"
 
 int main( int argc, char *argv[] )
 {
+
+#ifdef TEST_TCP_SOCKETS
+
+  StartWinSock();
+
+  TCPSocket listener;
+  TCPSocket client;
+
+  char *localIP = NULL;
+  GetLocalIP( localIP );
+
+  listener.SetIP( localIP );
+  listener.SetPortNumber( 8000 );
+
+  listener.Init();
+  
+  listener.Listen();
+
+  while( !listener.Accept( client ) );
+  
+  while( true )
+  {
+    std::string message;
+    Prompt( message, "Enter a message" );
+
+    NetworkMessage netMessage;
+    netMessage.msg_.Assign( message.c_str(), message.size() );
+
+    client.Send( netMessage );
+  }
+
+  client.Shutdown();
+  client.Close();
+
+  listener.Shutdown();
+  listener.Close();
+
+  CloseWinSock();
+
+#endif
+
   /*
   GameControl controller;
 
