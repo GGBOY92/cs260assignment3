@@ -92,6 +92,7 @@ int main( int argc, char *argv[] )
       if( client.Receive( netMessage ) )
       {
         printf( netMessage.msg_.Bytes() );
+        printf( "\n" );
         break;
       }
     }
