@@ -5,10 +5,12 @@
  *   @Brief  chess client main, controls the flow of the client application.
  */
 
-#define TEST_UDP_SOCKETS 1
+#define TEST_UDP_SOCKETS 0
 #define TEST_TCP_SOCKETS 0
 
 //#include "GameClient.hpp"
+#include "TCPSocket.hpp"
+#include "SocketLibrary.hpp"
 #include <iostream>
 #include "shared.hpp"
 
@@ -28,6 +30,70 @@ u32 const static READ_BUFFER_SIZE = 256;
 
 int main( int argc, char *argv[] )
 {
+    TCPSocket testSock;
+    SocketAddress remoteAddr;
+
+    char remoteIP[20];
+    u32 port;
+    LoadConfigFile(port, remoteIP);
+
+    try
+    {
+        StartWinSock();
+    }
+    catch(WSErr& e)
+    {
+        e.Print();
+    }
+
+    try
+    {
+        testSock.Init();
+    }
+    catch(iSocket::SockErr& e)
+    {
+        e.Print();
+    }
+   
+    remoteAddr.SetIP(remoteIP);
+    remoteAddr.SetPortNumber(port);
+
+    try
+    {
+        bool connected = false;
+        while(!connected)
+        {
+            if(testSock.Connect(remoteAddr))
+            {
+                printf("Connnection to Server esatblished...\n Port: %d\n Server IP: %s\n",
+                    port, remoteIP);
+                connected = true;
+            }
+            else
+            {
+                std::cout << "Retry connection? (YES/NO): ";
+                std::string retry;
+                std::cin >> retry;
+
+                if(retry == "yes")
+                    continue;
+                else
+                {
+                    testSock.Close();
+                    break;
+                }
+            }
+        }
+
+
+
+        //testSock.Send()
+    }
+    catch(iSocket::SockErr e)
+    {
+        e.Print();
+    }
+   
 #if TEST_TCP_SOCKETS | TEST_UDP_SOCKETS
 
   StartWinSock();
@@ -153,6 +219,8 @@ int main( int argc, char *argv[] )
     e.Print();
   }
   */
+
+    
 
   return WaitForInput();
 }

@@ -11,11 +11,10 @@
 struct FileInfo
 {
     std::string fileName_;
-    // conID_;
+    u32 conID_;
     int port_;
     std::string ip_;
 };
-
 
 // Message types
 
