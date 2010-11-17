@@ -4,6 +4,7 @@
 #include "SocketInterface.hpp"
 
 #include <list>
+#include <deque>
 
 class UDPSocket : public iSocket
 {
