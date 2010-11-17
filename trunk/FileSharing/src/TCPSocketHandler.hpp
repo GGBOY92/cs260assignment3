@@ -29,7 +29,11 @@ public: // methods
 
   u32 GetConID( void ) const { return conID_; }
   void SetConID( u32 conID ) { conID_ = conID; }
+
+protected: // methods
   
+  virtual void OnRun( void );
+
 private: // methods
 
 private: // members

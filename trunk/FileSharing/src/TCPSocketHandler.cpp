@@ -12,3 +12,6 @@ TCPSocketHandler::TCPSocketHandler( TCPSocket &socket, u32 conID ) :
 {
 
 }
+
+void TCPSocketHandler::OnRun( void )
+{}
