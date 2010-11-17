@@ -159,7 +159,10 @@ bool UDPSocket::ValidSender( SocketAddress const &address )
 
 void UDPSocket::Resend( void )
 {
-//  for( MessageQueue::iterator msgIt = sentQueue.begin(); msgIt != sentQueue.end(); ++msgIt )
+  for( MessageQueue::iterator msgIt = sentQueue.begin(); msgIt != sentQueue.end(); ++msgIt )
+  {
+    
+  }
 }
 
 void UDPSocket::UDPMessageHeader::WriteMessageHeader( char *buffer )
