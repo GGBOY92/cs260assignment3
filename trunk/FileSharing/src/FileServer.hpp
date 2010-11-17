@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "FileTransfer.hpp"
 #include "Server.hpp"  
 
@@ -17,7 +19,10 @@ public:
     void Run(void);
     void Close(void);
 
+    typedef std::vector<FileInfo> FileContainer;
 
 private:
     Server server_;
+
+    FileContainer masterFileList_;
 };

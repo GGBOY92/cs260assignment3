@@ -46,6 +46,7 @@ void Server::Init( void )
   try
   {
     listener_.Listen();
+    printf("Server is listening for connections...\nPort: %d\nIP: %s\n", port, localIP);
   }
   catch( iSocket::SockErr e )
   {

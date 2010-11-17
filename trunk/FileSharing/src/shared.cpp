@@ -39,7 +39,7 @@ void LoadConfigFile( u32 &port, char *ip )
     fclose( f );
   }
   else
-    fclose( f );
+      printf("config.ini not found.\n"); //fclose( f ); 
 }
 
 void Prompt( std::string &inBuffer, char const *msg )

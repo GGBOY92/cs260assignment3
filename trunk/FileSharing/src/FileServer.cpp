@@ -19,3 +19,35 @@ void FileServer::Init( void )
         throw e;
     }
 }
+
+/////////////////////////////////////
+
+void FileServer::Run(void)
+{
+    bool run = true;
+    try
+    {
+        while(run)
+        {
+            server_.Update();
+        }
+    }
+    catch(BaseErrExcep& e)
+    {
+        throw e;
+    }
+}
+
+/////////////////////////////////////
+
+void FileServer::Close(void)
+{
+    try
+    {
+        server_.Close();
+    }
+    catch(BaseErrExcep& e)
+    {
+        throw e;
+    }
+}

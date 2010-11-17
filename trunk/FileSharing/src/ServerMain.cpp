@@ -8,6 +8,7 @@
 #include "shared.hpp"
 #include "Server.hpp"
 //#include "GameControl.hpp"
+#include "FileServer.hpp"
 
 int main( int argc, char *argv[] )
 {
@@ -75,6 +76,29 @@ int main( int argc, char *argv[] )
     e.Print();
   }
   */
+
+    FileServer fileServer;
+
+    try
+    {
+        fileServer.Init();
+
+        try
+        {
+            fileServer.Run();
+        }
+        catch(BaseErrExcep& e)
+        {
+            e.Print();
+        }
+
+        fileServer.Close();
+    }
+    catch(BaseErrExcep& e)
+    {
+        e.Print();
+    }
+ 
    
   printf( "\n Server is closing \n" );
 

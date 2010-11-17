@@ -173,6 +173,18 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\src\File.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\src\File.hpp"
+			>
+		</File>
+		<File
+			RelativePath="..\src\FileClient.hpp"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
