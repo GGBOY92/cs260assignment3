@@ -36,9 +36,7 @@ public: // methods
   virtual void Init( void ) = 0;
   virtual void InitBlocking( void ) = 0;
 
-  virtual bool Receive( DataBuffer &data ) = 0;
   virtual bool Receive( NetworkMessage &message ) = 0;
-  virtual void Send( DataBuffer const &data ) = 0;
   virtual void Send( NetworkMessage const &message ) = 0;
   
   void Shutdown( void );

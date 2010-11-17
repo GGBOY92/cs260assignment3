@@ -19,12 +19,13 @@ public: // methods
   SocketHandler( iSocket *pSocket );
 
   virtual void InitThread( void );
-	virtual void Run( void );
-	virtual void FlushThread( void );
+  virtual void Run( void );
+  virtual void FlushThread( void );
 
   bool PullMessage( NetworkMessage &msg );
   void PushMessage( NetworkMessage const &msg );
 
+  virtual void OnRun( void ) = 0;
   /*
 
   deprecated

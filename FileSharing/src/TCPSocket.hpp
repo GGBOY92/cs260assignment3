@@ -54,13 +54,16 @@ public: // methods
   bool Connect( SocketAddress const &remoteSock );
 
   // data functions
-  virtual bool Receive( DataBuffer &data );
   virtual bool Receive( NetworkMessage &rMessage );
   void Receive( char const *initData = NULL, u32 dataSize = 0 );
 
-  virtual void Send( DataBuffer const &data );
   virtual void Send( NetworkMessage const &message );
-  
+
+private:  // methods
+
+  void Send( DataBuffer const &data );
+  bool Receive( DataBuffer &data );
+
 private: // members
 
   SecureObject< MessageQueue > inQueue_;

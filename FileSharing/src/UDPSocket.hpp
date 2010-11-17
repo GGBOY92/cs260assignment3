@@ -7,6 +7,7 @@
 
 class UDPSocket : public iSocket
 {
+
 protected: // classes
 
   struct UDPMessageHeader
@@ -31,6 +32,7 @@ protected: // classes
   typedef UDPMessageHeader MsgHdr;
 
   typedef std::list< SocketAddress > AddressList;
+  typedef std::deque< NetworkMessage > MessageQueue;
 
 public: // methods
 
@@ -40,15 +42,17 @@ public: // methods
   virtual void Init( void );
   virtual void InitBlocking( void );
 
-  virtual bool Receive( DataBuffer &data );
   virtual bool Receive( NetworkMessage &rMessage );
-  virtual void Send( DataBuffer const &data );
   virtual void Send( NetworkMessage const &message );
   void SendTo( DataBuffer const &data, SocketAddress const &address );
-  
+  void Resend( void );
+
   void AcceptFrom( SocketAddress const & address );
 
-private: // members
+private: // methods
+
+  void Send( DataBuffer const &data );
+  bool Receive( DataBuffer &data );
 
   bool ValidSender( SocketAddress const &address );
 
@@ -56,6 +60,9 @@ private: // members
 
   // a list of senders that this socket can receive from
   AddressList senders;
+
+  // a list of sent messages that have not yet been acked
+  MessageQueue sentQueue;
   
   u32 const static UDP_PACKET_SIZE = 1400;
 };
