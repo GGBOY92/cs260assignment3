@@ -52,10 +52,7 @@ int main( int argc, char *argv[] )
                 client.ConnectToServer();
                 client.SendFileList();
 
-                while(1)
-                {
-                    ;
-                }
+                client.Run();
             }
             catch(iSocket::SockErr& e)
             {

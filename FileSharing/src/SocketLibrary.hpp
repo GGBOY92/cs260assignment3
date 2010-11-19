@@ -68,9 +68,11 @@ typedef SocketAddress SockAddr;
 
 struct NetworkMessage
 {
-  enum{
+  enum
+  {
     DISCON = 1000,
     JOIN,
+    SERVER_FILES,
     QUIT,
     TRANSFER,
     INFORM_SENDER,

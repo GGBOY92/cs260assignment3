@@ -11,7 +11,7 @@
 
 const unsigned MAX_FILENAME_LENGTH = 100;
 const unsigned MAX_IP_LENGTH = 20;
-const unsigned MAX_FILES = 10;
+const unsigned MAX_FILES = 30;
 
 struct FileInfo 
 {
@@ -70,3 +70,15 @@ struct MsgJoin
 //     Data data_;
 //     MsgType type_;
 // };
+
+struct MsgServerFiles
+{
+    struct Data 
+    { 
+        u32 fileCount_;
+        FileInfo files_[MAX_FILES];
+    };
+
+    Data data_;
+    MsgType type_;
+};

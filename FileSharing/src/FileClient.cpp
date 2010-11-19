@@ -106,15 +106,56 @@ void FileClient::SendFileList( void )
         join.data_.files_[fCount] = fInfo;
 
         ++fCount;
+        if(fCount >= MAX_FILES)
+            break;
     }
 
+    if(fCount)
+    {
+        join.type_ = NetworkMessage::JOIN;
+        join.data_.fileCount_ = fCount;
+        join.data_.udpAddr_.SetIP(localIP_);
+        join.data_.udpAddr_.SetPortNumber(config_.udpPort_);
 
-    join.type_ = NetworkMessage::JOIN;
-    join.data_.fileCount_ = fCount;
-    join.data_.udpAddr_.SetIP(localIP_);
-    join.data_.udpAddr_.SetPortNumber(config_.udpPort_);
+        NetworkMessage netMsg;
+        netMsg << join;
+        clientSock_.Send(netMsg);
+    }
+}
 
-    NetworkMessage netMsg;
-    netMsg << join;
-    clientSock_.Send(netMsg);
+///////////////////////////////////////////
+
+void FileClient::Run( void )
+{
+    bool run = true;
+    while(run)
+    {
+        try
+        {
+            NetworkMessage netMessage;
+            
+            if(clientSock_.Receive(netMessage))
+            {
+                switch(netMessage.type_)
+                {
+                case NetworkMessage::SERVER_FILES:
+                    {
+                        printf("\nAvailable files on server: \n");
+                        printf("========================== \n");
+                        MsgServerFiles fileMsg;
+                        netMessage >> fileMsg;
+
+                        unsigned numFiles = fileMsg.data_.fileCount_;
+                        for(unsigned i = 0; i < numFiles; ++i)
+                            printf("%s\n", fileMsg.data_.files_[i].fileName_);
+                    }
+                    break;
+                }
+            }
+        }
+        catch( iSocket::SockErr e )
+        {
+            e.Print();
+        }
+    }
 }
