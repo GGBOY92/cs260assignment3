@@ -11,7 +11,7 @@
 
 const unsigned MAX_FILENAME_LENGTH = 100;
 const unsigned MAX_IP_LENGTH = 20;
-const unsigned MAX_FILES = 1;
+const unsigned MAX_FILES = 10;
 
 struct FileInfo 
 {
