@@ -5,6 +5,7 @@
  *   @Brief  Interface for client which interacts with file transfer server
  */
 
+#include <string>
 #include <vector>
 
 #include "File.hpp"         // File collector
@@ -27,6 +28,9 @@ private:
     SocketAddress updAddr_;
     FileCollector fileCollector_;
     Config config_;
+
+    void ProcInput(std::string& input);
+    void ProcMessage(NetworkMessage& msg);
 
     char* localIP_;
     

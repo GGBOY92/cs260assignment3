@@ -24,4 +24,6 @@ public:
 private:
     Server server_;
     FileCont masterFileList_;
+
+    void ProcMessage(NetworkMessage& msg);
 };
