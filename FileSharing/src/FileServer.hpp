@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <vector>
-
+#include <hash_map>
+ 
 #include "FileTransfer.hpp"
 #include "Server.hpp"  
 
@@ -19,10 +19,9 @@ public:
     void Run(void);
     void Close(void);
 
-    typedef std::vector<FileInfo> FileContainer;
+    typedef stdext::hash_map<std::string, SocketAddress> FileContainer;
 
 private:
     Server server_;
-
     FileContainer masterFileList_;
 };

@@ -65,5 +65,5 @@ private: // members
   // a list of sent messages that have not yet been acked
   MessageQueue sentQueue;
   
-  u32 const static UDP_PACKET_SIZE = 1400;
+  u32 const static UDP_PACKET_SIZE = 10400;
 };

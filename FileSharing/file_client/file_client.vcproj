@@ -182,6 +182,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\src\FileClient.cpp"
+			>
+		</File>
+		<File
 			RelativePath="..\src\FileClient.hpp"
 			>
 		</File>

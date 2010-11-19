@@ -44,9 +44,9 @@ struct SocketAddress
     adr_.sin_port = htons( port );
   }
 
-  void SetIP( char *IP )
+  void SetIP( std::string IP )
   {
-    adr_.sin_addr.s_addr = inet_addr( IP );
+    adr_.sin_addr.s_addr = inet_addr( IP.c_str() );
   }
 
   bool operator ==( SocketAddress const &rhs )
@@ -98,7 +98,8 @@ struct NetworkMessage
   {
     u32 sizeType = sizeof( MsgType );
     type_ = t.type_;
-    msg_.Assign( ( char * ) t.data_, sizeof( T::Data ) );
+    unsigned sizeOfData = sizeof( T::Data );
+    msg_.Assign( (const char *)&t.data_, sizeOfData );
   }
 };
 
@@ -107,4 +108,4 @@ typedef NetworkMessage NetMsg;
 void StartWinSock( void );
 void CloseWinSock( void );
 void ShowWinSockVersion( WSAData const &dat );
-void GetLocalIP( char * &localIP );
+void GetLocalIP( char* &localIP );
