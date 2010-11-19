@@ -42,13 +42,14 @@ void FileServer::Run(void)
                 {
                 case NetworkMessage::JOIN:
                     {
-                        MsgJoin* pJoin = reinterpret_cast<MsgJoin*>(it->msg_.Bytes());
-                  
-                        u32 numFiles = pJoin->data_.fileCount_;
+                        MsgJoin join;
+                        (*it) >> join;
+
+                        u32 numFiles = join.data_.fileCount_;
                         for(unsigned i = 0; i < numFiles; ++i)
                         {
-                            masterFileList_.insert(std::make_pair(pJoin->data_.files_[i].fileName_, pJoin->data_.udpAddr_));
-                            std::cout << pJoin->data_.files_[i].fileName_ << std::endl;
+                            masterFileList_.insert(std::make_pair(join.data_.files_[i].fileName_, join.data_.udpAddr_));
+                            std::cout << join.data_.files_[i].fileName_ << std::endl;
                         }
 
                         return;
