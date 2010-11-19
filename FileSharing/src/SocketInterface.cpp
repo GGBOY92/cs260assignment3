@@ -72,6 +72,7 @@ bool iSocket::ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 buf
     writeCount -= bytesRead;
   }
 
+/*
   if( totalBytesRead > recvCount )
     return totalBytesRead - recvCount;
   else if( totalBytesRead < recvCount )
@@ -79,6 +80,9 @@ bool iSocket::ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 buf
     return false;
   else
     return true;
+*/
+
+  return true;
 }
 
 

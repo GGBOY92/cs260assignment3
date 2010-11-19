@@ -10,6 +10,7 @@
 #include "shared.hpp"
 #include "SocketInterface.hpp"
 #include "SocketLibrary.hpp"
+#include "IOThread.hpp"
 
 #include "FileClient.hpp"
 
@@ -132,26 +133,13 @@ void FileClient::Run( void )
     {
         try
         {
-            NetworkMessage netMessage;
-            
-            if(clientSock_.Receive(netMessage))
-            {
-                switch(netMessage.type_)
-                {
-                case NetworkMessage::SERVER_FILES:
-                    {
-                        printf("\nAvailable files on server: \n");
-                        printf("========================== \n");
-                        MsgServerFiles fileMsg;
-                        netMessage >> fileMsg;
+            std::string input;
+            if(IOObject::console.GetMessages(input))
+                ProcInput(input);
 
-                        unsigned numFiles = fileMsg.data_.fileCount_;
-                        for(unsigned i = 0; i < numFiles; ++i)
-                            printf("%s\n", fileMsg.data_.files_[i].fileName_);
-                    }
-                    break;
-                }
-            }
+            NetworkMessage netMessage;
+            if(clientSock_.Receive(netMessage))
+                ProcMessage(netMessage);
         }
         catch( iSocket::SockErr e )
         {
@@ -159,3 +147,43 @@ void FileClient::Run( void )
         }
     }
 }
+
+///////////////////////////////////////////
+
+void FileClient::ProcInput( std::string& input )
+{
+    if(input == "/show")
+    {
+        NetworkMessage request;
+        request.type_ = NetworkMessage::REQ_FILES;
+
+        clientSock_.Send(request);
+    }
+}
+
+///////////////////////////////////////////
+
+void FileClient::ProcMessage( NetworkMessage& msg )
+{
+    switch(msg.type_)
+    {
+    case NetworkMessage::SERVER_FILES:
+        {
+            IOObject::console.Wake();
+            IOObject::console.Print("\nAvailable files on server: \n");
+            IOObject::console.Print("========================== \n");
+            MsgServerFiles fileMsg;
+            msg >> fileMsg;
+
+            unsigned numFiles = fileMsg.data_.fileCount_;
+            for(unsigned i = 0; i < numFiles; ++i)
+                IOObject::console.Print("%s\n", fileMsg.data_.files_[i].fileName_);
+
+            IOObject::console.Print("\n\n");
+            IOObject::console.Prompt();
+            IOObject::console.EndPrint();
+        }
+    break;
+    }
+}
+

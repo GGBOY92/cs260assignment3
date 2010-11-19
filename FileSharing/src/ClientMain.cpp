@@ -37,7 +37,6 @@ u32 const static READ_BUFFER_SIZE = 256;
 
 int main( int argc, char *argv[] )
 {
-
     FileClient client;
 
     try

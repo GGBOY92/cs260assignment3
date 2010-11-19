@@ -73,11 +73,15 @@ struct NetworkMessage
     DISCON = 1000,
     JOIN,
     SERVER_FILES,
+    REQ_FILES,
     QUIT,
     TRANSFER,
     INFORM_SENDER,
     INFORM_RECEIVER,
-	  ERR
+	  ERR,
+
+    // always at bottom
+    SIZE
   };
 
   NetworkMessage() :
@@ -90,6 +94,13 @@ struct NetworkMessage
   SocketAddress receiverAddress_;
   void operator<<( DataBuffer const &data )
   {
+      if( data.Size() == 0 )
+      {
+          type_ = SIZE;
+          return;
+      }
+
+      
       u32 sizeType = sizeof( MsgType );
       memcpy( &( type_ ), data.Bytes(), sizeType );
       msg_.Assign( data.Bytes( sizeType ), data.Size() - sizeType );
