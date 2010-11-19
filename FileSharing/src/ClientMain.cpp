@@ -51,6 +51,11 @@ int main( int argc, char *argv[] )
                  // establish connection with file server
                 client.ConnectToServer();
                 client.SendFileList();
+
+                while(1)
+                {
+                    ;
+                }
             }
             catch(iSocket::SockErr& e)
             {

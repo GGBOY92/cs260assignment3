@@ -31,7 +31,7 @@ void FileClient::Init( void )
     GetLocalIP(localIP_);
 
      // set client port
-    clientSock_.SetPortNumber(8012);
+    clientSock_.SetPortNumber(0);
     clientSock_.SetIP(localIP_);
 
      // initialize socket used to connect to the server
