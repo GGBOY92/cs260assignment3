@@ -8,11 +8,9 @@
 #define TEST_UDP_SOCKETS 0
 #define TEST_TCP_SOCKETS 0
 
-//#include "GameClient.hpp"
-#include "TCPSocket.hpp"
-#include "SocketLibrary.hpp"
-#include <iostream>
+#include "FileClient.hpp"
 #include "shared.hpp"
+#include "SocketLibrary.hpp"
 
 //testing headers
 
@@ -30,66 +28,32 @@ u32 const static READ_BUFFER_SIZE = 256;
 
 int main( int argc, char *argv[] )
 {
-    TCPSocket testSock;
-    SocketAddress remoteAddr;
 
-    char remoteIP[20];
-    u32 port;
-    LoadConfigFile(port, remoteIP);
+    FileClient client;
 
     try
     {
-        StartWinSock();
-    }
-    catch(WSErr& e)
-    {
-        e.Print();
-    }
-
-    try
-    {
-        testSock.Init();
-    }
-    catch(iSocket::SockErr& e)
-    {
-        e.Print();
-    }
-   
-    remoteAddr.SetIP(remoteIP);
-    remoteAddr.SetPortNumber(port);
-
-    try
-    {
-        bool connected = false;
-        while(!connected)
+        try
         {
-            if(testSock.Connect(remoteAddr))
+             // read config.ini, init winsock, set remote addr
+            client.Init();
+            try
             {
-                printf("Connnection to Server esatblished...\n Port: %d\n Server IP: %s\n",
-                    port, remoteIP);
-                connected = true;
+                 // establish connection with file server
+                client.ConnectToServer();
+                client.SendFileList();
             }
-            else
+            catch(iSocket::SockErr& e)
             {
-                std::cout << "Retry connection? (YES/NO): ";
-                std::string retry;
-                std::cin >> retry;
-
-                if(retry == "yes")
-                    continue;
-                else
-                {
-                    testSock.Close();
-                    break;
-                }
+                e.Print();
             }
         }
-
-
-
-        //testSock.Send()
+        catch(WSErr& e)
+        {
+            e.Print();
+        }
     }
-    catch(iSocket::SockErr e)
+    catch(iSocket::SockErr& e)
     {
         e.Print();
     }
@@ -219,8 +183,6 @@ int main( int argc, char *argv[] )
     e.Print();
   }
   */
-
-    
 
   return WaitForInput();
 }

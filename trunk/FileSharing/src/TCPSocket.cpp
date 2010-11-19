@@ -94,10 +94,8 @@ bool TCPSocket::Connect( SocketAddress const &remoteSock )
       eCode = WSAGetLastError();
 
 	  if( eCode == WSAEWOULDBLOCK )
-    {
-		  Sleep( 100 );
       continue;
-    }
+
     else if( eCode == WSAEALREADY )
       continue;
     else if( eCode == WSAEINVAL )
@@ -212,7 +210,7 @@ bool TCPSocket::Receive( DataBuffer &data )
   MsgHdr header; 
 
   data.Zero();
-  int eCode;
+  //int eCode;
 
   if( !ReceiveUntil( buffer, MsgHdr::GetSize(), MsgHdr::GetSize() ) )
     return false;

@@ -17,7 +17,18 @@ struct NetworkMessage;
 u32 const MAX_CONNECTIONS = 10;
 typedef u32 MsgType;
 
-void LoadConfigFile( u32 &port, char *ip = NULL );
+struct Config
+{
+    void LoadConfigFile(void);
+
+    u32 serverPort_;
+    u32 udpPort_;
+
+    std::string ip_;
+    std::string sendPath_;
+    std::string recvPath_;
+};
+
 void WaitForInput( void );
 bool PromptYesNo( char const *msg );
 void Prompt( std::string &inBuffer, char const *msg );
@@ -58,7 +69,7 @@ public:
 
 public: // members
 
-  u32 const static MAX_BUFFER_LEN = 1000;
+  u32 const static MAX_BUFFER_LEN = 10000;
 
 private: // members
   

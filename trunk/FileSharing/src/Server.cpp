@@ -23,12 +23,12 @@ void Server::Init( void )
   }
 
   char *localIP = NULL;
-  u32 port;
-
-  LoadConfigFile( port );
   GetLocalIP( localIP );
 
-  listener_.SetPortNumber( port );
+  Config serverConfig;
+  serverConfig.LoadConfigFile();
+
+  listener_.SetPortNumber( serverConfig.serverPort_ );
   listener_.SetIP( localIP );
 
   try
@@ -40,13 +40,13 @@ void Server::Init( void )
     CloseWinSock();
 
     e.Print();
-    throw( BaseErrExcep( "The server's listener socket could not be initialized.\n" ) );
+    throw( BaseErrExcep("The server's listener socket could not be initialized.\n") );
   }
 
   try
   {
     listener_.Listen();
-    printf("Server is listening for connections...\nPort: %d\nIP: %s\n", port, localIP);
+    printf("Server is listening for connections...\nPort: %d\nIP: %s\n", serverConfig.serverPort_, localIP);
   }
   catch( iSocket::SockErr e )
   {

@@ -7,58 +7,66 @@
 #pragma once
 
 #include "SocketLibrary.hpp"   // network message types
+#include <vector>
 
-struct FileInfo
+const unsigned MAX_FILENAME_LENGTH = 100;
+const unsigned MAX_IP_LENGTH = 20;
+const unsigned MAX_FILES = 50;
+
+struct FileInfo 
 {
-    std::string fileName_;
-    u32 conID_;
-    int port_;
-    std::string ip_;
+    char fileName_[MAX_FILENAME_LENGTH];
 };
+
+typedef std::vector<FileInfo> FileInfoCont;
 
 // Message types
 
 struct MsgJoin
 {
-    MsgJoin(void) : type_(NetworkMessage::JOIN) { }
-    struct Data { };
+    struct Data 
+    { 
+        u32 fileCount_;
+        FileInfo files_[MAX_FILES];
+        SocketAddress udpAddr_;
+    };
 
     Data data_;
     MsgType type_;
 };
 
-struct MsgQuit
-{
-    MsgQuit(void) : type_(NetworkMessage::QUIT) { }
-    struct Data { };
-
-    Data data_;
-    MsgType type_;
-};
-
-struct MsgTransfer
-{
-    MsgTransfer(void) : type_(NetworkMessage::TRANSFER) { }
-    struct Data { };
-
-    Data data_;
-    MsgType type_;
-};
-
-struct MsgInformSender
-{
-    MsgInformSender(void) : type_(NetworkMessage::INFORM_SENDER) { }
-    struct Data { };
-
-    Data data_;
-    MsgType type_;
-};
-
-struct MsgInformReceiver
-{
-    MsgInformReceiver(void) : type_(NetworkMessage::INFORM_RECEIVER) { }
-    struct Data { };
-
-    Data data_;
-    MsgType type_;
-};
+// struct MsgQuit
+// {
+//     MsgQuit(void) : type_(NetworkMessage::QUIT) { }
+//     struct Data { };
+// 
+//     Data data_;
+//     MsgType type_;
+// };
+// 
+// struct MsgTransfer
+// {
+//     MsgTransfer(void) : type_(NetworkMessage::TRANSFER) { }
+//     struct Data { };
+// 
+//     Data data_;
+//     MsgType type_;
+// };
+// 
+// struct MsgInformSender
+// {
+//     MsgInformSender(void) : type_(NetworkMessage::INFORM_SENDER) { }
+//     struct Data { };
+// 
+//     Data data_;
+//     MsgType type_;
+// };
+// 
+// struct MsgInformReceiver
+// {
+//     MsgInformReceiver(void) : type_(NetworkMessage::INFORM_RECEIVER) { }
+//     struct Data { };
+// 
+//     Data data_;
+//     MsgType type_;
+// };

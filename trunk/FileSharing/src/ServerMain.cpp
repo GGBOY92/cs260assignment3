@@ -12,7 +12,6 @@
 
 int main( int argc, char *argv[] )
 {
-
 #ifdef TEST_TCP_SOCKETS
 
   StartWinSock();

@@ -5,7 +5,6 @@
  *   @Brief  A collection of routines and data shared by bothe the client and server application.
  */
 
-
 #include "shared.hpp"
 #include "SocketLibrary.hpp"
 
@@ -19,27 +18,32 @@ void WaitForInput( void )
   scanf("%c", &in );
 }
 
-void LoadConfigFile( u32 &port, char *ip )
+void Config::LoadConfigFile(void)
 {
   FILE *f = fopen( "../config.ini", "rt" );
 
   if( f )
   {
-    int number = 0;
-    fscanf( f, "<server port> %d\n", &port );
-    
-    if( ip )
-    {
-      fscanf( f, "<server IP> " );
-      fscanf( f, "%s%n\n", ip, &number );
-    
-      ip[number] = 0;
-    }
-    
+      // port an ip
+    char buffer[20] = { 0 };
+    fscanf( f, "<server port> %d\n", &serverPort_ );
+    fscanf( f, "<server IP> %s\n", buffer );
+    ip_.assign(buffer);
+
+    fscanf( f, "<client UDP port> %d\n", &udpPort_ );
+
+     // read in path information
+    char pathBuffer[MAX_PATH] = { 0 };
+    fscanf(f, "<send path> %s\n", pathBuffer);
+    sendPath_.assign(pathBuffer);
+    memset(pathBuffer, 0, sizeof(char) * MAX_PATH);
+    fscanf(f, "<receive path> %s", pathBuffer);
+    recvPath_.assign(pathBuffer);
+
     fclose( f );
   }
   else
-      printf("config.ini not found.\n"); //fclose( f ); 
+      printf("config.ini not found.\n");
 }
 
 void Prompt( std::string &inBuffer, char const *msg )
