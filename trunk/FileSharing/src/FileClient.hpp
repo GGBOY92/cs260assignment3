@@ -19,6 +19,7 @@ public:
      // establish connection to server
     void ConnectToServer(void);
     void SendFileList(void);
+    void Run(void);
 
 private:
     TCPSocket clientSock_;

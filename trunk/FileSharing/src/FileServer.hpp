@@ -19,9 +19,9 @@ public:
     void Run(void);
     void Close(void);
 
-    typedef stdext::hash_map<std::string, SocketAddress> FileContainer;
+    typedef stdext::hash_map<std::string, SocketAddress> FileCont;
 
 private:
     Server server_;
-    FileContainer masterFileList_;
+    FileCont masterFileList_;
 };

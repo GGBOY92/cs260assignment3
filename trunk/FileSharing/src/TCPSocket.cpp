@@ -339,7 +339,6 @@ bool TCPSocket::Receive( DataBuffer &data )
 bool TCPSocket::Receive( NetworkMessage &rMessage )
 {
   DataBuffer messageBuffer;
-  Sleep(1001);
   bool status = Receive( messageBuffer );
 
   if( status )

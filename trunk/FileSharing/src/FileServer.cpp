@@ -42,9 +42,11 @@ void FileServer::Run(void)
                 {
                 case NetworkMessage::JOIN:
                     {
+                         // convert network message into known type
                         MsgJoin join;
                         (*it) >> join;
 
+                         // add the files from the new client to the master list
                         u32 numFiles = join.data_.fileCount_;
                         for(unsigned i = 0; i < numFiles; ++i)
                         {
@@ -52,14 +54,32 @@ void FileServer::Run(void)
                             std::cout << join.data_.files_[i].fileName_ << std::endl;
                         }
 
-                        return;
+                         // need to send the new client an updated list of available files...
 
-                        //NetworkMessage msg;
-                        //msg.conID_ = it->conID_;
+                         // set up the message to send
+                        MsgServerFiles serverFiles;
+                         // number of file names to send
+                        serverFiles.data_.fileCount_ = masterFileList_.size();
+                         // type of message
+                        serverFiles.type_ = NetworkMessage::SERVER_FILES;
 
+                         // copy each filename on the master list into the data of the message
+                        unsigned i = 0;
+                        for(FileCont::iterator it2 = masterFileList_.begin(); it2 != masterFileList_.end(); ++it2)
+                        {
+                            strcpy(serverFiles.data_.files_[i].fileName_, it2->first.c_str());
+                            ++i;
+                        }
 
+                         // now need to convert the message into a generic network message
+                        NetworkMessage msg;
+                         // set the connection id so the server knows who to send to
+                        msg.conID_ = it->conID_;
 
-                        //server_.SendMessage(msg);
+                         // convert to known type
+                        msg << serverFiles;
+                         // send to the client
+                        server_.SendMessage(msg);
                     }
                 break;
                 }
