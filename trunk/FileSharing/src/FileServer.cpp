@@ -43,7 +43,7 @@ void FileServer::Run(void)
                 case NetworkMessage::JOIN:
                     {
                         MsgJoin* pJoin = reinterpret_cast<MsgJoin*>(it->msg_.Bytes());
-                        
+                  
                         u32 numFiles = pJoin->data_.fileCount_;
                         for(unsigned i = 0; i < numFiles; ++i)
                         {
