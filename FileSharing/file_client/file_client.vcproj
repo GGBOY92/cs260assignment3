@@ -189,6 +189,14 @@
 			RelativePath="..\src\FileClient.hpp"
 			>
 		</File>
+		<File
+			RelativePath="..\src\Splitter.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\src\Splitter.hpp"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

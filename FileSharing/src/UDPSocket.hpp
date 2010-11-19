@@ -13,18 +13,34 @@ protected: // classes
 
   struct UDPMessageHeader
   {
+    enum{
+      // high level packet types
+      MESSAGE = 0,
+
+      // socket level packet types
+      ACK,
+
+      // always last in enum
+      SIZE
+    };
     UDPMessageHeader()
     {
       msgSize_ = 0;
+      packetID_ = 0;
+      sentCount_ = 0;
+      headerType_ = MESSAGE;
     }
 
     union
     {
-      char cData_ [ 4 ];
+      char cData_ [ 16 ];
       u32 msgSize_;
+      u32 packetID_;
+      u32 sentCount_;
+      u32 headerType_;
     };
 
-    static u32 GetSize( void ) { return 4; }
+    static u32 GetSize( void ) { return 16; }
 
     void WriteMessageHeader( char *buffer );
     void ReadMessageHeader( char const *buffer );
@@ -33,7 +49,7 @@ protected: // classes
   typedef UDPMessageHeader MsgHdr;
 
   typedef std::list< SocketAddress > AddressList;
-  typedef std::deque< NetworkMessage > MessageQueue;
+  typedef std::deque< std::pair< UDPMessageHeader, NetworkMessage > > MessageQueue;
 
 public: // methods
 
@@ -45,15 +61,16 @@ public: // methods
 
   virtual bool Receive( NetworkMessage &rMessage );
   virtual void Send( NetworkMessage const &message );
-  void SendTo( DataBuffer const &data, SocketAddress const &address );
+  void SendTo( DataBuffer const &data, MsgHdr header, SocketAddress const &address );
   void Resend( void );
 
   void AcceptFrom( SocketAddress const & address );
 
 private: // methods
 
-  void Send( DataBuffer const &data );
-  bool Receive( DataBuffer &data );
+  void ProcessAcknowledgement( MsgHdr const &header );
+  void Acknowledge( MsgHdr const &header, SocketAddress ackRecipient );
+  bool Receive( DataBuffer &data, MsgHdr &rHeader, SocketAddress &rSenderAddress );
 
   bool ValidSender( SocketAddress const &address );
 
@@ -65,5 +82,7 @@ private: // members
   // a list of sent messages that have not yet been acked
   MessageQueue sentQueue;
   
+  u32 static currentID_;
   u32 const static UDP_PACKET_SIZE = 10400;
+  u32 const static MAX_SEND_COUNT = 10;
 };

@@ -3,6 +3,7 @@
 
 #include <algorithm>
 
+u32 UDPSocket::currentID_ = 0;
 
 UDPSocket::UDPSocket() : iSocket()
 {}
@@ -46,22 +47,27 @@ void UDPSocket::InitBlocking( void )
 bool UDPSocket::Receive( NetworkMessage &rMessage )
 {
   DataBuffer messageBuffer;
-  bool status = Receive( messageBuffer );
+  MsgHdr header;
+  SocketAddress senderAddress;
+
+  bool status = Receive( messageBuffer, header, senderAddress );
 
   if( status )
+  {
     rMessage << messageBuffer;
+    Acknowledge( header, senderAddress );
+  }
 
   return status;
 }
 
 
-bool UDPSocket::Receive( DataBuffer &data )
+bool UDPSocket::Receive( DataBuffer &data, MsgHdr &rHeader, SocketAddress &rSenderAddress )
 {
   char buffer[ UDP_PACKET_SIZE ];
 
-  SocketAddress address;
-  int size = sizeof( address.adr_ );
-  int eCode = recvfrom( socket_, buffer, UDP_PACKET_SIZE, 0, ( sockaddr * ) &address.adr_, &size );
+  int size = sizeof( rSenderAddress.adr_ );
+  int eCode = recvfrom( socket_, buffer, UDP_PACKET_SIZE, 0, ( sockaddr * ) &rSenderAddress.adr_, &size );
   
   if( eCode == SOCKET_ERROR )
   {
@@ -75,19 +81,24 @@ bool UDPSocket::Receive( DataBuffer &data )
     throw( SockErr( eCode, "Error in UDPSocket::Receive\n" ) );
   }
 
-  if( !ValidSender( address ) )
+  if( !ValidSender( rSenderAddress ) )
     return false;
 
-  MsgHdr header;
-  header.ReadMessageHeader( buffer );
-  
-  data.Assign( buffer + MsgHdr::GetSize(), header.msgSize_ );
-  
+  rHeader.ReadMessageHeader( buffer );
+
+  if( rHeader.headerType_ == MsgHdr::ACK )
+  {
+    ProcessAcknowledgement( rHeader );
+    return Receive( data, rHeader, rSenderAddress );
+  }
+
+  data.Assign( buffer + MsgHdr::GetSize(), rHeader.msgSize_ );
+
   return true;
 }
 
 
-void UDPSocket::SendTo( DataBuffer const &data, SocketAddress const &address )
+void UDPSocket::SendTo( DataBuffer const &data, MsgHdr header, SocketAddress const &address )
 {
   if( data.Size() + MsgHdr::GetSize() > UDP_PACKET_SIZE )
     printf( "packet truncation in UDPSokcet::SendTo\n" );
@@ -96,9 +107,6 @@ void UDPSocket::SendTo( DataBuffer const &data, SocketAddress const &address )
   u32 totalBytesSent = 0;
 
   char buffer[ UDP_PACKET_SIZE ];
-
-  MsgHdr header;
-  header.msgSize_ = data.Size();
 
   header.WriteMessageHeader( buffer );
   memcpy( buffer + MsgHdr::GetSize(), data.Bytes(), data.Size() );
@@ -127,18 +135,25 @@ void UDPSocket::SendTo( DataBuffer const &data, SocketAddress const &address )
 }
 
 
-void UDPSocket::Send( DataBuffer const &data )
-{
-
-}
-
 void UDPSocket::Send( NetworkMessage const &message )
 {
   DataBuffer messageBuffer;
   messageBuffer << message;
   SocketAddress receiverAddress = message.receiverAddress_;
+  
+  MsgHdr header;
+  header.msgSize_ = messageBuffer.Size();
+  header.packetID_ = currentID_++;
+  header.headerType_ = MsgHdr::MESSAGE;
 
-  SendTo( messageBuffer, receiverAddress );
+  SendTo( messageBuffer, header, receiverAddress );
+  
+  // collect the message and store it for retransmission
+  std::pair< MsgHdr, NetworkMessage > messagePair;
+  messagePair.first = header;
+  messagePair.second = message;
+  sentQueue.push_back( messagePair );
+
 }
 
 void UDPSocket::AcceptFrom( SocketAddress const & address )
@@ -157,13 +172,55 @@ bool UDPSocket::ValidSender( SocketAddress const &address )
     return true;
 }
 
+
 void UDPSocket::Resend( void )
+{
+  for( MessageQueue::iterator msgIt = sentQueue.begin(); msgIt != sentQueue.end(); )
+  {
+    MsgHdr &header = msgIt->first;
+    NetworkMessage &netMessage = msgIt->second;
+
+    ++header.sentCount_;
+
+    if( header.sentCount_ > MAX_SEND_COUNT )
+      msgIt = sentQueue.erase( msgIt );
+    else
+    {
+      DataBuffer messageBuffer;
+      messageBuffer << netMessage;
+
+      SendTo( messageBuffer, header, netMessage.receiverAddress_ );
+
+      ++msgIt;
+    }
+  }
+}
+
+
+void UDPSocket::ProcessAcknowledgement( MsgHdr const &header )
 {
   for( MessageQueue::iterator msgIt = sentQueue.begin(); msgIt != sentQueue.end(); ++msgIt )
   {
-    
+    MsgHdr curHeader = msgIt->first;
+    if( curHeader.packetID_ == header.packetID_ )
+      sentQueue.erase( msgIt );
+
+    return;
   }
 }
+
+
+void UDPSocket::Acknowledge( MsgHdr const &header, SocketAddress ackRecipient )
+{
+  MsgHdr ackHeader;
+  ackHeader.msgSize_ = 0;
+  ackHeader.sentCount_ = 0;
+  ackHeader.packetID_ = header.packetID_;
+  ackHeader.headerType_ = MsgHdr::ACK;
+
+  SendTo( DataBuffer(), ackHeader, ackRecipient );
+}
+
 
 void UDPSocket::UDPMessageHeader::WriteMessageHeader( char *buffer )
 {

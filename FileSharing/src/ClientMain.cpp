@@ -7,10 +7,15 @@
 
 #define TEST_UDP_SOCKETS 0
 #define TEST_TCP_SOCKETS 0
+#define TEST_FILE_SPLITTER 1
 
 #include "FileClient.hpp"
 #include "shared.hpp"
 #include "SocketLibrary.hpp"
+
+#include "Splitter.hpp"
+
+#include <vector>
 
 //testing headers
 
@@ -21,6 +26,10 @@
 #elif TEST_UDP_SOCKETS
 
 #include "UDPSocket.hpp"
+
+#elif TEST_FILE_SPLITTER
+
+#include "File.hpp"
 
 #endif
 
@@ -57,6 +66,7 @@ int main( int argc, char *argv[] )
     {
         e.Print();
     }
+
    
 #if TEST_TCP_SOCKETS | TEST_UDP_SOCKETS
 
@@ -152,6 +162,39 @@ int main( int argc, char *argv[] )
   CloseWinSock();
 
 #endif
+
+  /*
+
+  FileSplitter splitter;
+  splitter.SetDirectory( "C:\\splitter_test\\" );
+  splitter.SetFilename( "split_target.mp3" );
+  splitter.SetChunkSize( 800 );
+
+  std::vector< iFileInfo::Chunk > chunks;
+  
+  iFileInfo::Chunk chunk;
+  while( splitter.GetNextChunk( chunk ) )
+  {
+    chunks.push_back( chunk );
+  }
+
+
+  FileJoiner joiner;
+
+  joiner.SetDirectory( "C:\\splitter_test\\" );
+  joiner.SetFilename( "join_target.mp3" );
+  joiner.SetFileSize( splitter.GetFileSize() );
+  joiner.SetChunkSize( 800 );
+
+  for( u32 i = 0; i < chunks.size(); ++i )
+  {
+    if( joiner.PutChunk( chunks[ i ] ) )
+      printf( "file complete\n" );
+    else
+      printf( "file incomplete\n" );
+  }
+
+  */
 
   /*
   GameClient client;
