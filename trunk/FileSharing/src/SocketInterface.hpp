@@ -62,7 +62,7 @@ protected: // members
   std::string name_;
   bool disconnect_;
   
-  u32 const static SEND_BUFFER_SIZE = 1000;
-  u32 const static RECV_BUFFER_SIZE = 1000;
+  u32 const static SEND_BUFFER_SIZE = 10500;
+  u32 const static RECV_BUFFER_SIZE = 10500;
 
 };

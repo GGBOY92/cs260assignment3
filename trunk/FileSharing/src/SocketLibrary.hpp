@@ -94,6 +94,17 @@ struct NetworkMessage
   }
 
   template < typename T >
+  void operator>>( T const &t )
+  {
+    u32 sizeType = sizeof( MsgType );
+    t.type_ = type_;
+
+    unsigned sizeOfData = sizeof( T::Data );
+    memcpy( (const char *)&t.data_, msg_.Bytes(), sizeOfData );
+  }
+
+
+  template < typename T >
   void operator<<( T const &t )
   {
     u32 sizeType = sizeof( MsgType );
