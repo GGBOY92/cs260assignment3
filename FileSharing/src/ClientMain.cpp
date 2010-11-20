@@ -16,8 +16,6 @@
 #include "Splitter.hpp"
 #include "IOThread.hpp"
 
-#include <vector>
-
 //testing headers
 
 #if TEST_TCP_SOCKETS
@@ -38,8 +36,9 @@
 
 u32 const static READ_BUFFER_SIZE = 256;
 
-int main( int argc, char *argv[] );
-
+int main( int argc, char *argv[] )
+{
+    
 /*
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow )
 {
@@ -59,8 +58,11 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLin
             {
                  // establish connection with file server
                 client.ConnectToServer();
+                 // send the server the initial list of files client has available
                 client.SendFileList();
 
+                 // process incomin messages and user input
+                  // run until connection is lost or user quits
                 client.Run();
             }
             catch(iSocket::SockErr& e)
@@ -72,6 +74,8 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLin
         {
             e.Print();
         }
+
+        client.Close();
     }
     catch(iSocket::SockErr& e)
     {

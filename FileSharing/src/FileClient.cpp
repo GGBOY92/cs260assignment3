@@ -57,31 +57,25 @@ void FileClient::ConnectToServer( void )
     try
     {
          // continue to try to connect to the server until the user quits
-        bool connected = false;
-        while(!connected)
+        connectedToServer_ = false;
+        while(!connectedToServer_)
         {
             if(clientSock_.Connect(remoteAddr_))
             {
-                printf("Connnection to Server esatblished...\n Port: %d\n Server IP: %s\n",
-                       config_.serverPort_, config_.ip_.c_str());
-                connected = true;
+                IOObject::console.Wake();
+                IOObject::console.Print("Connnection to Server established...\n Port: %d\n Server IP: %s\n",
+                                         config_.serverPort_, config_.ip_.c_str());
+                IOObject::console.Print("\nType '/help' for a list of available comands.\n\n");
+                IOObject::console.Prompt();
+                connectedToServer_ = true;
             }
             else
             {
-                std::cout << "Unable to establish connection with server.\nRetry? (YES/NO): ";
-                std::string retry;
-                std::cin >> retry;
-
-                for(size_t i = 0; i < retry.length(); ++i)
-                    retry[i] = toupper(retry[i]);
-
-                if(retry == "YES")
+                if(PromptYesNo("Unable to establish connection to server. Would you like to retry?"))
                     continue;
                 else
-                {
-                    clientSock_.Close();
                     break;
-                }
+
             }
         }
     }
@@ -128,24 +122,49 @@ void FileClient::SendFileList( void )
 
 void FileClient::Run( void )
 {
-    bool run = true;
-    while(run)
+    run_ = true;
+    while(run_)
     {
         try
         {
             std::string input;
             if(IOObject::console.GetMessages(input))
+            {
                 ProcInput(input);
+                IOObject::console.Prompt();
+            }
 
-            NetworkMessage netMessage;
-            if(clientSock_.Receive(netMessage))
-                ProcMessage(netMessage);
+            if(connectedToServer_)
+            {
+                NetworkMessage netMessage;
+                if(clientSock_.Receive(netMessage))
+                {
+                    ProcMessage(netMessage);
+                    IOObject::console.Prompt();
+                }
+            }
         }
         catch( iSocket::SockErr e )
         {
-            e.Print();
+            if(e.eCode_ == WSAECONNRESET)
+            {
+                IOObject::console.StartPrint();
+                IOObject::console.Print("===========================\n");
+                IOObject::console.Print("Connection to server lost.\n");
+                IOObject::console.Print("===========================\n");
+                IOObject::console.EndPrint();
+                connectedToServer_ = false;
+            }
         }
     }
+}
+
+///////////////////////////////////////////
+
+void FileClient::Close(void)
+{
+    IOObject::console.Print("\nExiting server...\n\n");
+    clientSock_.Close();
 }
 
 ///////////////////////////////////////////
@@ -154,11 +173,33 @@ void FileClient::ProcInput( std::string& input )
 {
     if(input == "/show")
     {
-        NetworkMessage request;
-        request.type_ = NetworkMessage::REQ_FILES;
+        if(connectedToServer_)
+        {
+            NetworkMessage request;
+            request.type_ = NetworkMessage::REQ_FILES;
 
-        clientSock_.Send(request);
+            clientSock_.Send(request);
+        }
+        else
+            IOObject::console.Print("\nConnection to server lost - no additionl transfers possible.\n\n");
     }
+    else if(input == "/help")
+    {
+        IOObject::console.StartPrint();
+
+        IOObject::console.Print("\n/get [filename]  Request to transfer a file. Myst be a valid file on the server.");
+        IOObject::console.Print("\n/help            Displays list of all valid commands and descriptions.");
+        IOObject::console.Print("\n/quit            Exit server session.");
+        IOObject::console.Print("\n/show            Request an updated list of files currently available from the server.\n\n");
+
+        IOObject::console.EndPrint();
+    }
+    else if(input == "/quit")
+        run_ = false;
+    else
+        IOObject::console.Print("\nUnknown command - type '/help' for valid commands.\n\n");
+
+    //input.substr();
 }
 
 ///////////////////////////////////////////
@@ -168,8 +209,9 @@ void FileClient::ProcMessage( NetworkMessage& msg )
     switch(msg.type_)
     {
     case NetworkMessage::SERVER_FILES:
-        {
-            IOObject::console.Wake();
+        {            
+            IOObject::console.StartPrint();
+
             IOObject::console.Print("\nAvailable files on server: \n");
             IOObject::console.Print("========================== \n");
             MsgServerFiles fileMsg;
@@ -179,11 +221,11 @@ void FileClient::ProcMessage( NetworkMessage& msg )
             for(unsigned i = 0; i < numFiles; ++i)
                 IOObject::console.Print("%s\n", fileMsg.data_.files_[i].fileName_);
 
-            IOObject::console.Print("\n\n");
-            IOObject::console.Prompt();
+            IOObject::console.Print("\n");
             IOObject::console.EndPrint();
         }
     break;
     }
 }
+
 

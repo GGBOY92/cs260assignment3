@@ -110,7 +110,7 @@ void IOObject::Resume( void )
 
 void IOObject::Print( char const *msg, ... ) const
 {
-  StartPrint();
+  //StartPrint();
 
   va_list argList;
   va_start(argList, msg);
@@ -119,7 +119,7 @@ void IOObject::Print( char const *msg, ... ) const
 
   va_end(argList);
 
-  EndPrint();
+  //EndPrint();
 }
 
 

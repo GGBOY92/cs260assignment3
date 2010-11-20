@@ -8,6 +8,8 @@
 #pragma once
 
 #include <hash_map>
+#include <string>
+#include <vector>
  
 #include "FileTransfer.hpp"
 #include "Server.hpp"  
@@ -20,10 +22,15 @@ public:
     void Close(void);
 
     typedef stdext::hash_map<std::string, SocketAddress> FileCont;
+    typedef stdext::hash_map<u32, std::vector<std::string> > FileNameCont;
 
 private:
     Server server_;
     FileCont masterFileList_;
+    FileNameCont fileNames_;
 
     void ProcMessage(NetworkMessage& msg);
+    void SendMasterList(u32 conID);
+    void RemoveFiles(u32 conID);
+    void PrintMasterList(void);
 };
