@@ -49,6 +49,9 @@ void FileClient::Init( void )
      // specify port and ip of remote connection, which will be the server
     remoteAddr_.SetIP(config_.ip_);
     remoteAddr_.SetPortNumber(config_.serverPort_);
+
+
+    m_update_count = 10;
 }
 
 ///////////////////////////////////////////
@@ -145,6 +148,8 @@ void FileClient::Run( void )
                     IOObject::console.Prompt();
                 }
             }
+
+            UpdateTransfers();
         }
         catch( iSocket::SockErr e )
         {
@@ -230,9 +235,78 @@ void FileClient::ProcMessage( NetworkMessage& msg )
 
             IOObject::console.Print("\n");
             IOObject::console.EndPrint();
+            break;
         }
-    break;
+    case NetworkMessage::INFORM_SENDER:
+        {
+            MsgInformSender msgInform;
+            msg >> msgInform;
+
+            TransferPair pear;
+
+            pear.first = msgInform.data_.recipient_;
+
+            pear.second.SetDirectory( config_.sendPath_ );
+            pear.second.SetFilename( msgInform.data_.fileName_ );
+            pear.second.SetChunkSize( DEFAULT_CHUNK_SIZE );
+
+            outgoingTransfers_[ msgInform.data_.transferID_ ] = pear;
+
+            break;
+        }
+    case NetworkMessage::INFORM_RECEIVER:
+        {
+            MsgInformReceiver msgInform;
+            msg >> msgInform;
+        }
+    default:
+        {
+            break;
+        }
     }
 }
 
+void FileClient::UpdateTransfers( void )
+{
+    if( outgoingTransfers_.size() <= 0 )
+        return;
+    
+    m_update_count;
+    m_curr_update;
+
+    u32 i = 0;
+    TransferMap::iterator it = outgoingTransfers_.begin();
+    std::advance( it, m_curr_update );
+
+    while( i < m_update_count )
+    {
+        if( m_curr_update >= outgoingTransfers_.size() )
+        {
+            m_curr_update = 0;
+        }
+
+        if( it == outgoingTransfers_.end() )
+            it = outgoingTransfers_.begin();
+
+        TransferPair &tPair = it->second;
+
+        iFileInfo::Chunk chunk;
+        if( tPair.second.GetNextChunk( chunk ) )
+        {
+            MsgTransfer transMsg;
+            transMsg.data_.chunk_ = chunk;
+            transMsg.data_.transferID_ = it->first;
+
+            NetworkMessage netMsg;
+
+            netMsg << transMsg;
+
+            peerSock_.Send( netMsg );
+        }
+
+        ++i;
+        ++m_curr_update;
+        ++it;
+    }
+}
 

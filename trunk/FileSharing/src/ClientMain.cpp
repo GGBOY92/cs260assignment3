@@ -36,8 +36,6 @@
 
 u32 const static READ_BUFFER_SIZE = 256;
 
-int main( int argc, char *argv[] )
-{
     
 /*
 int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow )
@@ -46,6 +44,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLin
 }
 */
 
+
+int main( int argc, char *argv[] )
+{
     FileClient client;
 
     try
@@ -82,7 +83,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLin
         e.Print();
     }
 
-   
+
 #if TEST_TCP_SOCKETS | TEST_UDP_SOCKETS
 
   StartWinSock();
