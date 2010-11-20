@@ -44,8 +44,21 @@ void FileClient::Init( void )
     }
     catch(iSocket::SockErr& e)
     {
+        CloseWinSock();
         throw e;
     }
+
+    try
+    {
+        peerSock_.Init();   
+    }
+    catch( iSocket::SockErr& e )
+    {
+        clientSock_.Close();
+        CloseWinSock();
+        e.Print();
+    }
+
 
      // specify port and ip of remote connection, which will be the server
     remoteAddr_.SetIP(config_.ip_);
