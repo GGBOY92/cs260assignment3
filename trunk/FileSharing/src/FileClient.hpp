@@ -19,8 +19,9 @@ class FileClient
 {
 private: // classes
 
-    typedef std::pair< SocketAddress, FileSplitter > TransferPair;
-    typedef stdext::hash_map< u32, TransferPair > TransferMap;
+    typedef std::pair< SocketAddress, FileSplitter > SplitPair;
+    typedef stdext::hash_map< u32, SplitPair > SplitterMap;
+    typedef stdext::hash_map< u32, FileJoiner > JoinerMap;
 
 public:
      // load config file, initialize socket, set remote address
@@ -52,8 +53,8 @@ private: // members
 
     char* localIP_;
 
-    TransferMap outgoingTransfers_;
-    TransferMap incomingTransfers_;
+    SplitterMap outgoingTransfers_;
+    JoinerMap incomingTransfers_;
 
     u32 const static DEFAULT_CHUNK_SIZE = 5000;
     u32 m_curr_update;
