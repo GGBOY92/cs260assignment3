@@ -108,8 +108,8 @@ void FileClient::ConnectToServer( void )
 void FileClient::SendFileList( void )
 {
     FileCollector collector;
-    config_.sendPath_ += "*.*";
-    collector.SetDirectory(config_.sendPath_.c_str());
+    std::string temp = config_.sendPath_ + "*.*";
+    collector.SetDirectory(temp.c_str());
     collector.CollectFiles();
 
     MsgJoin join;
