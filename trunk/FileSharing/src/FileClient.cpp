@@ -164,6 +164,12 @@ void FileClient::Run( void )
                     ProcMessage(netMessage);
                     IOObject::console.Prompt();
                 }
+
+                if(peerSock_.Receive(netMessage))
+                {
+                    ProcMessage(netMessage);
+                    IOObject::console.Prompt();
+                }
             }
 
             UpdateTransfers();
