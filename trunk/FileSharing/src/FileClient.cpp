@@ -355,14 +355,14 @@ void FileClient::UpdateTransfers( void )
     if( outgoingTransfers_.size() <= 0 )
         return;
     
-    m_update_count;
-    m_curr_update;
-
     u32 i = 0;
     SplitterMap::iterator it = outgoingTransfers_.begin();
 
     while( i < m_update_count )
     {
+        if( outgoingTransfers_.size() <= 0 )
+            return;
+
         if( m_curr_update >= outgoingTransfers_.size() )
         {
             m_curr_update = 0;
@@ -387,9 +387,17 @@ void FileClient::UpdateTransfers( void )
             peerSock_.Send( netMsg );
         }
 
+        if( tPair.second.ChunkedAll() )
+        {
+            it = outgoingTransfers_.erase( it );
+        }
+        else
+        {
+            ++it;
+        }
+
         ++i;
         ++m_curr_update;
-        ++it;
     }
 }
 

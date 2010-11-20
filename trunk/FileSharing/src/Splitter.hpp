@@ -92,10 +92,10 @@ class FileSplitter : public iFileInfo
 public: // methods
 
     bool GetNextChunk( iFileInfo::Chunk &chunk );
+    bool ChunkedAll( void );
 
 private: // methods
     
     void InitChunking( void );
     void CalculateFileSize( void );
-
 };
