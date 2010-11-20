@@ -333,7 +333,6 @@ void FileClient::UpdateTransfers( void )
 
     u32 i = 0;
     SplitterMap::iterator it = outgoingTransfers_.begin();
-    std::advance( it, m_curr_update );
 
     while( i < m_update_count )
     {
