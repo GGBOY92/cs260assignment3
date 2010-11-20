@@ -36,7 +36,7 @@ void iSocket::Close( void )
 }
 
 
-bool iSocket::ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 bufferOffset /*= 0 */ )
+bool iSocket::ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 bufferOffset /* = 0 */ )
 {
   u32 writeCount = bufferSize - bufferOffset;
   if( recvCount > writeCount )

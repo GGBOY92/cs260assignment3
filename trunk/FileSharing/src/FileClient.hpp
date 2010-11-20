@@ -21,8 +21,12 @@ public:
     void ConnectToServer(void);
     void SendFileList(void);
     void Run(void);
+    void Close(void);
 
 private:
+    bool run_;
+    bool connectedToServer_;
+
     TCPSocket clientSock_;
     SocketAddress remoteAddr_;
     SocketAddress updAddr_;

@@ -97,9 +97,9 @@ bool TCPSocket::Connect( SocketAddress const &remoteSock )
       continue;
 
     else if( eCode == WSAEALREADY )
-      continue;
+       continue;
     else if( eCode == WSAEINVAL )
-      continue;
+      return false;
     else if( eCode == WSAEISCONN )
       return true;
 
