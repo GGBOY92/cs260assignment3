@@ -196,11 +196,12 @@ void IOObject::ProcInputRecord( INPUT_RECORD const &in )
     {
         KEY_EVENT_RECORD key_info = in.Event.KeyEvent;
 
+    /*
         if( key_info.bKeyDown == TRUE )
         {
             m_input_string.append( key_info.uChar.AsciiChar, key_info.wRepeatCount );
         }
-
+*/
         break;
     }
     default:

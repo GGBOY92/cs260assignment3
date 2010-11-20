@@ -7,12 +7,21 @@
 
 #include <string>
 #include <vector>
+#include <hash_map>
 
 #include "TCPSocket.hpp"
-#include "FileTransfer.hpp" // FileName
+#include "UDPSocket.hpp"
+#include "FileTransfer.hpp" // FileInfo
+
+#include "Splitter.hpp"
 
 class FileClient
 {
+private: // classes
+
+    typedef std::pair< SocketAddress, FileSplitter > TransferPair;
+    typedef stdext::hash_map< u32, TransferPair > TransferMap;
+
 public:
      // load config file, initialize socket, set remote address
     void Init(void);
@@ -22,18 +31,30 @@ public:
     void Run(void);
     void Close(void);
 
-private:
+private: // methods
+    
+    void ProcInput(std::string& input);
+    void ProcMessage(NetworkMessage& msg);
+    void UpdateTransfers( void );
+
+
+private: // members
     bool run_;
     bool connectedToServer_;
 
     TCPSocket clientSock_;
+    UDPSocket peerSock_;
+
     SocketAddress remoteAddr_;
     SocketAddress updAddr_;
     Config config_;
 
-    void ProcInput(std::string& input);
-    void ProcMessage(NetworkMessage& msg);
-
     char* localIP_;
-    
+
+    TransferMap outgoingTransfers_;
+    TransferMap incomingTransfers_;
+
+    u32 const static DEFAULT_CHUNK_SIZE = 5000;
+    u32 m_curr_update;
+    u32 m_update_count;
 };

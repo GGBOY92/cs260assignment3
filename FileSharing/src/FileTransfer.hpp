@@ -9,6 +9,8 @@
 #include "SocketLibrary.hpp"   // network message types
 #include <vector>
 
+#include "Splitter.hpp"
+
 const unsigned MAX_FILENAME_LENGTH = 100;
 const unsigned MAX_IP_LENGTH = 20;
 const unsigned MAX_FILES = 30;
@@ -43,33 +45,48 @@ struct MsgJoin
 //     Data data_;
 //     MsgType type_;
 // };
-// 
-// struct MsgTransfer
-// {
-//     MsgTransfer(void) : type_(NetworkMessage::TRANSFER) { }
-//     struct Data { };
-// 
-//     Data data_;
-//     MsgType type_;
-// };
-// 
-// struct MsgInformSender
-// {
-//     MsgInformSender(void) : type_(NetworkMessage::INFORM_SENDER) { }
-//     struct Data { };
-// 
-//     Data data_;
-//     MsgType type_;
-// };
-// 
-// struct MsgInformReceiver
-// {
-//     MsgInformReceiver(void) : type_(NetworkMessage::INFORM_RECEIVER) { }
-//     struct Data { };
-// 
-//     Data data_;
-//     MsgType type_;
-// };
+ 
+struct MsgTransfer
+{
+  MsgTransfer(void) : type_(NetworkMessage::TRANSFER) { }
+  struct Data
+  {
+    iFileInfo::Chunk chunk_;
+    u32 transferID_;
+  };
+ 
+  Data data_;
+  MsgType type_;
+};
+ 
+
+struct MsgInformSender
+{
+  MsgInformSender(void) : type_(NetworkMessage::INFORM_SENDER) { }
+  struct Data
+  {
+    u32 transferID_;
+    char fileName_[MAX_FILENAME_LENGTH];
+    SocketAddress recipient_;
+  };
+
+  Data data_;
+  MsgType type_;
+};
+ 
+
+ struct MsgInformReceiver
+ {
+     MsgInformReceiver(void) : type_(NetworkMessage::INFORM_RECEIVER) { }
+     struct Data
+     {
+        u32 transferID_;
+        SocketAddress sender_;
+     };
+ 
+     Data data_;
+     MsgType type_;
+ };
 
 struct MsgServerFiles
 {
