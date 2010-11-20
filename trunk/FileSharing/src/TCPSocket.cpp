@@ -215,6 +215,7 @@ bool TCPSocket::Receive( DataBuffer &data )
   if( !ReceiveUntil( buffer, MsgHdr::GetSize(), MsgHdr::GetSize() ) )
     return false;
 
+  Sleep( 1 );
   /*
   eCode = recv( socket_, buffer, MsgHdr::GetSize(), 0 );
 

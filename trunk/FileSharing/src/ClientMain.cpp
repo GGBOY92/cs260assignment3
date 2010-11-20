@@ -55,6 +55,7 @@ int main( int argc, char *argv[] )
         {
              // read config.ini, init winsock, set remote addr
             client.Init();
+
             try
             {
                  // establish connection with file server
