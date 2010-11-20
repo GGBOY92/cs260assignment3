@@ -90,6 +90,7 @@ void FileServer::ProcMessage(NetworkMessage& msg)
         }
         break;
     case NetworkMessage::REQ_FILES: 
+        printf("\nClient requesting file list...\n\n");
         SendMasterList(msg.conID_);
     break;
     case NetworkMessage::DISCON:
