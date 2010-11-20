@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "File.hpp"         // File collector
 #include "TCPSocket.hpp"
 #include "FileTransfer.hpp" // FileInfo
 
@@ -30,7 +29,6 @@ private:
     TCPSocket clientSock_;
     SocketAddress remoteAddr_;
     SocketAddress updAddr_;
-    FileCollector fileCollector_;
     Config config_;
 
     void ProcInput(std::string& input);

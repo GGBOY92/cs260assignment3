@@ -13,12 +13,12 @@ const unsigned MAX_FILENAME_LENGTH = 100;
 const unsigned MAX_IP_LENGTH = 20;
 const unsigned MAX_FILES = 30;
 
-struct FileInfo 
+struct FileName 
 {
     char fileName_[MAX_FILENAME_LENGTH];
 };
 
-typedef std::vector<FileInfo> FileInfoCont;
+typedef std::vector<FileName> FileInfoCont;
 
 // Message types
 
@@ -27,7 +27,7 @@ struct MsgJoin
     struct Data 
     { 
         u32 fileCount_;
-        FileInfo files_[MAX_FILES];
+        FileName files_[MAX_FILES];
         SocketAddress udpAddr_;
     };
 
@@ -76,7 +76,7 @@ struct MsgServerFiles
     struct Data 
     { 
         u32 fileCount_;
-        FileInfo files_[MAX_FILES];
+        FileName files_[MAX_FILES];
     };
 
     Data data_;

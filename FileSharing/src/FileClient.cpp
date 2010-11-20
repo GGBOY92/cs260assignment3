@@ -7,6 +7,7 @@
 
 #include <iostream>
 
+#include "File.hpp"            // File collector
 #include "shared.hpp"
 #include "SocketInterface.hpp"
 #include "SocketLibrary.hpp"
@@ -89,13 +90,14 @@ void FileClient::ConnectToServer( void )
 
 void FileClient::SendFileList( void )
 {
-    fileCollector_.SetDirectory(config_.sendPath_.c_str());
-    fileCollector_.CollectFiles();
+    FileCollector collector;
+    collector.SetDirectory(config_.sendPath_.c_str());
+    collector.CollectFiles();
 
     MsgJoin join;
-    FileInfo fInfo;
+    FileName fInfo;
     unsigned fCount = 0;
-    for(FileCollector::iterator it = fileCollector_.begin(); it != fileCollector_.end(); ++it)
+    for(FileCollector::iterator it = collector.begin(); it != collector.end(); ++it)
     {
         strcpy(fInfo.fileName_, (*it).c_str());
         join.data_.files_[fCount] = fInfo;
@@ -199,7 +201,12 @@ void FileClient::ProcInput( std::string& input )
     else
         IOObject::console.Print("\nUnknown command - type '/help' for valid commands.\n\n");
 
-    //input.substr();
+    std::string subString = input.substr(0, 4);
+    if(subString == "/get ")
+    {
+        subString = input.substr(5);
+        
+    }
 }
 
 ///////////////////////////////////////////
