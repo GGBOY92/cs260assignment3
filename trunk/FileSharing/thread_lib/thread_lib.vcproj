@@ -183,6 +183,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\src\LimitedQueue.hpp"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

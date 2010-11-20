@@ -13,6 +13,7 @@
 
 #include "ActiveObject.hpp"
 #include "SecureObject.hpp"
+#include "LimitedQueue.hpp"
 
 class IOObject : public ActiveObject
 {
@@ -48,6 +49,22 @@ public:
   void Print( char const *msg, ... ) const;
 
   bool GetMessages( std::string &str );
-  
+  void CheckForInput( void );
+  void TranslateInputs( void );
+  void ProcInput( void );
+  void ProcInputRecord( INPUT_RECORD const &in );
   IOObject static console;
+
+  u32 m_history_count;
+
+  std::string m_input_string;
+  LimitedQueue< std::string > m_message_history;
+
+  // windows
+
+  INPUT_RECORD inputs[ 1000 ];
+
+  HANDLE outBuffer;
+  HANDLE inBuffer;
+  DWORD m_input_count;
 };

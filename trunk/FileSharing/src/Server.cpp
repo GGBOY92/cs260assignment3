@@ -91,6 +91,8 @@ void Server::Run( void )
 
 void Server::Close( void )
 {
+  KillAllHandlers();
+
   try
   {
     listener_.Shutdown();
@@ -284,4 +286,13 @@ TCPSocketHandler *Server::GetHandler( u32 conID )
   }
 
   return NULL;
+}
+
+
+void Server::KillAllHandlers( void )
+{
+  for( ConnectionList::iterator conIt = connections_.begin(); conIt != connections_.end(); ++conIt )
+  {
+      ( *conIt )->Kill();
+  }
 }
