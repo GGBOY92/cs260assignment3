@@ -85,7 +85,7 @@ DataBuffer::DataBuffer( char const *bytes, u32 len )
 
 u32 DataBuffer::Assign( char const *bytes, u32 count )
 {
-  if( count < MAX_BUFFER_LEN )
+  if( count <= MAX_BUFFER_LEN )
   {
     memcpy( bytes_, bytes, count );
     len_ = count;
@@ -100,7 +100,7 @@ u32 DataBuffer::Assign( char const *bytes, u32 count )
     len_ = MAX_BUFFER_LEN;
 
 #ifdef _DEBUG
-    printf( "Data truncated by %d in DataBuffer::Assign\n", overFlow );
+    printf( "Data truncated by %u in DataBuffer::Assign\n", overFlow );
 #endif
 
     return overFlow;

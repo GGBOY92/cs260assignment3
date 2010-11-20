@@ -14,6 +14,7 @@
 #include "SocketLibrary.hpp"
 
 #include "Splitter.hpp"
+#include "IOThread.hpp"
 
 #include <vector>
 
@@ -33,10 +34,19 @@
 
 #endif
 
+#include <iostream>
+
 u32 const static READ_BUFFER_SIZE = 256;
 
-int main( int argc, char *argv[] )
+int main( int argc, char *argv[] );
+
+/*
+int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow )
 {
+    return main( 0, NULL );
+}
+*/
+
     FileClient client;
 
     try
