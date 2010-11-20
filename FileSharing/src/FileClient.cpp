@@ -270,7 +270,7 @@ void FileClient::ProcMessage( NetworkMessage& msg )
             MsgInformSender msgInform;
             msg >> msgInform;
 
-            TransferPair tPear;
+            SplitPair tPear;
 
             tPear.first = msgInform.data_.recipient_;
 
@@ -287,15 +287,34 @@ void FileClient::ProcMessage( NetworkMessage& msg )
             MsgInformReceiver msgInform;
             msg >> msgInform;
 
-            TransferPair &tPear = outgoingTransfers_[ msgInform.data_.transferID_ ];
+            FileJoiner &joiner = incomingTransfers_[ msgInform.data_.transferID_ ];
             
-            tPear.first = msgInform.data_.sender_;
-            
-            tPear.second.SetDirectory( config_.recvPath_ );
-            tPear.second.SetFilename( msgInform.data_.fileName_ );
-            tPear.second.SetChunkSize( DEFAULT_CHUNK_SIZE );
+            joiner.SetDirectory( config_.recvPath_ );
+            joiner.SetFilename( msgInform.data_.fileName_ );
+            joiner.SetChunkSize( DEFAULT_CHUNK_SIZE );
 
             peerSock_.AcceptFrom( msgInform.data_.sender_ );
+            break;
+        }
+    case NetworkMessage::TRANSFER:
+        {
+            MsgTransfer transMsg;
+            msg >> transMsg;
+
+            JoinerMap::iterator it = incomingTransfers_.find( transMsg.data_.transferID_ );
+
+            if( it != incomingTransfers_.end() )
+            {
+                FileJoiner &joiner = it->second;
+                joiner.PutChunk( transMsg.data_.chunk_ );
+
+                if( joiner.IsFileComplete() )
+                {
+                    incomingTransfers_.erase( it );
+                }
+            }
+
+            break;
         }
     default:
         {
@@ -313,7 +332,7 @@ void FileClient::UpdateTransfers( void )
     m_curr_update;
 
     u32 i = 0;
-    TransferMap::iterator it = outgoingTransfers_.begin();
+    SplitterMap::iterator it = outgoingTransfers_.begin();
     std::advance( it, m_curr_update );
 
     while( i < m_update_count )
@@ -326,7 +345,7 @@ void FileClient::UpdateTransfers( void )
         if( it == outgoingTransfers_.end() )
             it = outgoingTransfers_.begin();
 
-        TransferPair &tPair = it->second;
+        SplitPair &tPair = it->second;
 
         iFileInfo::Chunk chunk;
         if( tPair.second.GetNextChunk( chunk ) )
