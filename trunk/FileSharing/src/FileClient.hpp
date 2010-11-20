@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "TCPSocket.hpp"
-#include "FileTransfer.hpp" // FileInfo
+#include "FileTransfer.hpp" // FileName
 
 class FileClient
 {

@@ -18,7 +18,7 @@ struct FileName
     char fileName_[MAX_FILENAME_LENGTH];
 };
 
-typedef std::vector<FileName> FileInfoCont;
+typedef std::vector<FileName> FileNameCont;
 
 // Message types
 
