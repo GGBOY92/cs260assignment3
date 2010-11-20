@@ -119,6 +119,10 @@ void FileSplitter::CalculateFileSize( void )
     fseek( m_p_file, 0, SEEK_SET );
 }
 
+bool FileSplitter::ChunkedAll( void )
+{
+    return ( m_curr_seq_number == m_chunk_count );
+}
 
 bool FileJoiner::IsFileComplete( void )
 {
