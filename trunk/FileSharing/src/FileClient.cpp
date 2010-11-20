@@ -219,7 +219,11 @@ void FileClient::ProcInput( std::string& input )
         IOObject::console.EndPrint();
     }
     else if(input == "/quit")
-        run_ = false;
+    {
+        NetworkMessage quitMsg;
+        quitMsg.type_ = NetworkMessage::QUIT;
+        clientSock_.Send(quitMsg);
+    }
     else
     {
         std::string subString = input.substr(0, 5);

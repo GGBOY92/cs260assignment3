@@ -59,15 +59,6 @@ struct MsgGet
     Data data_;
     MsgType type_;
 };
-
-// struct MsgQuit
-// {
-//     MsgQuit(void) : type_(NetworkMessage::QUIT) { }
-//     struct Data { };
-// 
-//     Data data_;
-//     MsgType type_;
-// };
  
 struct MsgTransfer
 {
