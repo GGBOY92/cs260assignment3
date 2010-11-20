@@ -36,6 +36,7 @@ public: // methods
     void SetDirectory( std::string const &directory );
     void SetFilename( std::string const &file_name );
     void SetChunkSize( u32 chunk_size );
+    bool IsGood( void );
 
     ~iFileInfo( void );
 

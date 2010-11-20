@@ -51,11 +51,21 @@ void iFileInfo::CalculateChunkCount( void )
         ++m_chunk_count;
 }
 
+bool iFileInfo::IsGood( void )
+{
+    if( m_p_file == NULL )
+        return false;
+    else
+        return true;
+}
 
 bool FileSplitter::GetNextChunk( iFileInfo::Chunk &chunk )
 {
     if( !m_p_file )
         InitChunking();
+
+    if( !m_p_file )
+        return false;
 
     char buffer[ DataBuffer::MAX_BUFFER_LEN ];
 
