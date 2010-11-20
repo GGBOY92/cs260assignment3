@@ -297,7 +297,9 @@ void FileClient::ProcMessage( NetworkMessage& msg )
             tPear.second.SetFilename( msgInform.data_.fileName_ );
             tPear.second.SetChunkSize( DEFAULT_CHUNK_SIZE );
 
-            outgoingTransfers_[ msgInform.data_.transferID_ ] = tPear;
+            if( tPear.second.IsGood() )
+                outgoingTransfers_[ msgInform.data_.transferID_ ] = tPear;
+
 
             break;
         }
