@@ -48,6 +48,7 @@ private: // members
     SocketAddress remoteAddr_;
     SocketAddress updAddr_;
     Config config_;
+    FileName files_[MAX_FILES];
 
     char* localIP_;
 

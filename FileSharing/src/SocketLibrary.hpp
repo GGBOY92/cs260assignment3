@@ -78,6 +78,7 @@ struct NetworkMessage
     TRANSFER,
     INFORM_SENDER,
     INFORM_RECEIVER,
+    GET,
 	  ERR,
 
     // always at bottom

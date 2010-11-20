@@ -37,6 +37,17 @@ struct MsgJoin
     MsgType type_;
 };
 
+struct MsgGet
+{
+    struct Data
+    {
+        FileName name_;
+    };
+
+    Data data_;
+    MsgType type_;
+};
+
 // struct MsgQuit
 // {
 //     MsgQuit(void) : type_(NetworkMessage::QUIT) { }

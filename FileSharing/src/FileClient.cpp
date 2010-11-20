@@ -5,6 +5,7 @@
  *   @Brief  Implementation of client for file transfer assignment.
  */
 
+#include <algorithm>           // std::find
 #include <iostream>
 
 #include "File.hpp"            // File collector
@@ -110,6 +111,8 @@ void FileClient::SendFileList( void )
             break;
     }
 
+    memcpy(files_, join.data_.files_, sizeof(join.data_.files_));
+
     if(fCount)
     {
         join.type_ = NetworkMessage::JOIN;
@@ -178,6 +181,7 @@ void FileClient::Close(void)
 
 void FileClient::ProcInput( std::string& input )
 {
+
     if(input == "/show")
     {
         if(connectedToServer_)
@@ -204,13 +208,34 @@ void FileClient::ProcInput( std::string& input )
     else if(input == "/quit")
         run_ = false;
     else
-        IOObject::console.Print("\nUnknown command - type '/help' for valid commands.\n\n");
-
-    std::string subString = input.substr(0, 4);
-    if(subString == "/get ")
     {
-        subString = input.substr(5);
-        
+        std::string subString = input.substr(0, 5);
+        if(subString == "/get ")
+        {
+            subString = input.substr(5);
+
+            bool found = false;
+            for(size_t i = 0; i < MAX_FILES; ++i)
+            {
+                if(!strcmp(files_[i].fileName_, subString.c_str()))
+                    found = true;
+            }
+
+             if(found)
+             {
+                 MsgGet get;
+                 strcpy(get.data_.name_.fileName_, subString.c_str());
+                 get.type_ = NetworkMessage::GET;
+
+                 NetworkMessage netMsg;
+                 netMsg << get;
+                 clientSock_.Send(netMsg);
+             }
+             else
+                 IOObject::console.Print("\nInvalid filename requested. Type '/show' for an updated list of files.\n\n");
+        }
+        else
+            IOObject::console.Print("\nUnknown command - type '/help' for valid commands.\n\n");
     }
 }
 
@@ -232,6 +257,9 @@ void FileClient::ProcMessage( NetworkMessage& msg )
             unsigned numFiles = fileMsg.data_.fileCount_;
             for(unsigned i = 0; i < numFiles; ++i)
                 IOObject::console.Print("%s\n", fileMsg.data_.files_[i].fileName_);
+
+            memcpy(files_, fileMsg.data_.files_, sizeof(fileMsg.data_.files_));
+
 
             IOObject::console.Print("\n");
             IOObject::console.EndPrint();
