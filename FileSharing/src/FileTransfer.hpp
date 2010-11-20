@@ -92,6 +92,7 @@ struct MsgInformSender
      struct Data
      {
         u32 transferID_;
+        char fileName_[MAX_FILENAME_LENGTH];
         SocketAddress sender_;
      };
  

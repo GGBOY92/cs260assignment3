@@ -270,15 +270,15 @@ void FileClient::ProcMessage( NetworkMessage& msg )
             MsgInformSender msgInform;
             msg >> msgInform;
 
-            TransferPair pear;
+            TransferPair tPear;
 
-            pear.first = msgInform.data_.recipient_;
+            tPear.first = msgInform.data_.recipient_;
 
-            pear.second.SetDirectory( config_.sendPath_ );
-            pear.second.SetFilename( msgInform.data_.fileName_ );
-            pear.second.SetChunkSize( DEFAULT_CHUNK_SIZE );
+            tPear.second.SetDirectory( config_.sendPath_ );
+            tPear.second.SetFilename( msgInform.data_.fileName_ );
+            tPear.second.SetChunkSize( DEFAULT_CHUNK_SIZE );
 
-            outgoingTransfers_[ msgInform.data_.transferID_ ] = pear;
+            outgoingTransfers_[ msgInform.data_.transferID_ ] = tPear;
 
             break;
         }
@@ -286,6 +286,16 @@ void FileClient::ProcMessage( NetworkMessage& msg )
         {
             MsgInformReceiver msgInform;
             msg >> msgInform;
+
+            TransferPair &tPear = outgoingTransfers_[ msgInform.data_.transferID_ ];
+            
+            tPear.first = msgInform.data_.sender_;
+            
+            tPear.second.SetDirectory( config_.recvPath_ );
+            tPear.second.SetFilename( msgInform.data_.fileName_ );
+            tPear.second.SetChunkSize( DEFAULT_CHUNK_SIZE );
+
+            peerSock_.AcceptFrom( msgInform.data_.sender_ );
         }
     default:
         {
