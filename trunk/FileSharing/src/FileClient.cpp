@@ -64,6 +64,9 @@ void FileClient::Init( void )
     remoteAddr_.SetIP(config_.ip_);
     remoteAddr_.SetPortNumber(config_.serverPort_);
 
+    updAddr_.SetIP(localIP_);
+    updAddr_.SetPortNumber(config_.udpPort_);
+
 
     m_update_count = 10;
 }
@@ -83,7 +86,7 @@ void FileClient::ConnectToServer( void )
                 IOObject::console.Wake();
                 IOObject::console.Print("Connnection to Server established...\n Port: %d\n Server IP: %s\n",
                                          config_.serverPort_, config_.ip_.c_str());
-                IOObject::console.Print("\nType '/help' for a list of available comands.\n\n");
+                IOObject::console.Print("\nType '/help' for a list of available commands.\n\n");
                 IOObject::console.Prompt();
                 connectedToServer_ = true;
             }
