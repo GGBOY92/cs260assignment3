@@ -9,6 +9,8 @@
 
 #include "FileServer.hpp"
 
+unsigned FileServer::transID_ = 0;
+
 void FileServer::Init( void )
 {
     try
@@ -72,9 +74,12 @@ void FileServer::ProcMessage(NetworkMessage& msg)
 
              // add the files from the new client to the master list - *assumes no duplicates*
             u32 numFiles = join.data_.fileCount_;
+            FileOwner owner;
+            owner.conID_ = msg.conID_;
+            owner.sockAddr_ = join.data_.udpAddr_;
             for(unsigned i = 0; i < numFiles; ++i)
             {
-                masterFileList_.insert(std::make_pair(join.data_.files_[i].fileName_, join.data_.udpAddr_));
+                masterFileList_.insert(std::make_pair(join.data_.files_[i].fileName_, owner));
                 fileNames_[msg.conID_].push_back(join.data_.files_[i].fileName_);
             }
 
@@ -96,7 +101,43 @@ void FileServer::ProcMessage(NetworkMessage& msg)
         PrintMasterList();
     break;
     case NetworkMessage::GET:
-        printf("Client requested valid file.");
+        {
+            MsgGet get;
+            msg >> get;
+       
+            FileCont::iterator it = masterFileList_.find(get.data_.name_.fileName_);
+            if(it != masterFileList_.end())
+            {            
+                FileOwner fileSender;
+                fileSender = it->second;
+                
+                MsgInformReceiver informRecv;
+                informRecv.data_.sender_ = fileSender.sockAddr_;
+                informRecv.data_.transferID_ = transID_;
+                informRecv.type_ = NetworkMessage::INFORM_RECEIVER;
+
+                NetworkMessage recvMsg;
+                recvMsg.conID_ = msg.conID_;
+                recvMsg << informRecv;
+                server_.SendMessage(recvMsg);
+
+                MsgInformSender informSender;
+                strcpy(informSender.data_.fileName_, get.data_.name_.fileName_);
+                informSender.data_.recipient_ = get.data_.recvAddr_;
+                informSender.data_.transferID_ = transID_;
+                informSender.type_ = NetworkMessage::INFORM_SENDER;
+
+                NetworkMessage sendMsg;
+                sendMsg.conID_ = fileSender.conID_;
+                sendMsg << informSender;
+                server_.SendMessage(sendMsg);
+
+                ++transID_;
+            }
+
+
+
+        }
     break;
     }
 }

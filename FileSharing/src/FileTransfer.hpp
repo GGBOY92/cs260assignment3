@@ -17,7 +17,18 @@ const unsigned MAX_FILES = 30;
 
 struct FileName 
 {
+    FileName(void)
+    {
+        memset(fileName_, 0, MAX_FILENAME_LENGTH);
+    }
+
     char fileName_[MAX_FILENAME_LENGTH];
+};
+
+struct FileOwner
+{
+    SocketAddress sockAddr_;
+    u32 conID_;
 };
 
 typedef std::vector<FileName> FileNameCont;
@@ -42,6 +53,7 @@ struct MsgGet
     struct Data
     {
         FileName name_;
+        SocketAddress recvAddr_;
     };
 
     Data data_;
