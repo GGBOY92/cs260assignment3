@@ -226,6 +226,7 @@ void FileClient::ProcInput( std::string& input )
                  MsgGet get;
                  strcpy(get.data_.name_.fileName_, subString.c_str());
                  get.type_ = NetworkMessage::GET;
+                 get.data_.recvAddr_ = updAddr_;
 
                  NetworkMessage netMsg;
                  netMsg << get;

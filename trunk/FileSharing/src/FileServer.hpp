@@ -21,10 +21,12 @@ public:
     void Run(void);
     void Close(void);
 
-    typedef stdext::hash_map<std::string, SocketAddress> FileCont;
+    typedef stdext::hash_map<std::string, FileOwner> FileCont;
     typedef stdext::hash_map<u32, std::vector<std::string> > FileNameCont;
 
 private:
+    static unsigned transID_;
+
     Server server_;
     FileCont masterFileList_;
     FileNameCont fileNames_;
