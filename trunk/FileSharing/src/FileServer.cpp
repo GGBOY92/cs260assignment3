@@ -95,6 +95,9 @@ void FileServer::ProcMessage(NetworkMessage& msg)
         printf("====================== \n\n");
         PrintMasterList();
     break;
+    case NetworkMessage::GET:
+        printf("Client requested valid file.");
+    break;
     }
 }
 
