@@ -303,6 +303,7 @@ void FileClient::ProcMessage( NetworkMessage& msg )
             tPear.second.SetFilename( msgInform.data_.fileName_ );
             tPear.second.SetChunkSize( DEFAULT_CHUNK_SIZE );
 
+            tPear.second.InitChunking();
             if( tPear.second.IsGood() )
                 outgoingTransfers_[ msgInform.data_.transferID_ ] = tPear;
 
@@ -383,6 +384,7 @@ void FileClient::UpdateTransfers( void )
             NetworkMessage netMsg;
 
             netMsg << transMsg;
+            netMsg.receiverAddress_ = tPair.first;
 
             peerSock_.Send( netMsg );
         }

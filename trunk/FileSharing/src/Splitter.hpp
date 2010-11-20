@@ -93,9 +93,9 @@ public: // methods
 
     bool GetNextChunk( iFileInfo::Chunk &chunk );
     bool ChunkedAll( void );
+    void InitChunking( void );
 
 private: // methods
     
-    void InitChunking( void );
     void CalculateFileSize( void );
 };
