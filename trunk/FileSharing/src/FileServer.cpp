@@ -87,11 +87,16 @@ void FileServer::ProcMessage(NetworkMessage& msg)
             printf("Available files from all clients:\n");
             printf("=================================\n");
             PrintMasterList();
+
+            SendMasterList(msg.conID_);
         }
         break;
     case NetworkMessage::REQ_FILES: 
         printf("\nClient requesting file list...\n\n");
         SendMasterList(msg.conID_);
+    break;
+    case NetworkMessage::QUIT:
+            printf("\nClient is quitting server...\n\n", fileNames_[msg.conID_].size());
     break;
     case NetworkMessage::DISCON:
         RemoveFiles(msg.conID_);
@@ -177,9 +182,13 @@ void FileServer::SendMasterList(u32 conID)
 
 void FileServer::RemoveFiles(u32 conID)
 {
-    std::vector<std::string>& names = fileNames_.find(conID)->second;
-    for(std::vector<std::string>::iterator it = names.begin(); it != names.end(); ++it)
-        masterFileList_.erase((*it));
+    FileNameCont::iterator it = fileNames_.find(conID);
+    if(it != fileNames_.end())
+    {
+        std::vector<std::string>& names = it->second;
+        for(std::vector<std::string>::iterator it = names.begin(); it != names.end(); ++it)
+            masterFileList_.erase((*it));
+    }
 }
 
 /////////////////////////////////////
