@@ -154,25 +154,16 @@ void FileClient::Run( void )
         {
             std::string input;
             if(IOObject::console.GetMessages(input))
-            {
                 ProcInput(input);
-                IOObject::console.Prompt();
-            }
 
             if(connectedToServer_)
             {
                 NetworkMessage netMessage;
                 if(clientSock_.Receive(netMessage))
-                {
                     ProcMessage(netMessage);
-                    IOObject::console.Prompt();
-                }
 
                 if(peerSock_.Receive(netMessage))
-                {
                     ProcMessage(netMessage);
-                    IOObject::console.Prompt();
-                }
             }
 
             UpdateTransfers();
@@ -215,7 +206,10 @@ void FileClient::ProcInput( std::string& input )
             clientSock_.Send(request);
         }
         else
+        {
             IOObject::console.Print("\nConnection to server lost - no additionl transfers possible.\n\n");
+            IOObject::console.Prompt();
+        }
     }
     else if(input == "/help")
     {
@@ -227,6 +221,7 @@ void FileClient::ProcInput( std::string& input )
         IOObject::console.Print("\n/show            Request an updated list of files currently available from the server.\n\n");
 
         IOObject::console.EndPrint();
+        IOObject::console.Prompt();
     }
     else if(input == "/quit")
     {
@@ -263,7 +258,10 @@ void FileClient::ProcInput( std::string& input )
                  IOObject::console.Print("\nInvalid filename requested. Type '/show' for an updated list of files.\n\n");
         }
         else
+        {
             IOObject::console.Print("\nUnknown command - type '/help' for valid commands.\n\n");
+            IOObject::console.Prompt();
+        }
     }
 }
 
@@ -291,6 +289,7 @@ void FileClient::ProcMessage( NetworkMessage& msg )
 
             IOObject::console.Print("\n");
             IOObject::console.EndPrint();
+            IOObject::console.Prompt();
             break;
         }
     case NetworkMessage::INFORM_SENDER:
