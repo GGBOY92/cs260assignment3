@@ -87,7 +87,6 @@ void FileClient::ConnectToServer( void )
                 IOObject::console.Print("Connnection to Server established...\n Port: %d\n Server IP: %s\n",
                                          config_.serverPort_, config_.ip_.c_str());
                 IOObject::console.Print("\nType '/help' for a list of available commands.\n\n");
-                IOObject::console.Prompt();
                 connectedToServer_ = true;
             }
             else
@@ -130,17 +129,14 @@ void FileClient::SendFileList( void )
 
     memcpy(files_, join.data_.files_, sizeof(join.data_.files_));
 
-    if(fCount)
-    {
-        join.type_ = NetworkMessage::JOIN;
-        join.data_.fileCount_ = fCount;
-        join.data_.udpAddr_.SetIP(localIP_);
-        join.data_.udpAddr_.SetPortNumber(config_.udpPort_);
+    join.type_ = NetworkMessage::JOIN;
+    join.data_.fileCount_ = fCount;
+    join.data_.udpAddr_.SetIP(localIP_);
+    join.data_.udpAddr_.SetPortNumber(config_.udpPort_);
 
-        NetworkMessage netMsg;
-        netMsg << join;
-        clientSock_.Send(netMsg);
-    }
+    NetworkMessage netMsg;
+    netMsg << join;
+    clientSock_.Send(netMsg);
 }
 
 ///////////////////////////////////////////
@@ -152,12 +148,12 @@ void FileClient::Run( void )
     {
         try
         {
-            std::string input;
-            if(IOObject::console.GetMessages(input))
-                ProcInput(input);
-
             if(connectedToServer_)
             {
+                std::string input;
+                if(IOObject::console.GetMessages(input))
+                    ProcInput(input);
+
                 NetworkMessage netMessage;
                 if(clientSock_.Receive(netMessage))
                     ProcMessage(netMessage);
@@ -165,6 +161,8 @@ void FileClient::Run( void )
                 if(peerSock_.Receive(netMessage))
                     ProcMessage(netMessage);
             }
+            else
+                break;
 
             UpdateTransfers();
         }
@@ -228,6 +226,7 @@ void FileClient::ProcInput( std::string& input )
         NetworkMessage quitMsg;
         quitMsg.type_ = NetworkMessage::QUIT;
         clientSock_.Send(quitMsg);
+        connectedToServer_ = false;
     }
     else
     {
