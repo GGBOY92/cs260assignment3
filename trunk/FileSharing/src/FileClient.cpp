@@ -255,6 +255,8 @@ void FileClient::ProcInput( std::string& input )
              }
              else
                  IOObject::console.Print("\nInvalid filename requested. Type '/show' for an updated list of files.\n\n");
+
+             IOObject::console.Prompt();
         }
         else
         {
