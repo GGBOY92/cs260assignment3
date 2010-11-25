@@ -118,6 +118,7 @@ void FileServer::ProcMessage(NetworkMessage& msg)
                 fileSender = it->second;
                 
                 MsgInformReceiver informRecv;
+                strcpy(informRecv.data_.fileName_, get.data_.name_.fileName_);
                 informRecv.data_.sender_ = fileSender.sockAddr_;
                 informRecv.data_.transferID_ = transID_;
                 informRecv.type_ = NetworkMessage::INFORM_RECEIVER;
