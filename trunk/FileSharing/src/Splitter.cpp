@@ -13,10 +13,13 @@ iFileInfo::iFileInfo() : m_chunk_size( 0 ), m_curr_seq_number( 0 ), m_p_file( NU
 
 iFileInfo::~iFileInfo( void )
 {
+}
+
+void iFileInfo::Close( void )
+{
     if( m_p_file )
         fclose( m_p_file );
 }
-
 
 void iFileInfo::SetChunkSize( u32 chunk_size )
 {
@@ -61,10 +64,10 @@ bool iFileInfo::IsGood( void )
 
 bool FileSplitter::GetNextChunk( iFileInfo::Chunk &chunk )
 {
-    if( !m_p_file )
+    if( m_p_file == NULL )
         InitChunking();
 
-    if( !m_p_file )
+    if( m_p_file == NULL )
         return false;
 
     char buffer[ DataBuffer::MAX_BUFFER_LEN ];
