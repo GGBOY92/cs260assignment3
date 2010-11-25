@@ -14,7 +14,7 @@ public: // classes
 
     struct Chunk
     {
-        u32 const static MAX_CHUNK_SIZE = 8000;
+        u32 const static MAX_CHUNK_SIZE = 500;
         u32 m_chunk_count;
         u32 m_seq_number;
         u32 m_size;
