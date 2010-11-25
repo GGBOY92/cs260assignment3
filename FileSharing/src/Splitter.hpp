@@ -18,6 +18,7 @@ public: // classes
         u32 m_chunk_count;
         u32 m_seq_number;
         u32 m_size;
+        u32 m_file_size;
         char m_data[ MAX_CHUNK_SIZE ];
 //        DataBuffer m_data;
 
