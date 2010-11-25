@@ -42,6 +42,7 @@ private: // methods
 private: // members
     bool run_;
     bool connectedToServer_;
+    bool requestFiles_;
 
     TCPSocket clientSock_;
     UDPSocket peerSock_;
