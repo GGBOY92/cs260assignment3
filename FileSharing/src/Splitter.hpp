@@ -14,9 +14,12 @@ public: // classes
 
     struct Chunk
     {
+        u32 const static MAX_CHUNK_SIZE = 8000;
         u32 m_chunk_count;
         u32 m_seq_number;
-        DataBuffer m_data;
+        u32 m_size;
+        char m_data[ MAX_CHUNK_SIZE ];
+//        DataBuffer m_data;
 
         bool operator< ( Chunk const &rhs )
         {
