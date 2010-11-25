@@ -70,14 +70,12 @@ bool FileSplitter::GetNextChunk( iFileInfo::Chunk &chunk )
     if( m_p_file == NULL )
         return false;
 
-    char buffer[ DataBuffer::MAX_BUFFER_LEN ];
+    size_t bytes_read = fread( chunk.m_data, 1, m_chunk_size, m_p_file );
 
-    size_t bytes_read = fread( buffer, 1, m_chunk_size, m_p_file );
-        
     if( ferror( m_p_file ) )
         printf( "error reading file" );
 
-    chunk.m_data.Assign( buffer, bytes_read );
+    chunk.m_size = bytes_read;
     chunk.m_seq_number = m_curr_seq_number++;
     chunk.m_chunk_count = m_chunk_count;
 
@@ -144,7 +142,7 @@ bool FileJoiner::PutChunk( Chunk const &chunk )
         return false;
 
     fseek( m_p_file, chunk.m_seq_number * m_chunk_size, SEEK_SET );
-    fwrite( chunk.m_data.Bytes(), 1, chunk.m_data.Size(), m_p_file );
+    fwrite( chunk.m_data, 1, chunk.m_size, m_p_file );
 
     ++chunk_status;
     ++m_curr_chunk_count;
