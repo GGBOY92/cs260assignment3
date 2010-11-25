@@ -340,7 +340,8 @@ void FileClient::ProcMessage( NetworkMessage& msg )
                 joiner.PutChunk( transMsg.data_.chunk_ );
 
                 if( joiner.IsFileComplete() )
-                {
+                {   
+                    joiner.Close();
                     incomingTransfers_.erase( it );
                 }
             }
@@ -353,6 +354,7 @@ void FileClient::ProcMessage( NetworkMessage& msg )
         }
     }
 }
+
 
 void FileClient::UpdateTransfers( void )
 {
@@ -394,6 +396,7 @@ void FileClient::UpdateTransfers( void )
 
         if( tPair.second.ChunkedAll() )
         {
+            tPair.second.Close();
             it = outgoingTransfers_.erase( it );
         }
         else
