@@ -126,6 +126,7 @@ public:
    *  be found the message is discarded.
    */
   void SendMessage( NetworkMessage const &msg );
+  void BroadcastMessage( NetworkMessage &msg);
   void KillAllHandlers( void );
 
 private: // members

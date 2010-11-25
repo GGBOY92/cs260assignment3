@@ -276,6 +276,7 @@ void FileClient::ProcMessage( NetworkMessage& msg )
         {            
             IOObject::console.StartPrint();
 
+            IOObject::console.Print("\nAvailable files on server have changed...\n");
             IOObject::console.Print("\nAvailable files on server: \n");
             IOObject::console.Print("========================== \n");
             MsgServerFiles fileMsg;

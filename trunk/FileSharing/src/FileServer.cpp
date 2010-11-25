@@ -174,8 +174,8 @@ void FileServer::SendMasterList(u32 conID)
 
      // convert to known type
     newMsg << serverFiles;
-     // send to the client
-    server_.SendMessage(newMsg);
+     // send to the clients
+    server_.BroadcastMessage(newMsg);
 }
 
 /////////////////////////////////////
