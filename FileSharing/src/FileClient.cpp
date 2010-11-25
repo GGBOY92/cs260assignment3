@@ -69,6 +69,7 @@ void FileClient::Init( void )
 
 
     m_update_count = 10;
+    requestFiles_ = false;
 }
 
 ///////////////////////////////////////////
@@ -87,6 +88,7 @@ void FileClient::ConnectToServer( void )
                 IOObject::console.Print("Connnection to Server established...\n Port: %d\n Server IP: %s\n",
                                          config_.serverPort_, config_.ip_.c_str());
                 IOObject::console.Print("\nType '/help' for a list of available commands.\n\n");
+                IOObject::console.Prompt();
                 connectedToServer_ = true;
             }
             else
@@ -200,6 +202,7 @@ void FileClient::ProcInput( std::string& input )
         {
             NetworkMessage request;
             request.type_ = NetworkMessage::REQ_FILES;
+            requestFiles_ = true;
 
             clientSock_.Send(request);
         }
@@ -276,7 +279,9 @@ void FileClient::ProcMessage( NetworkMessage& msg )
         {            
             IOObject::console.StartPrint();
 
-            IOObject::console.Print("\nAvailable files on server have changed...\n");
+            if(!requestFiles_)
+                IOObject::console.Print("\nAvailable files on server have changed...\n\n");
+
             IOObject::console.Print("\nAvailable files on server: \n");
             IOObject::console.Print("========================== \n");
             MsgServerFiles fileMsg;
@@ -292,6 +297,8 @@ void FileClient::ProcMessage( NetworkMessage& msg )
             IOObject::console.Print("\n");
             IOObject::console.EndPrint();
             IOObject::console.Prompt();
+
+            requestFiles_ = false;
             break;
         }
     case NetworkMessage::INFORM_SENDER:
