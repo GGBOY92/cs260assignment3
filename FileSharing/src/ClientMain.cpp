@@ -112,16 +112,14 @@ int main( int argc, char *argv[] )
 #elif TEST_UDP_SOCKETS
 
   UDPSocket client;
-
-  u32 port;
-  char ip[ 100 ];
-  LoadConfigFile( port, ip );
+  Config config;
+  config.LoadConfigFile();
 
   client.SetIP( localIP );
-  client.SetPortNumber( port );
+  client.SetPortNumber( 8000 );
 
-  remoteAddress.SetIP( ip );
-  remoteAddress.SetPortNumber( port );
+  remoteAddress.SetIP( config.ip_ );
+  remoteAddress.SetPortNumber( config.udpPort_ );
 
   client.Init();
 
