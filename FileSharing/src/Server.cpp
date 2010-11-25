@@ -1,6 +1,7 @@
 /*!
  *   @File   Server.cpp
  *   @Author Steven Liss
+ *   @Author Michael Travaglione
  *   @Date   14 Oct 2010
  *   @Brief  Server class for managing multiple connections
  */
@@ -273,6 +274,17 @@ void Server::SendMessage( NetworkMessage const &msg )
   outQueue_.push_back( msg );
 }
 
+void Server::BroadcastMessage( NetworkMessage &msg )
+{
+    TCPSocketHandler *clientHandler;
+    for( u32 i = 0; i < connections_.size(); ++i )
+    {
+        clientHandler = connections_[ i ];
+        u32 currID = clientHandler->GetConID();
+        msg.conID_ = currID;
+        SendMessage(msg);
+    }
+}
 
 TCPSocketHandler *Server::GetHandler( u32 conID )
 {
