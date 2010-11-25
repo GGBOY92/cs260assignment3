@@ -369,6 +369,38 @@ void FileClient::UpdateTransfers( void )
     if( outgoingTransfers_.size() <= 0 )
         return;
     
+    for( SplitterMap::iterator it = outgoingTransfers_.begin(); it != outgoingTransfers_.end(); ++it )
+    {
+        SplitPair &tPair = it->second;
+
+        iFileInfo::Chunk chunk;
+        if( tPair.second.GetNextChunk( chunk ) )
+        {
+            MsgTransfer transMsg;
+            transMsg.data_.chunk_ = chunk;
+            transMsg.data_.transferID_ = it->first;
+
+            NetworkMessage netMsg;
+
+            netMsg << transMsg;
+            netMsg.receiverAddress_ = tPair.first;
+
+            peerSock_.Send( netMsg );
+        }
+
+        if( tPair.second.ChunkedAll() )
+        {
+            tPair.second.Close();
+            it = outgoingTransfers_.erase( it );
+        }
+        else
+        {
+            ++it;
+        }
+
+    }
+
+/*
     u32 i = 0;
     SplitterMap::iterator it = outgoingTransfers_.begin();
 
@@ -415,5 +447,7 @@ void FileClient::UpdateTransfers( void )
         ++i;
         ++m_curr_update;
     }
+*/
+
 }
 
