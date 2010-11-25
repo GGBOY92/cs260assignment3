@@ -36,6 +36,13 @@ void FileClient::Init( void )
      // set client port
     clientSock_.SetPortNumber(0);
     clientSock_.SetIP(localIP_);
+    
+    peerSock_.SetIP(localIP_);
+    peerSock_.SetPortNumber(config_.udpPort_);
+
+     // set udp port
+    updAddr_.SetIP(localIP_);
+    updAddr_.SetPortNumber(config_.udpPort_);
 
      // initialize socket used to connect to the server
     try
@@ -63,10 +70,6 @@ void FileClient::Init( void )
      // specify port and ip of remote connection, which will be the server
     remoteAddr_.SetIP(config_.ip_);
     remoteAddr_.SetPortNumber(config_.serverPort_);
-
-    updAddr_.SetIP(localIP_);
-    updAddr_.SetPortNumber(config_.udpPort_);
-
 
     m_update_count = 10;
     requestFiles_ = false;
