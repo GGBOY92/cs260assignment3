@@ -369,7 +369,7 @@ void FileClient::UpdateTransfers( void )
     if( outgoingTransfers_.size() <= 0 )
         return;
     
-    for( SplitterMap::iterator it = outgoingTransfers_.begin(); it != outgoingTransfers_.end(); ++it )
+    for( SplitterMap::iterator it = outgoingTransfers_.begin(); it != outgoingTransfers_.end(); )
     {
         SplitPair &tPair = it->second;
 
