@@ -159,10 +159,6 @@ void FileClient::Run( void )
         {
             if(connectedToServer_)
             {
-                std::string input;
-                if(IOObject::console.GetMessages(input))
-                    ProcInput(input);
-
                 NetworkMessage netMessage;
                 if(clientSock_.Receive(netMessage))
                     ProcMessage(netMessage);
@@ -172,8 +168,10 @@ void FileClient::Run( void )
 
                 peerSock_.Resend();
             }
-            else
-                break;
+
+            std::string input;
+            if(IOObject::console.GetMessages(input))
+                ProcInput(input);
 
             UpdateTransfers();
         }
@@ -247,6 +245,13 @@ void FileClient::ProcInput( std::string& input )
     }
     else
     {
+        if(!connectedToServer_)
+        {
+            IOObject::console.Print("\nConnection to server lost - no additionl transfers possible.\n\n");
+            IOObject::console.Prompt();
+            return;
+        }
+
         std::string subString = input.substr(0, 5);
         if(subString == "/get ")
         {
