@@ -134,6 +134,7 @@ bool FileJoiner::IsFileComplete( void )
 
 bool FileJoiner::PutChunk( Chunk const &chunk )
 {
+    m_file_size = chunk.m_file_size;
     if( !m_p_file )
         InitJoining();
 
@@ -142,7 +143,7 @@ bool FileJoiner::PutChunk( Chunk const &chunk )
     if( chunk_status > 0 )
         return false;
 
-    m_file_size = chunk.m_file_size;
+
 
     fseek( m_p_file, chunk.m_seq_number * m_chunk_size, SEEK_SET );
     fwrite( chunk.m_data, 1, chunk.m_size, m_p_file );

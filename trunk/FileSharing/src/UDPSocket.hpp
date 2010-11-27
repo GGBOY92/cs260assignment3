@@ -33,11 +33,14 @@ protected: // classes
 
     union
     {
+      struct
+      {
+        u32 msgSize_;
+        u32 packetID_;
+        u32 sentCount_;
+        u32 headerType_;
+      };
       char cData_ [ 16 ];
-      u32 msgSize_;
-      u32 packetID_;
-      u32 sentCount_;
-      u32 headerType_;
     };
 
     static u32 GetSize( void ) { return 16; }
@@ -81,11 +84,13 @@ private: // members
 
   // a list of sent messages that have not yet been acked
   MessageQueue sentQueue;
+
+  u32 m_sent_count;
   
   u32 m_wait_count;
   
   u32 static currentID_;
   u32 const static UDP_PACKET_SIZE = 5400;
-  u32 const static MAX_SEND_COUNT = 10;
+  u32 const static MAX_SEND_COUNT = 100;
   u32 const static MAX_WAIT = 10;
 };

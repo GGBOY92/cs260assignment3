@@ -7,7 +7,7 @@
 
 #define TEST_UDP_SOCKETS 0
 #define TEST_TCP_SOCKETS 0
-#define TEST_FILE_SPLITTER 1
+#define TEST_FILE_SPLITTER 0
 
 #include "FileClient.hpp"
 #include "shared.hpp"
@@ -22,7 +22,7 @@
 
 #include "TCPSocket.hpp"
 
-#elif TEST_UDP_SOCKETS
+#elif TEST_UDP_SOCKETS 
 
 #include "UDPSocket.hpp"
 
@@ -83,6 +83,7 @@ int main( int argc, char *argv[] )
     {
         e.Print();
     }
+
 
 
 #if TEST_TCP_SOCKETS | TEST_UDP_SOCKETS
