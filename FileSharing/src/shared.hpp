@@ -69,7 +69,7 @@ public:
 
 public: // members
 
-  u32 const static MAX_BUFFER_LEN = 10000;
+  u32 const static MAX_BUFFER_LEN = 10200;
 
 private: // members
   
