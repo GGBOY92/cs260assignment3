@@ -42,6 +42,8 @@ public: // methods
     void SetChunkSize( u32 chunk_size );
     bool IsGood( void );
     void Close( void );
+    
+    u32 GetChunkCount( void ) { return m_chunk_count; }
 
     ~iFileInfo( void );
 
@@ -77,6 +79,8 @@ public: // methods
 
     bool PutChunk( Chunk const &chunk );
     bool IsFileComplete( void );
+
+    u32 GetCurrChunkCount( void ) { return m_curr_chunk_count; }
 
 private: // methods
 

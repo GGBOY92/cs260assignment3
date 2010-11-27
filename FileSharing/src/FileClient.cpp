@@ -73,6 +73,7 @@ void FileClient::Init( void )
 
     m_update_count = 10;
     requestFiles_ = false;
+    m_show_prog = false;
 }
 
 ///////////////////////////////////////////
@@ -234,6 +235,10 @@ void FileClient::ProcInput( std::string& input )
         clientSock_.Send(quitMsg);
         connectedToServer_ = false;
     }
+    else if(input == "/prog")
+    {
+        m_show_prog = true;
+    }
     else
     {
         std::string subString = input.substr(0, 5);
@@ -369,9 +374,6 @@ void FileClient::ProcMessage( NetworkMessage& msg )
 
 void FileClient::UpdateTransfers( void )
 {
-    if( outgoingTransfers_.size() <= 0 )
-        return;
-    
     for( SplitterMap::iterator it = outgoingTransfers_.begin(); it != outgoingTransfers_.end(); )
     {
         SplitPair &tPair = it->second;
@@ -400,8 +402,9 @@ void FileClient::UpdateTransfers( void )
         {
             ++it;
         }
-
     }
+
+    m_show_prog = false;
 
 /*
     u32 i = 0;
