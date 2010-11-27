@@ -7,6 +7,8 @@
 #include <string>
 #include <deque>
 
+#include "Windows.h"
+
 class iFileInfo
 {
 
@@ -45,6 +47,7 @@ public: // methods
     void Close( void );
     
     u32 GetChunkCount( void ) { return m_chunk_count; }
+    DWORD GetStartTime( void ) { return m_start_time; }
 
     ~iFileInfo( void );
 
@@ -63,6 +66,8 @@ protected: // members
     u32 m_file_size;
     u32 m_chunk_count;
     u32 m_last_chunk_size;
+
+    DWORD m_start_time;
 
 };
 

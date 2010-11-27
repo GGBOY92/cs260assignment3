@@ -91,6 +91,6 @@ private: // members
   
   u32 static currentID_;
   u32 const static UDP_PACKET_SIZE = 5400;
-  u32 const static MAX_SEND_COUNT = 100;
-  u32 const static MAX_WAIT = 10;
+  u32 const static MAX_SEND_COUNT = 1000;
+  u32 const static MAX_WAIT = 100;
 };
