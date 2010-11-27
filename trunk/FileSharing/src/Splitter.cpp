@@ -162,7 +162,7 @@ void FileJoiner::InitJoining( void )
     if( !m_p_file )
         return;
 
-    fseek( m_p_file, m_file_size, SEEK_SET );
+    fseek( m_p_file, m_file_size - 1, SEEK_SET );
 
     fputc( 0, m_p_file );
 
