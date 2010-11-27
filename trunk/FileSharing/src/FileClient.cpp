@@ -157,9 +157,9 @@ void FileClient::Run( void )
     {
         try
         {
+            NetworkMessage netMessage;
             if(connectedToServer_)
             {
-                NetworkMessage netMessage;
                 if(clientSock_.Receive(netMessage))
                     ProcMessage(netMessage);
             }
