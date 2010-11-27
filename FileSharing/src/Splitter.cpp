@@ -3,23 +3,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #include "splitter.hpp"
 
 
-iFileInfo::iFileInfo() : m_chunk_size( 0 ), m_curr_seq_number( 0 ), m_p_file( NULL )
+iFileInfo::iFileInfo() : m_chunk_size( 0 ), m_curr_seq_number( 0 ), m_p_file( NULL ), m_start_time( 0 )
 {}
 
 
 iFileInfo::~iFileInfo( void )
-{
-}
+{}
+
 
 void iFileInfo::Close( void )
 {
     if( m_p_file )
         fclose( m_p_file );
 }
+
 
 void iFileInfo::SetChunkSize( u32 chunk_size )
 {
@@ -172,6 +172,7 @@ void FileJoiner::InitJoining( void )
     m_chunk_data.resize( m_chunk_count, u32( 0 ) );
 
     m_curr_chunk_count = 0;
+    m_start_time = timeGetTime();
 }
 
 void FileJoiner::SetFileSize( u32 file_size )

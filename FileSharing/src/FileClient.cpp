@@ -369,7 +369,14 @@ void FileClient::ProcMessage( NetworkMessage& msg )
                 if( joiner.IsFileComplete() )
                 {   
                     joiner.Close();
-                    IOObject::console.Print( "Completed transfering %s\n", joiner.GetFilename() );
+
+                    DWORD start_time = joiner.GetStartTime();
+                    DWORD curr_time = timeGetTime();
+
+                    float time_diff = ( float( curr_time - start_time ) );
+
+                    IOObject::console.Print( "Completed transfering %s in %f\n", joiner.GetFilename().c_str(), time_diff / 1000.0f );
+
                     incomingTransfers_.erase( it );
                 }
             }
@@ -422,12 +429,24 @@ void FileClient::UpdateTransfers( void )
       {
         u32 chunks = it->second.GetCurrChunkCount();
         u32 total_chunks = it->second.GetChunkCount();
+        u32 remaining_chunks = total_chunks - chunks;
 
-        IOObject::console.Print( "Acquired %u of %u chunks\n", chunks, total_chunks );
+        DWORD start_time = it->second.GetStartTime();
+        DWORD curr_time = timeGetTime();
+
+        float time_diff = float( curr_time - start_time );
+
+        float ratio = time_diff / float( chunks ) ;
+        float time = ratio * float( remaining_chunks );
+
+        IOObject::console.Print( "Acquired %u of %u chunks.  Estimated remaining time is %f\n", chunks, total_chunks, time / 1000.0f );
       }
+
+      IOObject::console.Prompt();
 
       m_show_prog = false;
     }
+
 /*
     u32 i = 0;
     SplitterMap::iterator it = outgoingTransfers_.begin();
