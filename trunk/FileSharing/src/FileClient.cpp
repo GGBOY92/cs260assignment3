@@ -162,12 +162,12 @@ void FileClient::Run( void )
                 NetworkMessage netMessage;
                 if(clientSock_.Receive(netMessage))
                     ProcMessage(netMessage);
-
-                if(peerSock_.Receive(netMessage))
-                    ProcMessage(netMessage);
-
-                peerSock_.Resend();
             }
+
+            if(peerSock_.Receive(netMessage))
+                ProcMessage(netMessage);
+
+            peerSock_.Resend();
 
             std::string input;
             if(IOObject::console.GetMessages(input))
