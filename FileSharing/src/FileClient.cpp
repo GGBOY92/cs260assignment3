@@ -57,6 +57,9 @@ void FileClient::Init( void )
 
     try
     {
+        peerSock_.SetIP(localIP_);
+        peerSock_.SetPortNumber( config_.udpPort_ );
+
         peerSock_.Init();   
     }
     catch( iSocket::SockErr& e )
@@ -166,6 +169,8 @@ void FileClient::Run( void )
 
                 if(peerSock_.Receive(netMessage))
                     ProcMessage(netMessage);
+
+                peerSock_.Resend();
             }
             else
                 break;
@@ -238,6 +243,7 @@ void FileClient::ProcInput( std::string& input )
     else if(input == "/prog")
     {
         m_show_prog = true;
+        IOObject::console.Prompt();
     }
     else
     {
@@ -404,8 +410,18 @@ void FileClient::UpdateTransfers( void )
         }
     }
 
-    m_show_prog = false;
+    if( m_show_prog )
+    {
+      for( JoinerMap::iterator it = incomingTransfers_.begin(); it != incomingTransfers_.end(); ++it )
+      {
+        u32 chunks = it->second.GetCurrChunkCount();
+        u32 total_chunks = it->second.GetChunkCount();
 
+        IOObject::console.Print( "Acquired %u of %u chunks\n", chunks, total_chunks );
+      }
+
+      m_show_prog = false;
+    }
 /*
     u32 i = 0;
     SplitterMap::iterator it = outgoingTransfers_.begin();

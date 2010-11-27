@@ -147,6 +147,8 @@ void UDPSocket::Send( NetworkMessage const &message )
   header.headerType_ = MsgHdr::MESSAGE;
 
   SendTo( messageBuffer, header, receiverAddress );
+
+  ++m_sent_count;
   
   // collect the message and store it for retransmission
   std::pair< MsgHdr, NetworkMessage > messagePair;
@@ -175,6 +177,14 @@ bool UDPSocket::ValidSender( SocketAddress const &address )
 
 void UDPSocket::Resend( void )
 {
+  /*
+  if( m_sent_count >= 1 )
+  {
+    m_sent_count = 0;
+    return;
+  }
+  */
+
   for( MessageQueue::iterator msgIt = sentQueue.begin(); msgIt != sentQueue.end(); )
   {
     ++m_wait_count;
