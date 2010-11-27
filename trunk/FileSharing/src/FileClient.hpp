@@ -57,7 +57,7 @@ private: // members
     SplitterMap outgoingTransfers_;
     JoinerMap incomingTransfers_;
 
-    u32 const static DEFAULT_CHUNK_SIZE = 10000;
+    u32 const static DEFAULT_CHUNK_SIZE = 5000;
     u32 m_curr_update;
     u32 m_update_count;
 };
