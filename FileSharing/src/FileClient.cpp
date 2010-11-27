@@ -375,7 +375,7 @@ void FileClient::ProcMessage( NetworkMessage& msg )
 
                     float time_diff = ( float( curr_time - start_time ) );
 
-                    IOObject::console.Print( "Completed transfering %s in %f\n", joiner.GetFilename().c_str(), time_diff / 1000.0f );
+                    IOObject::console.Print( "Completed transfering %s in %f seconds\n", joiner.GetFilename().c_str(), time_diff / 1000.0f );
 
                     incomingTransfers_.erase( it );
                 }
