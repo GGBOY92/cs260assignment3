@@ -39,6 +39,7 @@ public: // methods
 
     void SetDirectory( std::string const &directory );
     void SetFilename( std::string const &file_name );
+    std::string GetFilename( void ) { return m_filename; }
     void SetChunkSize( u32 chunk_size );
     bool IsGood( void );
     void Close( void );

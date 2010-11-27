@@ -369,6 +369,7 @@ void FileClient::ProcMessage( NetworkMessage& msg )
                 if( joiner.IsFileComplete() )
                 {   
                     joiner.Close();
+                    IOObject::console.Print( "Completed transfering %s\n", joiner.GetFilename() );
                     incomingTransfers_.erase( it );
                 }
             }
