@@ -190,8 +190,32 @@ static GameObjInst*	missileAcquireTarget(GameObjInst* pMissile);
 
 #if CLIENT_APP
 
+void SendJoinMessage(void)
+{
+    MsgJoin join;
+    join.type_ = NetworkMessage::JOIN;
+    strcpy(join.data_.username_.name_, client.config_.username_.c_str());
+
+    NetworkMessage netMsg;
+    netMsg << join;
+    netMsg.receiverAddress_ = client.remoteAddr_;
+
+    try
+    {
+        printf("\nSending JOIN message...\n");
+        client.udpSock_.Send(netMsg);
+    }
+    catch(iSocket::SockErr& e)
+    {
+        e.Print();
+    }
+};
+
 void ProcInput(void)
 {
+    if (AEInputCheckTriggered(DIK_J))
+        SendJoinMessage();
+
     if (AEInputCheckCurr(DIK_UP))
     {
         MsgInput input;
@@ -206,6 +230,7 @@ void ProcInput(void)
 
         try
         {
+            printf("\nSending DIK_UP INPUT message...\n");
             client.udpSock_.Send(netMsg);
         }
         catch(iSocket::SockErr& e)
@@ -227,6 +252,7 @@ void ProcInput(void)
 
         try
         {
+            printf("\nSending DIK_DOWN INPUT message...\n");
             client.udpSock_.Send(netMsg);
         }
         catch(iSocket::SockErr& e)
@@ -248,6 +274,7 @@ void ProcInput(void)
 
         try
         {
+            printf("\nSending DIK_LEFT INPUT message...\n");
             client.udpSock_.Send(netMsg);
         }
         catch(iSocket::SockErr& e)
@@ -269,6 +296,7 @@ void ProcInput(void)
 
         try
         {
+            printf("\nSending DIK_RIGHT INPUT message...\n");
             client.udpSock_.Send(netMsg);
         }
         catch(iSocket::SockErr& e)
@@ -294,6 +322,7 @@ void ProcInput(void)
 
         try
         {
+            printf("\nSending DIK_SPACE INPUT message...\n");
             client.udpSock_.Send(netMsg);
         }
         catch(iSocket::SockErr& e)
@@ -315,6 +344,7 @@ void ProcInput(void)
 
         try
         {
+            printf("\nSending DIK_Z INPUT message...\n");
             client.udpSock_.Send(netMsg);
         }
         catch(iSocket::SockErr& e)
@@ -336,6 +366,7 @@ void ProcInput(void)
 
         try
         {
+            printf("\nSending DIK_X INPUT message...\n");
             client.udpSock_.Send(netMsg);
         }
         catch(iSocket::SockErr& e)
@@ -412,37 +443,14 @@ void GameStatePlayInit(void)
     client.udpSock_.Init();
     client.udpSock_.AcceptFrom(client.remoteAddr_);
 
-    MsgJoin join;
-    join.type_ = NetworkMessage::JOIN;
-    strcpy(join.data_.username_.name_, client.config_.username_.c_str());
-
-    NetworkMessage netMsg;
-    netMsg << join;
-    netMsg.receiverAddress_ = client.remoteAddr_;
-
-    try
-    {
-        client.udpSock_.Send(netMsg);
-    }
-    catch(iSocket::SockErr& e)
-    {
-        e.Print();
-    }
+    SendJoinMessage();
 
 	// reset the number of current asteroid and the total allowed
 	sAstCtr = 0;
 	sAstNum = AST_NUM_MIN;
 
-	// create the main ship
-	spShip = gameObjInstCreate(TYPE_SHIP, SHIP_SIZE, 0, 0, 0.0f, true);
-	AE_ASSERT(spShip);
-
 	// get the time the asteroid is created
 	sAstCreationTime = AEGetTime();
-	
-	// generate the initial asteroid
-	for (u32 i = 0; i < sAstNum; i++)
-		astCreate(0);
 
 	// reset the score and the number of ship
 	sScore      = 0;
@@ -457,35 +465,12 @@ void GameStatePlayInit(void)
 
 void GameStatePlayUpdate(void)
 {
-	// =================
-	// update the input
-	// =================
-    if (spShip == 0)
-    {
-        sGameStateChangeCtr -= (f32)(gAEFrameTime);
+    ProcInput();
 
-        if (sGameStateChangeCtr < 0.0)
-            gGameStateNext = GS_RESULT;
-    }
-    else
-        ProcInput();
-
+     // check for messages from server
     NetworkMessage netMsg;
     if(client.udpSock_.Receive(netMsg))
         ProcMessage(netMsg);
-
-	// ==================================
-	// create new asteroids if necessary
-	// ==================================
-
-	if ((sAstCtr < sAstNum) && ((AEGetTime() - sAstCreationTime) > AST_CREATE_DELAY))
-	{
-		// keep track the last time an asteroid is created
-		sAstCreationTime = AEGetTime();
-
-		// create an asteroid
-		astCreate(0);
-	}
 
 	// ===============
 	// update physics
