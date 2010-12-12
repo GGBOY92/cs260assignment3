@@ -21,12 +21,10 @@ struct Config
 {
     void LoadConfigFile(void);
 
-    u32 serverPort_;
-    u32 udpPort_;
+    std::string username_;
 
-    std::string ip_;
-    std::string sendPath_;
-    std::string recvPath_;
+    u32 serverPort_;
+    std::string serverIp_;
 };
 
 void WaitForInput( void );
