@@ -40,3 +40,14 @@ struct MsgInput
     Data data_;
     MsgType type_;
 };
+
+struct MsgPosUpdate
+{
+    struct Data
+    {
+
+    };
+
+    Data data_;
+    MsgType type_;
+};

@@ -347,6 +347,14 @@ void ProcInput(void)
     }
 }
 
+void ProcMessage(NetworkMessage& netMsg)
+{
+    switch(netMsg.type_)
+    {
+
+    }
+}
+
 // ---------------------------------------------------------------------------
 
 void GameStatePlayLoad(void)
@@ -453,6 +461,10 @@ void GameStatePlayUpdate(void)
 	// =================
 
     ProcInput();
+
+    NetworkMessage netMsg;
+    if(client.udpSock_.Receive(netMsg))
+        ProcMessage(netMsg);
 
 	// ==================================
 	// create new asteroids if necessary
