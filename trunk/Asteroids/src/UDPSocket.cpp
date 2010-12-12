@@ -191,14 +191,12 @@ void UDPSocket::Resend( void )
 
   for( MessageQueue::iterator msgIt = sentQueue.begin(); msgIt != sentQueue.end(); )
   {
-      /*
     ++m_wait_count;
 
     if( m_wait_count != MAX_WAIT )
         continue;
     else
         m_wait_count = 0;
-      */
 
     MsgHdr &header = msgIt->first;
     NetworkMessage &netMessage = msgIt->second;
