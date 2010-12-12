@@ -20,7 +20,7 @@
 // ---------------------------------------------------------------------------
 // Defines
 
-#define CLIENT_APP 1
+#define CLIENT_APP 0
 
 #define GAME_OBJ_NUM_MAX			32
 #define GAME_OBJ_INST_NUM_MAX		16
@@ -123,6 +123,18 @@ struct GameObjInst
 	// pointer to custom data specific for each object type
 	void*			pUserData;
 };
+
+
+struct NetworkObjInst
+{
+    u32             type;
+	f32				life;		// object 'life'
+	f32				scale;
+	AEVec2			posCurr;	// object current position
+	AEVec2			velCurr;	// object current velocity
+	f32				dirCurr;	// object current direction
+};
+
 
 // client object
 struct Client
