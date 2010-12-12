@@ -116,6 +116,8 @@ void GameStatePlayInit(void)
 
 void GameStatePlayUpdate(void)
 {
+    p_main_socket->Resend();
+
     NetworkMessage netMessage;
 
     while( p_main_socket->Receive( netMessage ) )
