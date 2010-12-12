@@ -41,6 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -62,6 +63,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="d3d9.lib dinput8.lib dxguid.lib d3dx9d.lib winmm.lib user32.lib comctl32.lib shell32.lib gdi32.lib advapi32.lib Alpha_Engine.lib"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="../lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
