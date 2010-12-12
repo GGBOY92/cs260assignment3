@@ -55,6 +55,7 @@ bool UDPSocket::Receive( NetworkMessage &rMessage )
   if( status )
   {
     rMessage << messageBuffer;
+    rMessage.receiverAddress_ = senderAddress;
     Acknowledge( header, senderAddress );
   }
 
