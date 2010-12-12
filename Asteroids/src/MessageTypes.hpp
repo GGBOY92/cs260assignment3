@@ -54,7 +54,7 @@ struct MsgInput
 
 struct MsgPosUpdate
 {
-    u32 const static buf_size_ = 5000;
+    u32 const static buf_size_ = 1600;
 
     struct Data
     {
