@@ -193,17 +193,13 @@ static GameObjInst*	missileAcquireTarget(GameObjInst* pMissile);
 
 void GameStatePlayLoad(void)
 {
-<<<<<<< .mine=======	// zero the game object list
+  client.config_.LoadConfigFile();
+
+    // zero the game object list
 	memset(sGameObjList, 0, sizeof(GameObj) * GAME_OBJ_NUM_MAX);
 	sGameObjNum = 0;
->>>>>>> .theirs
-<<<<<<< .mine    client.config_.LoadConfigFile();
 
     /////////////
-
-=======	// zero the game object instance list
-	memset(sGameObjInstList, 0, sizeof(GameObjInst) * GAME_OBJ_INST_NUM_MAX);
-	sGameObjInstNum = 0;
 
 	spShip = 0;
 
@@ -261,49 +257,23 @@ void GameStatePlayUpdate(void)
 	{
 		if (AEInputCheckCurr(DIK_UP))
 		{
-#if 0
-			AEVec2 acc, u, dir;
+        MsgInput input;
+        input.type_ = NetworkMessage::INPUT;
+        input.data_.input = DIK_UP; 
+        input.data_.state = MsgInput::KEY_DOWN;
 
-			// calculate the current direction vector
-			AEVec2Set	(&dir, AECos(spShip->dirCurr), AESin(spShip->dirCurr));
+        NetworkMessage netMsg;
+        netMsg << input;
+        netMsg.receiverAddress_ = client.remoteAddr_;
 
-			// calculate the dampening vector
-			AEVec2Scale(&u, &spShip->velCurr, -AEVec2Length(&spShip->velCurr) * 0.01f);//pow(SHIP_DAMP_FORWARD, (f32)(gAEFrameTime)));
-
-			// calculate the acceleration vector and add the dampening vector to it
-			//AEVec2Scale	(&acc, &dir, 0.5f * SHIP_ACCEL_FORWARD * (f32)(gAEFrameTime) * (f32)(gAEFrameTime));
-			AEVec2Scale	(&acc, &dir, SHIP_ACCEL_FORWARD);
-			AEVec2Add	(&acc, &acc, &u);
-
-			// add the velocity to the position
-			//AEVec2Scale	(&u,               &spShip->velCurr, (f32)(gAEFrameTime));
-			//AEVec2Add	(&spShip->posCurr, &spShip->posCurr, &u);
-			// add the acceleration to the position
-			AEVec2Scale	(&u,               &acc,             0.5f * (f32)(gAEFrameTime) * (f32)(gAEFrameTime));
-			AEVec2Add	(&spShip->posCurr, &spShip->posCurr, &u);
-
-			// add the acceleration to the velocity
-			AEVec2Scale	(&u,               &acc, (f32)(gAEFrameTime));
-			AEVec2Add	(&spShip->velCurr, &acc, &spShip->velCurr);
-
-			AEVec2Scale	(&u, &dir, -spShip->scale);
-			AEVec2Add	(&u, &u,   &spShip->posCurr);
-
-			sparkCreate(PTCL_EXHAUST, &u, 2, spShip->dirCurr + 0.8f * PI, spShip->dirCurr + 1.2f * PI);
-#else
-			AEVec2 pos, dir;
-
-			AEVec2Set	(&dir, AECos(spShip->dirCurr), AESin(spShip->dirCurr));
-			pos = dir;
-			AEVec2Scale	(&dir, &dir, SHIP_ACCEL_FORWARD * (f32)(gAEFrameTime));
-			AEVec2Add	(&spShip->velCurr, &spShip->velCurr, &dir);
-			AEVec2Scale	(&spShip->velCurr, &spShip->velCurr, pow(SHIP_DAMP_FORWARD, (f32)(gAEFrameTime)));
-
-			AEVec2Scale	(&pos, &pos, -spShip->scale);
-			AEVec2Add	(&pos, &pos, &spShip->posCurr);
-
-			sparkCreate(PTCL_EXHAUST, &pos, 2, spShip->dirCurr + 0.8f * PI, spShip->dirCurr + 1.2f * PI);
-#endif
+        try
+        {
+            client.udpSock_.Send(netMsg);
+        }
+        catch(iSocket::SockErr& e)
+        {
+            e.Print();
+        }
 		}
 		if (AEInputCheckCurr(DIK_DOWN))
 		{
@@ -967,22 +937,49 @@ void GameStatePlayUpdate(void)
 	{
 		if (AEInputCheckCurr(DIK_UP))
 		{
-        MsgInput input;
-        input.type_ = NetworkMessage::INPUT;
-        input.data_.input = DIK_UP; 
+#if 0
+        AEVec2 acc, u, dir;
 
-        NetworkMessage netMsg;
-        netMsg << input;
-        netMsg.receiverAddress_ = client.remoteAddr_;
+        // calculate the current direction vector
+        AEVec2Set	(&dir, AECos(spShip->dirCurr), AESin(spShip->dirCurr));
 
-        try
-        {
-            client.udpSock_.Send(netMsg);
-        }
-        catch(iSocket::SockErr& e)
-        {
-            e.Print();
-        }
+        // calculate the dampening vector
+        AEVec2Scale(&u, &spShip->velCurr, -AEVec2Length(&spShip->velCurr) * 0.01f);//pow(SHIP_DAMP_FORWARD, (f32)(gAEFrameTime)));
+
+        // calculate the acceleration vector and add the dampening vector to it
+        //AEVec2Scale	(&acc, &dir, 0.5f * SHIP_ACCEL_FORWARD * (f32)(gAEFrameTime) * (f32)(gAEFrameTime));
+        AEVec2Scale	(&acc, &dir, SHIP_ACCEL_FORWARD);
+        AEVec2Add	(&acc, &acc, &u);
+
+        // add the velocity to the position
+        //AEVec2Scale	(&u,               &spShip->velCurr, (f32)(gAEFrameTime));
+        //AEVec2Add	(&spShip->posCurr, &spShip->posCurr, &u);
+        // add the acceleration to the position
+        AEVec2Scale	(&u,               &acc,             0.5f * (f32)(gAEFrameTime) * (f32)(gAEFrameTime));
+        AEVec2Add	(&spShip->posCurr, &spShip->posCurr, &u);
+
+        // add the acceleration to the velocity
+        AEVec2Scale	(&u,               &acc, (f32)(gAEFrameTime));
+        AEVec2Add	(&spShip->velCurr, &acc, &spShip->velCurr);
+
+        AEVec2Scale	(&u, &dir, -spShip->scale);
+        AEVec2Add	(&u, &u,   &spShip->posCurr);
+
+        sparkCreate(PTCL_EXHAUST, &u, 2, spShip->dirCurr + 0.8f * PI, spShip->dirCurr + 1.2f * PI);
+#else
+        AEVec2 pos, dir;
+
+        AEVec2Set	(&dir, AECos(spShip->dirCurr), AESin(spShip->dirCurr));
+        pos = dir;
+        AEVec2Scale	(&dir, &dir, SHIP_ACCEL_FORWARD * (f32)(gAEFrameTime));
+        AEVec2Add	(&spShip->velCurr, &spShip->velCurr, &dir);
+        AEVec2Scale	(&spShip->velCurr, &spShip->velCurr, pow(SHIP_DAMP_FORWARD, (f32)(gAEFrameTime)));
+
+        AEVec2Scale	(&pos, &pos, -spShip->scale);
+        AEVec2Add	(&pos, &pos, &spShip->posCurr);
+
+        sparkCreate(PTCL_EXHAUST, &pos, 2, spShip->dirCurr + 0.8f * PI, spShip->dirCurr + 1.2f * PI);
+#endif
 		}
 		if (AEInputCheckCurr(DIK_DOWN))
 		{
