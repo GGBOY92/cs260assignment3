@@ -23,7 +23,7 @@
 #define CLIENT_APP 0
 
 #define GAME_OBJ_NUM_MAX			32
-#define GAME_OBJ_INST_NUM_MAX		2048
+#define GAME_OBJ_INST_NUM_MAX		32
 
 #define AST_NUM_MIN					2		// minimum number of asteroid alive
 #define AST_NUM_MAX					32		// maximum number of asteroid alive
@@ -110,6 +110,7 @@ struct GameObj
 struct GameObjInst
 {
 	GameObj*		pObject;	// pointer to the 'original'
+    u32             type;
 	u32				flag;		// bit flag or-ed together
 	f32				life;		// object 'life'
 	f32				scale;
@@ -1122,6 +1123,7 @@ GameObjInst* gameObjInstCreate(u32 type, f32 scale, AEVec2* pPos, AEVec2* pVel, 
 		{
 			// it is not used => use it to create the new instance
 			pInst->pObject	 = sGameObjList + type;
+            pInst->type      = type;
 			pInst->flag		 = FLAG_ACTIVE;
 			pInst->life		 = 1.0f;
 			pInst->scale	 = scale;
@@ -1160,6 +1162,7 @@ GameObjInst* gameObjInstCreate(u32 type, f32 scale, AEVec2* pPos, AEVec2* pVel, 
 		if (pDst)
 		{
 			pDst->pObject	 = sGameObjList + type;
+            pDst->type       = type;
 			pDst->flag		 = FLAG_ACTIVE;
 			pDst->life		 = 1.0f;
 			pDst->scale	 = scale;
