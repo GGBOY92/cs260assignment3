@@ -192,158 +192,155 @@ static GameObjInst*	missileAcquireTarget(GameObjInst* pMissile);
 
 void ProcInput(void)
 {
-    if (spShip == 0)
+    if (AEInputCheckCurr(DIK_UP))
     {
-        sGameStateChangeCtr -= (f32)(gAEFrameTime);
+        MsgInput input;
+        input.type_ = NetworkMessage::INPUT;
+        input.data_.input = DIK_UP; 
+        input.data_.state = KEY_DOWN;
+        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
 
-        if (sGameStateChangeCtr < 0.0)
-            gGameStateNext = GS_RESULT;
+        NetworkMessage netMsg;
+        netMsg << input;
+        netMsg.receiverAddress_ = client.remoteAddr_;
+
+        try
+        {
+            client.udpSock_.Send(netMsg);
+        }
+        catch(iSocket::SockErr& e)
+        {
+            e.Print();
+        }
+    }
+    if (AEInputCheckCurr(DIK_DOWN))
+    {
+        MsgInput input;
+        input.type_ = NetworkMessage::INPUT;
+        input.data_.input = DIK_DOWN; 
+        input.data_.state = KEY_DOWN;
+        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+
+        NetworkMessage netMsg;
+        netMsg << input;
+        netMsg.receiverAddress_ = client.remoteAddr_;
+
+        try
+        {
+            client.udpSock_.Send(netMsg);
+        }
+        catch(iSocket::SockErr& e)
+        {
+            e.Print();
+        }
+    }
+    if (AEInputCheckCurr(DIK_LEFT))
+    {
+        MsgInput input;
+        input.type_ = NetworkMessage::INPUT;
+        input.data_.input = DIK_LEFT; 
+        input.data_.state = KEY_DOWN;
+        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+
+        NetworkMessage netMsg;
+        netMsg << input;
+        netMsg.receiverAddress_ = client.remoteAddr_;
+
+        try
+        {
+            client.udpSock_.Send(netMsg);
+        }
+        catch(iSocket::SockErr& e)
+        {
+            e.Print();
+        }
+    }
+    else if (AEInputCheckCurr(DIK_RIGHT))
+    {
+        MsgInput input;
+        input.type_ = NetworkMessage::INPUT;
+        input.data_.input = DIK_RIGHT; 
+        input.data_.state = KEY_DOWN;
+        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+
+        NetworkMessage netMsg;
+        netMsg << input;
+        netMsg.receiverAddress_ = client.remoteAddr_;
+
+        try
+        {
+            client.udpSock_.Send(netMsg);
+        }
+        catch(iSocket::SockErr& e)
+        {
+            e.Print();
+        }
     }
     else
     {
-        if (AEInputCheckCurr(DIK_UP))
+        sShipRotSpeed = 0.0f;
+    }
+    if (AEInputCheckTriggered(DIK_SPACE))
+    {
+        MsgInput input;
+        input.type_ = NetworkMessage::INPUT;
+        input.data_.input = DIK_SPACE; 
+        input.data_.state = KEY_TRIGGERED;
+        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+
+        NetworkMessage netMsg;
+        netMsg << input;
+        netMsg.receiverAddress_ = client.remoteAddr_;
+
+        try
         {
-            MsgInput input;
-            input.type_ = NetworkMessage::INPUT;
-            input.data_.input = DIK_UP; 
-            input.data_.state = KEY_DOWN;
-
-            NetworkMessage netMsg;
-            netMsg << input;
-            netMsg.receiverAddress_ = client.remoteAddr_;
-
-            try
-            {
-                client.udpSock_.Send(netMsg);
-            }
-            catch(iSocket::SockErr& e)
-            {
-                e.Print();
-            }
+            client.udpSock_.Send(netMsg);
         }
-        if (AEInputCheckCurr(DIK_DOWN))
+        catch(iSocket::SockErr& e)
         {
-            MsgInput input;
-            input.type_ = NetworkMessage::INPUT;
-            input.data_.input = DIK_DOWN; 
-            input.data_.state = KEY_DOWN;
-
-            NetworkMessage netMsg;
-            netMsg << input;
-            netMsg.receiverAddress_ = client.remoteAddr_;
-
-            try
-            {
-                client.udpSock_.Send(netMsg);
-            }
-            catch(iSocket::SockErr& e)
-            {
-                e.Print();
-            }
+            e.Print();
         }
-        if (AEInputCheckCurr(DIK_LEFT))
+    }
+    if (AEInputCheckTriggered(DIK_Z) && (sSpecialCtr >= BOMB_COST))
+    {
+        MsgInput input;
+        input.type_ = NetworkMessage::INPUT;
+        input.data_.input = DIK_Z; 
+        input.data_.state = KEY_TRIGGERED;
+        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+
+        NetworkMessage netMsg;
+        netMsg << input;
+        netMsg.receiverAddress_ = client.remoteAddr_;
+
+        try
         {
-            MsgInput input;
-            input.type_ = NetworkMessage::INPUT;
-            input.data_.input = DIK_LEFT; 
-            input.data_.state = KEY_DOWN;
-
-            NetworkMessage netMsg;
-            netMsg << input;
-            netMsg.receiverAddress_ = client.remoteAddr_;
-
-            try
-            {
-                client.udpSock_.Send(netMsg);
-            }
-            catch(iSocket::SockErr& e)
-            {
-                e.Print();
-            }
+            client.udpSock_.Send(netMsg);
         }
-        else if (AEInputCheckCurr(DIK_RIGHT))
+        catch(iSocket::SockErr& e)
         {
-            MsgInput input;
-            input.type_ = NetworkMessage::INPUT;
-            input.data_.input = DIK_RIGHT; 
-            input.data_.state = KEY_DOWN;
-
-            NetworkMessage netMsg;
-            netMsg << input;
-            netMsg.receiverAddress_ = client.remoteAddr_;
-
-            try
-            {
-                client.udpSock_.Send(netMsg);
-            }
-            catch(iSocket::SockErr& e)
-            {
-                e.Print();
-            }
+            e.Print();
         }
-        else
+    }
+    if (AEInputCheckTriggered(DIK_X) && (sSpecialCtr >= MISSILE_COST))
+    {
+        MsgInput input;
+        input.type_ = NetworkMessage::INPUT;
+        input.data_.input = DIK_X; 
+        input.data_.state = KEY_TRIGGERED;
+        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+
+        NetworkMessage netMsg;
+        netMsg << input;
+        netMsg.receiverAddress_ = client.remoteAddr_;
+
+        try
         {
-            sShipRotSpeed = 0.0f;
+            client.udpSock_.Send(netMsg);
         }
-        if (AEInputCheckTriggered(DIK_SPACE))
+        catch(iSocket::SockErr& e)
         {
-            MsgInput input;
-            input.type_ = NetworkMessage::INPUT;
-            input.data_.input = DIK_SPACE; 
-            input.data_.state = KEY_TRIGGERED;
-
-            NetworkMessage netMsg;
-            netMsg << input;
-            netMsg.receiverAddress_ = client.remoteAddr_;
-
-            try
-            {
-                client.udpSock_.Send(netMsg);
-            }
-            catch(iSocket::SockErr& e)
-            {
-                e.Print();
-            }
-        }
-        if (AEInputCheckTriggered(DIK_Z) && (sSpecialCtr >= BOMB_COST))
-        {
-            MsgInput input;
-            input.type_ = NetworkMessage::INPUT;
-            input.data_.input = DIK_Z; 
-            input.data_.state = KEY_TRIGGERED;
-
-            NetworkMessage netMsg;
-            netMsg << input;
-            netMsg.receiverAddress_ = client.remoteAddr_;
-
-            try
-            {
-                client.udpSock_.Send(netMsg);
-            }
-            catch(iSocket::SockErr& e)
-            {
-                e.Print();
-            }
-        }
-        if (AEInputCheckTriggered(DIK_X) && (sSpecialCtr >= MISSILE_COST))
-        {
-            MsgInput input;
-            input.type_ = NetworkMessage::INPUT;
-            input.data_.input = DIK_X; 
-            input.data_.state = KEY_TRIGGERED;
-
-            NetworkMessage netMsg;
-            netMsg << input;
-            netMsg.receiverAddress_ = client.remoteAddr_;
-
-            try
-            {
-                client.udpSock_.Send(netMsg);
-            }
-            catch(iSocket::SockErr& e)
-            {
-                e.Print();
-            }
+            e.Print();
         }
     }
 }
@@ -352,7 +349,9 @@ void ProcMessage(NetworkMessage& netMsg)
 {
     switch(netMsg.type_)
     {
-
+    case NetworkMessage::POS_UPDATE:
+        printf("Pos update recieved.\n");
+    break;
     }
 }
 
@@ -411,6 +410,7 @@ void GameStatePlayInit(void)
     client.remoteAddr_.SetPortNumber(client.config_.serverPort_);
 
     client.udpSock_.Init();
+    client.udpSock_.AcceptFrom(client.remoteAddr_);
 
     MsgJoin join;
     join.type_ = NetworkMessage::JOIN;
@@ -460,8 +460,15 @@ void GameStatePlayUpdate(void)
 	// =================
 	// update the input
 	// =================
+    if (spShip == 0)
+    {
+        sGameStateChangeCtr -= (f32)(gAEFrameTime);
 
-    ProcInput();
+        if (sGameStateChangeCtr < 0.0)
+            gGameStateNext = GS_RESULT;
+    }
+    else
+        ProcInput();
 
     NetworkMessage netMsg;
     if(client.udpSock_.Receive(netMsg))

@@ -35,6 +35,7 @@ struct MsgInput
 {
     struct Data
     {
+        Username username_;
         u32 input;
         KeyState state;
     };

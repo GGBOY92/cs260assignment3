@@ -37,7 +37,7 @@ void Config::LoadConfigFile(void)
         fscanf( f, "<server IP> %s\n", buffer );
         serverIp_.assign(buffer);
 
-        printf("\n Username: %s\n Server port: %d\n Server IP: %s", username_.c_str(), serverPort_, serverIp_.c_str());
+        printf("\n Username: %s\n Server port: %d\n Server IP: %s\n\n", username_.c_str(), serverPort_, serverIp_.c_str());
 
         fclose( f );
     }
