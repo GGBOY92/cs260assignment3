@@ -152,10 +152,13 @@ void UDPSocket::Send( NetworkMessage const &message )
   ++m_sent_count;
   
   // collect the message and store it for retransmission
-  std::pair< MsgHdr, NetworkMessage > messagePair;
-  messagePair.first = header;
-  messagePair.second = message;
-  sentQueue.push_back( messagePair );
+  if( MAX_SEND_COUNT > 0 )
+  {
+      std::pair< MsgHdr, NetworkMessage > messagePair;
+      messagePair.first = header;
+      messagePair.second = message;
+      sentQueue.push_back( messagePair );
+  }
 
 }
 
@@ -181,6 +184,12 @@ bool UDPSocket::ValidSender( SocketAddress const &address )
 
 void UDPSocket::Resend( void )
 {
+    if( MAX_SEND_COUNT == 0 )
+    {
+        sentQueue.clear();
+        return;
+    }
+
   /*
   if( m_sent_count >= 1 )
   {
