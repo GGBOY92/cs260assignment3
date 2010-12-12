@@ -13,10 +13,14 @@
 #include "SocketLibrary.hpp"
 #include "MessageTypes.hpp"
 
+#include <vector>
+#include <map>
+#include <string>
+
 // ---------------------------------------------------------------------------
 // Defines
 
-#define CLIENT_APP 1
+#define CLIENT_APP 0
 
 #define GAME_OBJ_NUM_MAX			32
 #define GAME_OBJ_INST_NUM_MAX		2048
