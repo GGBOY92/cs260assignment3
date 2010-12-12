@@ -20,7 +20,7 @@
 // ---------------------------------------------------------------------------
 // Defines
 
-#define CLIENT_APP 0
+#define CLIENT_APP 1
 
 #define GAME_OBJ_NUM_MAX			32
 #define GAME_OBJ_INST_NUM_MAX		32
@@ -216,98 +216,42 @@ void SendJoinMessage(void)
     }
 };
 
-void ProcInput(void)
+bool ProcInput(MsgInput& inputMsg)
 {
-    if (AEInputCheckTriggered(DIK_J))
-        SendJoinMessage();
+    bool inputDetected = false;
+    unsigned i = 0;
 
     if (AEInputCheckCurr(DIK_UP))
     {
-        MsgInput input;
-        input.type_ = NetworkMessage::INPUT;
-        input.data_.input = DIK_UP; 
-        input.data_.state = KEY_DOWN;
-        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+        inputMsg.data_.key_data_[i].key_ = DIK_UP;
+        inputMsg.data_.key_data_[i].state_ = KEY_DOWN;
+        ++i;
 
-        NetworkMessage netMsg;
-        netMsg << input;
-        netMsg.receiverAddress_ = client.remoteAddr_;
-
-        try
-        {
-            printf("\nSending DIK_UP INPUT message...\n");
-            client.udpSock_.Send(netMsg);
-        }
-        catch(iSocket::SockErr& e)
-        {
-            e.Print();
-        }
+        inputDetected = true;
     }
     if (AEInputCheckCurr(DIK_DOWN))
     {
-        MsgInput input;
-        input.type_ = NetworkMessage::INPUT;
-        input.data_.input = DIK_DOWN; 
-        input.data_.state = KEY_DOWN;
-        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+        inputMsg.data_.key_data_[i].key_ = DIK_DOWN;
+        inputMsg.data_.key_data_[i].state_ = KEY_DOWN;
+        ++i;
 
-        NetworkMessage netMsg;
-        netMsg << input;
-        netMsg.receiverAddress_ = client.remoteAddr_;
-
-        try
-        {
-            printf("\nSending DIK_DOWN INPUT message...\n");
-            client.udpSock_.Send(netMsg);
-        }
-        catch(iSocket::SockErr& e)
-        {
-            e.Print();
-        }
+        inputDetected = true;
     }
     if (AEInputCheckCurr(DIK_LEFT))
     {
-        MsgInput input;
-        input.type_ = NetworkMessage::INPUT;
-        input.data_.input = DIK_LEFT; 
-        input.data_.state = KEY_DOWN;
-        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+        inputMsg.data_.key_data_[i].key_ = DIK_LEFT;
+        inputMsg.data_.key_data_[i].state_ = KEY_DOWN;
+        ++i;
 
-        NetworkMessage netMsg;
-        netMsg << input;
-        netMsg.receiverAddress_ = client.remoteAddr_;
-
-        try
-        {
-            printf("\nSending DIK_LEFT INPUT message...\n");
-            client.udpSock_.Send(netMsg);
-        }
-        catch(iSocket::SockErr& e)
-        {
-            e.Print();
-        }
+        inputDetected = true;
     }
     else if (AEInputCheckCurr(DIK_RIGHT))
     {
-        MsgInput input;
-        input.type_ = NetworkMessage::INPUT;
-        input.data_.input = DIK_RIGHT; 
-        input.data_.state = KEY_DOWN;
-        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+        inputMsg.data_.key_data_[i].key_ = DIK_RIGHT;
+        inputMsg.data_.key_data_[i].state_ = KEY_DOWN;
+        ++i;
 
-        NetworkMessage netMsg;
-        netMsg << input;
-        netMsg.receiverAddress_ = client.remoteAddr_;
-
-        try
-        {
-            printf("\nSending DIK_RIGHT INPUT message...\n");
-            client.udpSock_.Send(netMsg);
-        }
-        catch(iSocket::SockErr& e)
-        {
-            e.Print();
-        }
+        inputDetected = true;
     }
     else
     {
@@ -315,70 +259,30 @@ void ProcInput(void)
     }
     if (AEInputCheckTriggered(DIK_SPACE))
     {
-        MsgInput input;
-        input.type_ = NetworkMessage::INPUT;
-        input.data_.input = DIK_SPACE; 
-        input.data_.state = KEY_TRIGGERED;
-        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+        inputMsg.data_.key_data_[i].key_ = DIK_SPACE;
+        inputMsg.data_.key_data_[i].state_ = KEY_TRIGGERED;
+        ++i;
 
-        NetworkMessage netMsg;
-        netMsg << input;
-        netMsg.receiverAddress_ = client.remoteAddr_;
-
-        try
-        {
-            printf("\nSending DIK_SPACE INPUT message...\n");
-            client.udpSock_.Send(netMsg);
-        }
-        catch(iSocket::SockErr& e)
-        {
-            e.Print();
-        }
+        inputDetected = true;
     }
     if (AEInputCheckTriggered(DIK_Z) && (sSpecialCtr >= BOMB_COST))
     {
-        MsgInput input;
-        input.type_ = NetworkMessage::INPUT;
-        input.data_.input = DIK_Z; 
-        input.data_.state = KEY_TRIGGERED;
-        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+        inputMsg.data_.key_data_[i].key_ = DIK_Z;
+        inputMsg.data_.key_data_[i].state_ = KEY_TRIGGERED;
+        ++i;
 
-        NetworkMessage netMsg;
-        netMsg << input;
-        netMsg.receiverAddress_ = client.remoteAddr_;
-
-        try
-        {
-            printf("\nSending DIK_Z INPUT message...\n");
-            client.udpSock_.Send(netMsg);
-        }
-        catch(iSocket::SockErr& e)
-        {
-            e.Print();
-        }
+        inputDetected = true;
     }
     if (AEInputCheckTriggered(DIK_X) && (sSpecialCtr >= MISSILE_COST))
     {
-        MsgInput input;
-        input.type_ = NetworkMessage::INPUT;
-        input.data_.input = DIK_X; 
-        input.data_.state = KEY_TRIGGERED;
-        strcpy(input.data_.username_.name_, client.config_.username_.c_str());
+        inputMsg.data_.key_data_[i].key_ = DIK_X;
+        inputMsg.data_.key_data_[i].state_ = KEY_TRIGGERED;
+        ++i;
 
-        NetworkMessage netMsg;
-        netMsg << input;
-        netMsg.receiverAddress_ = client.remoteAddr_;
-
-        try
-        {
-            printf("\nSending DIK_X INPUT message...\n");
-            client.udpSock_.Send(netMsg);
-        }
-        catch(iSocket::SockErr& e)
-        {
-            e.Print();
-        }
+        inputDetected = true;
     }
+
+    return inputDetected;
 }
 
 void ProcMessage(NetworkMessage& netMsg)
@@ -386,7 +290,22 @@ void ProcMessage(NetworkMessage& netMsg)
     switch(netMsg.type_)
     {
     case NetworkMessage::POS_UPDATE:
-        printf("Pos update recieved.\n");
+        {
+            MsgPosUpdate posUpdate;
+            netMsg >> posUpdate;
+
+            size_t size = sizeof(sGameObjInstList);
+            memcpy_s(sGameObjInstList, size, posUpdate.data_.inst_data_, size); 
+            sGameObjInstNum = posUpdate.data_.inst_count_;
+
+            for(unsigned i = 0; i < GAME_OBJ_INST_NUM_MAX; ++i)
+            {
+                if(sGameObjInstList[i].flag & FLAG_ACTIVE == 0)
+                    continue;
+
+                sGameObjInstList[i].pObject = sGameObjList + sGameObjInstList[i].type;
+            }
+        }
     break;
     }
 }
@@ -470,7 +389,26 @@ void GameStatePlayInit(void)
 
 void GameStatePlayUpdate(void)
 {
-    ProcInput();
+    if (AEInputCheckTriggered(DIK_J))
+        SendJoinMessage();
+
+    MsgInput inputMsg;
+    if(ProcInput(inputMsg))
+    {
+         strcpy(inputMsg.data_.username_.name_, client.config_.username_.c_str());
+         NetworkMessage netMsg;
+         netMsg << inputMsg;
+         netMsg.receiverAddress_ = client.remoteAddr_;
+         try
+         {
+             printf("\nSending INPUT message...\n");
+             client.udpSock_.Send(netMsg);
+         }
+         catch(iSocket::SockErr& e)
+         {
+             e.Print();
+         }
+    }
 
      // check for messages from server
     NetworkMessage netMsg;

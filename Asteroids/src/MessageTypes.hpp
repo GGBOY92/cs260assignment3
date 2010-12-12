@@ -9,6 +9,15 @@
 #include "SocketLibrary.hpp"   // network message types
 
 const unsigned MAX_USERNAME_LEN = 20;
+const unsigned KEY_INFO_BUFF_LEN = 32;
+
+enum KeyState { KEY_DOWN, KEY_TRIGGERED };
+
+struct KeyInfo
+{
+    u32 key_;
+    KeyState state_;
+};
 
 struct Username 
 {
@@ -29,15 +38,14 @@ struct MsgJoin
     MsgType type_;
 };
 
-enum KeyState { KEY_DOWN, KEY_TRIGGERED };
-
 struct MsgInput 
 {
+    MsgInput(void) : type_(NetworkMessage::INPUT) { }
     struct Data
     {
         Username username_;
-        u32 input;
-        KeyState state;
+        KeyInfo key_data_[KEY_INFO_BUFF_LEN];
+        u32 key_info_count_;
     };
 
     Data data_;
