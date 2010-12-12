@@ -189,6 +189,164 @@ static GameObjInst*	missileAcquireTarget(GameObjInst* pMissile);
 
 #if CLIENT_APP
 
+void ProcInput(void)
+{
+    if (spShip == 0)
+    {
+        sGameStateChangeCtr -= (f32)(gAEFrameTime);
+
+        if (sGameStateChangeCtr < 0.0)
+            gGameStateNext = GS_RESULT;
+    }
+    else
+    {
+        if (AEInputCheckCurr(DIK_UP))
+        {
+            MsgInput input;
+            input.type_ = NetworkMessage::INPUT;
+            input.data_.input = DIK_UP; 
+            input.data_.state = MsgInput::KEY_DOWN;
+
+            NetworkMessage netMsg;
+            netMsg << input;
+            netMsg.receiverAddress_ = client.remoteAddr_;
+
+            try
+            {
+                client.udpSock_.Send(netMsg);
+            }
+            catch(iSocket::SockErr& e)
+            {
+                e.Print();
+            }
+        }
+        if (AEInputCheckCurr(DIK_DOWN))
+        {
+            MsgInput input;
+            input.type_ = NetworkMessage::INPUT;
+            input.data_.input = DIK_DOWN; 
+            input.data_.state = MsgInput::KEY_DOWN;
+
+            NetworkMessage netMsg;
+            netMsg << input;
+            netMsg.receiverAddress_ = client.remoteAddr_;
+
+            try
+            {
+                client.udpSock_.Send(netMsg);
+            }
+            catch(iSocket::SockErr& e)
+            {
+                e.Print();
+            }
+        }
+        if (AEInputCheckCurr(DIK_LEFT))
+        {
+            MsgInput input;
+            input.type_ = NetworkMessage::INPUT;
+            input.data_.input = DIK_LEFT; 
+            input.data_.state = MsgInput::KEY_DOWN;
+
+            NetworkMessage netMsg;
+            netMsg << input;
+            netMsg.receiverAddress_ = client.remoteAddr_;
+
+            try
+            {
+                client.udpSock_.Send(netMsg);
+            }
+            catch(iSocket::SockErr& e)
+            {
+                e.Print();
+            }
+        }
+        else if (AEInputCheckCurr(DIK_RIGHT))
+        {
+            MsgInput input;
+            input.type_ = NetworkMessage::INPUT;
+            input.data_.input = DIK_RIGHT; 
+            input.data_.state = MsgInput::KEY_DOWN;
+
+            NetworkMessage netMsg;
+            netMsg << input;
+            netMsg.receiverAddress_ = client.remoteAddr_;
+
+            try
+            {
+                client.udpSock_.Send(netMsg);
+            }
+            catch(iSocket::SockErr& e)
+            {
+                e.Print();
+            }
+        }
+        else
+        {
+            sShipRotSpeed = 0.0f;
+        }
+        if (AEInputCheckTriggered(DIK_SPACE))
+        {
+            MsgInput input;
+            input.type_ = NetworkMessage::INPUT;
+            input.data_.input = DIK_SPACE; 
+            input.data_.state = MsgInput::KEY_TRIGGERED;
+
+            NetworkMessage netMsg;
+            netMsg << input;
+            netMsg.receiverAddress_ = client.remoteAddr_;
+
+            try
+            {
+                client.udpSock_.Send(netMsg);
+            }
+            catch(iSocket::SockErr& e)
+            {
+                e.Print();
+            }
+        }
+        if (AEInputCheckTriggered(DIK_Z) && (sSpecialCtr >= BOMB_COST))
+        {
+            MsgInput input;
+            input.type_ = NetworkMessage::INPUT;
+            input.data_.input = DIK_Z; 
+            input.data_.state = MsgInput::KEY_TRIGGERED;
+
+            NetworkMessage netMsg;
+            netMsg << input;
+            netMsg.receiverAddress_ = client.remoteAddr_;
+
+            try
+            {
+                client.udpSock_.Send(netMsg);
+            }
+            catch(iSocket::SockErr& e)
+            {
+                e.Print();
+            }
+        }
+        if (AEInputCheckTriggered(DIK_X) && (sSpecialCtr >= MISSILE_COST))
+        {
+            MsgInput input;
+            input.type_ = NetworkMessage::INPUT;
+            input.data_.input = DIK_X; 
+            input.data_.state = MsgInput::KEY_TRIGGERED;
+
+            NetworkMessage netMsg;
+            netMsg << input;
+            netMsg.receiverAddress_ = client.remoteAddr_;
+
+            try
+            {
+                client.udpSock_.Send(netMsg);
+            }
+            catch(iSocket::SockErr& e)
+            {
+                e.Print();
+            }
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 
 void GameStatePlayLoad(void)
@@ -214,6 +372,54 @@ void GameStatePlayLoad(void)
 
 void GameStatePlayInit(void)
 {
+    // initialize winsock
+    try
+    {
+        StartWinSock();
+    }
+    catch(WSErr& e)
+    {
+        printf("%s\n", e.msg_.c_str());
+    }
+
+    GetLocalIP(client.localIP_);
+
+    try
+    {
+        // local IP of client computer
+        client.udpSock_.SetIP(client.localIP_);
+        // set port to whatever is available next
+        client.udpSock_.SetPortNumber(0);
+    }
+    catch( iSocket::SockErr& e )
+    {
+        CloseWinSock();
+        e.Print();
+    }
+
+    // specify port and ip of remote connection, which will be the server
+    client.remoteAddr_.SetIP(client.config_.serverIp_);
+    client.remoteAddr_.SetPortNumber(client.config_.serverPort_);
+
+    client.udpSock_.Init();
+
+    MsgJoin join;
+    join.type_ = NetworkMessage::JOIN;
+    strcpy(join.data_.username_.name_, client.config_.username_.c_str());
+
+    NetworkMessage netMsg;
+    netMsg << join;
+    netMsg.receiverAddress_ = client.remoteAddr_;
+
+    try
+    {
+        client.udpSock_.Send(netMsg);
+    }
+    catch(iSocket::SockErr& e)
+    {
+        e.Print();
+    }
+
 	// reset the number of current asteroid and the total allowed
 	sAstCtr = 0;
 	sAstNum = AST_NUM_MIN;
@@ -246,100 +452,7 @@ void GameStatePlayUpdate(void)
 	// update the input
 	// =================
 
-	if (spShip == 0)
-	{
-		sGameStateChangeCtr -= (f32)(gAEFrameTime);
-
-		if (sGameStateChangeCtr < 0.0)
-			gGameStateNext = GS_RESULT;
-	}
-	else
-	{
-		if (AEInputCheckCurr(DIK_UP))
-		{
-        MsgInput input;
-        input.type_ = NetworkMessage::INPUT;
-        input.data_.input = DIK_UP; 
-        input.data_.state = MsgInput::KEY_DOWN;
-
-        NetworkMessage netMsg;
-        netMsg << input;
-        netMsg.receiverAddress_ = client.remoteAddr_;
-
-        try
-        {
-            client.udpSock_.Send(netMsg);
-        }
-        catch(iSocket::SockErr& e)
-        {
-            e.Print();
-        }
-		}
-		if (AEInputCheckCurr(DIK_DOWN))
-		{
-			AEVec2 dir;
-			
-			AEVec2Set	(&dir, AECos(spShip->dirCurr), AESin(spShip->dirCurr));
-			AEVec2Scale	(&dir, &dir, SHIP_ACCEL_BACKWARD * (f32)(gAEFrameTime));
-			AEVec2Add	(&spShip->velCurr, &spShip->velCurr, &dir);
-			AEVec2Scale	(&spShip->velCurr, &spShip->velCurr, pow(SHIP_DAMP_BACKWARD, (f32)(gAEFrameTime)));
-		}
-		if (AEInputCheckCurr(DIK_LEFT))
-		{
-			sShipRotSpeed   += (SHIP_ROT_SPEED - sShipRotSpeed) * 0.1f;
-			spShip->dirCurr += sShipRotSpeed * (f32)(gAEFrameTime);
-			spShip->dirCurr =  AEWrap(spShip->dirCurr, -PI, PI);
-		}
-		else if (AEInputCheckCurr(DIK_RIGHT))
-		{
-			sShipRotSpeed   += (SHIP_ROT_SPEED - sShipRotSpeed) * 0.1f;
-			spShip->dirCurr -= sShipRotSpeed * (f32)(gAEFrameTime);
-			spShip->dirCurr =  AEWrap(spShip->dirCurr, -PI, PI);
-		}
-		else
-		{
-			sShipRotSpeed = 0.0f;
-		}
-		if (AEInputCheckTriggered(DIK_SPACE))
-		{
-			AEVec2 vel;
-
-			AEVec2Set	(&vel, AECos(spShip->dirCurr), AESin(spShip->dirCurr));
-			AEVec2Scale	(&vel, &vel, BULLET_SPEED);
-			
-			gameObjInstCreate(TYPE_BULLET, 1.0f, &spShip->posCurr, &vel, spShip->dirCurr, true);
-		}
-		if (AEInputCheckTriggered(DIK_Z) && (sSpecialCtr >= BOMB_COST))
-		{
-			u32 i;
-
-			// make sure there is no bomb is active currently
-			for (i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
-				if ((sGameObjInstList[i].flag & FLAG_ACTIVE) && (sGameObjInstList[i].pObject->type == TYPE_BOMB))
-					break;
-
-			// if no bomb is active currently, create one
-			if (i == GAME_OBJ_INST_NUM_MAX)
-			{
-				sSpecialCtr -= BOMB_COST;
-				gameObjInstCreate(TYPE_BOMB, 1.0f, &spShip->posCurr, 0, 0, true);
-			}
-		}
-		if (AEInputCheckTriggered(DIK_X) && (sSpecialCtr >= MISSILE_COST))
-		{
-			sSpecialCtr -= MISSILE_COST;
-
-			f32			 dir = spShip->dirCurr;
-			AEVec2       vel = spShip->velCurr;
-			AEVec2		 pos;
-
-			AEVec2Set	(&pos, AECos(spShip->dirCurr), AESin(spShip->dirCurr));
-			AEVec2Scale	(&pos, &pos, spShip->scale * 0.5f);
-			AEVec2Add	(&pos, &pos, &spShip->posCurr);
-			
-			gameObjInstCreate(TYPE_MISSILE, 1.0f, &pos, &vel, dir, true);
-		}
-	}
+    ProcInput();
 
 	// ==================================
 	// create new asteroids if necessary
@@ -763,6 +876,7 @@ void GameStatePlayUpdate(void)
 	}
 }
 
+
 // ---------------------------------------------------------------------------
 
 void GameStatePlayDraw(void)
@@ -847,53 +961,6 @@ void GameStatePlayLoad(void)
 
 void GameStatePlayInit(void)
 {
-    // initialize winsock
-    try
-    {
-        StartWinSock();
-    }
-    catch(WSErr& e)
-    {
-        printf("%s\n", e.msg_.c_str());
-    }
-
-    GetLocalIP(client.localIP_);
-
-    try
-    {
-        // local IP of client computer
-        client.udpSock_.SetIP(client.localIP_);
-        // set port to whatever is available next
-        client.udpSock_.SetPortNumber(0);
-    }
-    catch( iSocket::SockErr& e )
-    {
-        CloseWinSock();
-        e.Print();
-    }
-
-    // specify port and ip of remote connection, which will be the server
-    client.remoteAddr_.SetIP(client.config_.serverIp_);
-    client.remoteAddr_.SetPortNumber(client.config_.serverPort_);
-
-
-    MsgJoin join;
-    join.type_ = NetworkMessage::JOIN;
-    strcpy(join.data_.username_.name_, client.config_.username_.c_str());
-
-    NetworkMessage netMsg;
-    netMsg << join;
-    netMsg.receiverAddress_ = client.remoteAddr_;
-
-    try
-    {
-        client.udpSock_.Send(netMsg);
-    }
-    catch(iSocket::SockErr& e)
-    {
-        e.Print();
-    }
-
 	// reset the number of current asteroid and the total allowed
 	sAstCtr = 0;
 	sAstNum = AST_NUM_MIN;
