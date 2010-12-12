@@ -20,7 +20,7 @@
 // ---------------------------------------------------------------------------
 // Defines
 
-#define CLIENT_APP 0
+#define CLIENT_APP 1
 
 #define GAME_OBJ_NUM_MAX			32
 #define GAME_OBJ_INST_NUM_MAX		16
@@ -93,8 +93,6 @@ enum
 // object flag definition
 
 #define FLAG_ACTIVE		0x00000001
-#define FLAG_LIFE_CTR_S	8
-#define FLAG_LIFE_CTR_M	0x000000FF
 
 // ---------------------------------------------------------------------------
 // Struct/Class definitions
@@ -232,37 +230,40 @@ void SendJoinMessage(void)
 bool ProcInput(MsgInput& inputMsg)
 {
     bool inputDetected = false;
-    unsigned i = 0;
 
     if (AEInputCheckCurr(DIK_UP))
     {
-        inputMsg.data_.key_data_[i].key_ = DIK_UP;
-        inputMsg.data_.key_data_[i].state_ = KEY_DOWN;
-        ++i;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].key_ = DIK_UP;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].state_ = KEY_DOWN;
+
+        ++inputMsg.data_.key_info_count_;
 
         inputDetected = true;
     }
     if (AEInputCheckCurr(DIK_DOWN))
     {
-        inputMsg.data_.key_data_[i].key_ = DIK_DOWN;
-        inputMsg.data_.key_data_[i].state_ = KEY_DOWN;
-        ++i;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].key_ = DIK_DOWN;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].state_ = KEY_DOWN;
+        
+        ++inputMsg.data_.key_info_count_;
 
         inputDetected = true;
     }
     if (AEInputCheckCurr(DIK_LEFT))
     {
-        inputMsg.data_.key_data_[i].key_ = DIK_LEFT;
-        inputMsg.data_.key_data_[i].state_ = KEY_DOWN;
-        ++i;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].key_ = DIK_LEFT;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].state_ = KEY_DOWN;
+
+        ++inputMsg.data_.key_info_count_;
 
         inputDetected = true;
     }
     else if (AEInputCheckCurr(DIK_RIGHT))
     {
-        inputMsg.data_.key_data_[i].key_ = DIK_RIGHT;
-        inputMsg.data_.key_data_[i].state_ = KEY_DOWN;
-        ++i;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].key_ = DIK_RIGHT;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].state_ = KEY_DOWN;
+
+        ++inputMsg.data_.key_info_count_;
 
         inputDetected = true;
     }
@@ -272,25 +273,28 @@ bool ProcInput(MsgInput& inputMsg)
     }
     if (AEInputCheckTriggered(DIK_SPACE))
     {
-        inputMsg.data_.key_data_[i].key_ = DIK_SPACE;
-        inputMsg.data_.key_data_[i].state_ = KEY_TRIGGERED;
-        ++i;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].key_ = DIK_SPACE;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].state_ = KEY_TRIGGERED;
+
+        ++inputMsg.data_.key_info_count_;
 
         inputDetected = true;
     }
     if (AEInputCheckTriggered(DIK_Z) && (sSpecialCtr >= BOMB_COST))
     {
-        inputMsg.data_.key_data_[i].key_ = DIK_Z;
-        inputMsg.data_.key_data_[i].state_ = KEY_TRIGGERED;
-        ++i;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].key_ = DIK_Z;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].state_ = KEY_TRIGGERED;
+ 
+        ++inputMsg.data_.key_info_count_;
 
         inputDetected = true;
     }
     if (AEInputCheckTriggered(DIK_X) && (sSpecialCtr >= MISSILE_COST))
     {
-        inputMsg.data_.key_data_[i].key_ = DIK_X;
-        inputMsg.data_.key_data_[i].state_ = KEY_TRIGGERED;
-        ++i;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].key_ = DIK_X;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].state_ = KEY_TRIGGERED;
+
+        ++inputMsg.data_.key_info_count_;
 
         inputDetected = true;
     }
@@ -307,16 +311,24 @@ void ProcMessage(NetworkMessage& netMsg)
             MsgPosUpdate posUpdate;
             netMsg >> posUpdate;
 
-            size_t size = sizeof(sGameObjInstList);
-            memcpy_s(sGameObjInstList, size, posUpdate.data_.inst_data_, size); 
+            size_t size = sizeof(sGameObjInstList); 
             sGameObjInstNum = posUpdate.data_.inst_count_;
 
-            for(unsigned i = 0; i < GAME_OBJ_INST_NUM_MAX; ++i)
+            NetworkObjInst currInst;
+            for(unsigned i = 0; i < posUpdate.data_.inst_count_; ++i)
             {
-                if(sGameObjInstList[i].flag & FLAG_ACTIVE == 0)
-                    continue;
+                currInst = reinterpret_cast<NetworkObjInst*>(posUpdate.data_.inst_data_)[i];
+                sGameObjInstList[i].pObject = sGameObjList + currInst.type;
 
-                sGameObjInstList[i].pObject = sGameObjList + sGameObjInstList[i].type;
+                sGameObjInstList[i].dirCurr = currInst.dirCurr;
+                sGameObjInstList[i].life = currInst.life;
+                sGameObjInstList[i].posCurr = currInst.posCurr;
+                sGameObjInstList[i].scale = currInst.scale;
+                sGameObjInstList[i].type = currInst.type;
+                sGameObjInstList[i].velCurr = currInst.velCurr;
+
+                sGameObjInstList[i].pUserData = NULL;
+                sGameObjInstList[i].flag = FLAG_ACTIVE;
             }
         }
     break;
@@ -414,7 +426,7 @@ void GameStatePlayUpdate(void)
          netMsg.receiverAddress_ = client.remoteAddr_;
          try
          {
-             printf("\nSending INPUT message...\n");
+             printf("\nSending INPUT message... Input Count = %d\n", inputMsg.data_.key_info_count_);
              client.udpSock_.Send(netMsg);
          }
          catch(iSocket::SockErr& e)
@@ -422,6 +434,8 @@ void GameStatePlayUpdate(void)
              e.Print();
          }
     }
+
+    client.udpSock_.Resend();
 
      // check for messages from server
     NetworkMessage netMsg;
@@ -447,7 +461,7 @@ void GameStatePlayUpdate(void)
 	// ===============
 	// update objects
 	// ===============
-
+#if 0
 	for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
 	{
 		GameObjInst* pInst = sGameObjInstList + i;
@@ -815,7 +829,7 @@ void GameStatePlayUpdate(void)
 			}
 		}
 	}
-
+#endif
 	// =====================================
 	// calculate the matrix for all objects
 	// =====================================
