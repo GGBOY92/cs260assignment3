@@ -29,6 +29,7 @@ protected: // classes
       packetID_ = 0;
       sentCount_ = 0;
       headerType_ = MESSAGE;
+      messageID_ = 0;
     }
 
     union
@@ -39,11 +40,12 @@ protected: // classes
         u32 packetID_;
         u32 sentCount_;
         u32 headerType_;
+        u32 messageID_;
       };
-      char cData_ [ 16 ];
+      char cData_ [ 20 ];
     };
 
-    static u32 GetSize( void ) { return 16; }
+    static u32 GetSize( void ) { return 20; }
 
     void WriteMessageHeader( char *buffer );
     void ReadMessageHeader( char const *buffer );
@@ -94,6 +96,6 @@ private: // members
   
   u32 static currentID_;
   u32 const static UDP_PACKET_SIZE = 800;
-  u32 const static MAX_SEND_COUNT = 50;
+  u32 const static MAX_SEND_COUNT = 1;
   u32 const static MAX_WAIT = 1;
 };
