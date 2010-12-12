@@ -20,7 +20,7 @@
 // ---------------------------------------------------------------------------
 // Defines
 
-#define CLIENT_APP 0
+#define CLIENT_APP 1
 
 #define GAME_OBJ_NUM_MAX			32
 #define GAME_OBJ_INST_NUM_MAX		16
