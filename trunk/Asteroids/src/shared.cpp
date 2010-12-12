@@ -2,7 +2,7 @@
  *   @File   shared.cpp
  *   @Author Steven Liss
  *   @Date   20 Sept 2010
- *   @Brief  A collection of routines and data shared by bothe the client and server application.
+ *   @Brief  A collection of routines and data shared by both the client and server application.
  */
 
 #include "shared.hpp"
@@ -20,30 +20,29 @@ void WaitForInput( void )
 
 void Config::LoadConfigFile(void)
 {
-  FILE *f = fopen( "../config.ini", "rt" );
+    printf("Loading config.ini... ");
+    FILE *f = fopen( "config.ini", "rt" );
 
-  if( f )
-  {
-      // port an ip
-    char buffer[20] = { 0 };
-    fscanf( f, "<server port> %d\n", &serverPort_ );
-    fscanf( f, "<server IP> %s\n", buffer );
-    ip_.assign(buffer);
+    if( f )
+    {
+        char buffer[20] = { 0 };
+        // read in username 
+        fscanf( f, "<username> %s\n", buffer);
+        username_.assign(buffer);
 
-    fscanf( f, "<client UDP port> %d\n", &udpPort_ );
+        // read in server UDP port
+        fscanf( f, "<server UDP port> %d\n", &serverPort_ );
 
-     // read in path information
-    char pathBuffer[MAX_PATH] = { 0 };
-    fscanf(f, "<send path> %s\n", pathBuffer);
-    sendPath_.assign(pathBuffer);
-    memset(pathBuffer, 0, sizeof(char) * MAX_PATH);
-    fscanf(f, "<receive path> %s", pathBuffer);
-    recvPath_.assign(pathBuffer);
+        // read in server IP address
+        fscanf( f, "<server IP> %s\n", buffer );
+        serverIp_.assign(buffer);
 
-    fclose( f );
-  }
-  else
-      printf("config.ini not found.\n");
+        printf("\n Username: %s\n Server port: %d\n Server IP: %s", username_.c_str(), serverPort_, serverIp_.c_str());
+
+        fclose( f );
+    }
+    else
+        printf("config.ini not found.\n");
 }
 
 void Prompt( std::string &inBuffer, char const *msg )

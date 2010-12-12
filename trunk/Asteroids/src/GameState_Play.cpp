@@ -10,6 +10,9 @@
 
 #include "main.h"
 
+#include "SocketLibrary.hpp"
+#include "MessageTypes.hpp"
+
 // ---------------------------------------------------------------------------
 // Defines
 
@@ -31,7 +34,7 @@
 #define AST_VEL_DAMP				1E-18f	// dampening to use if the asteroid velocity is above the maximum
 #define AST_TO_SHIP_ACC				0.001f	// how much acceleration to apply to steer the asteroid toward the ship
 
-#define SHIP_INITIAL_NUM			3		// initial number of ship
+#define SHIP_INITIAL_NUM			42		// initial number of ship
 #define SHIP_SPECIAL_NUM			20
 #define SHIP_SIZE					3.0f	// ship size
 #define SHIP_ACCEL_FORWARD			50.0f	// ship forward acceleration (in m/s^2)
@@ -116,6 +119,16 @@ struct GameObjInst
 	void*			pUserData;
 };
 
+// client object
+struct Client
+{
+    UDPSocket udpSock_;
+    Config config_;
+    SocketAddress remoteAddr_;
+
+    char* localIP_;
+};
+
 // ---------------------------------------------------------------------------
 // Static variables
 
@@ -151,6 +164,8 @@ static u32				sScore;
 
 static f64				sGameStateChangeCtr;
 
+static Client client;
+
 // ---------------------------------------------------------------------------
 
 // function to 'load' object data
@@ -178,11 +193,15 @@ static GameObjInst*	missileAcquireTarget(GameObjInst* pMissile);
 
 void GameStatePlayLoad(void)
 {
-	// zero the game object list
+<<<<<<< .mine=======	// zero the game object list
 	memset(sGameObjList, 0, sizeof(GameObj) * GAME_OBJ_NUM_MAX);
 	sGameObjNum = 0;
+>>>>>>> .theirs
+<<<<<<< .mine    client.config_.LoadConfigFile();
 
-	// zero the game object instance list
+    /////////////
+
+=======	// zero the game object instance list
 	memset(sGameObjInstList, 0, sizeof(GameObjInst) * GAME_OBJ_INST_NUM_MAX);
 	sGameObjInstNum = 0;
 
@@ -837,7 +856,7 @@ void GameStatePlayUnload(void)
 
 void GameStatePlayLoad(void)
 {
-	// zero the game object list
+>>>>>>> .theirs	// zero the game object list
 	memset(sGameObjList, 0, sizeof(GameObj) * GAME_OBJ_NUM_MAX);
 	sGameObjNum = 0;
 
@@ -858,6 +877,53 @@ void GameStatePlayLoad(void)
 
 void GameStatePlayInit(void)
 {
+    // initialize winsock
+    try
+    {
+        StartWinSock();
+    }
+    catch(WSErr& e)
+    {
+        printf("%s\n", e.msg_.c_str());
+    }
+
+    GetLocalIP(client.localIP_);
+
+    try
+    {
+        // local IP of client computer
+        client.udpSock_.SetIP(client.localIP_);
+        // set port to whatever is available next
+        client.udpSock_.SetPortNumber(0);
+    }
+    catch( iSocket::SockErr& e )
+    {
+        CloseWinSock();
+        e.Print();
+    }
+
+    // specify port and ip of remote connection, which will be the server
+    client.remoteAddr_.SetIP(client.config_.serverIp_);
+    client.remoteAddr_.SetPortNumber(client.config_.serverPort_);
+
+
+    MsgJoin join;
+    join.type_ = NetworkMessage::JOIN;
+    strcpy(join.data_.username_.name_, client.config_.username_.c_str());
+
+    NetworkMessage netMsg;
+    netMsg << join;
+    netMsg.receiverAddress_ = client.remoteAddr_;
+
+    try
+    {
+        client.udpSock_.Send(netMsg);
+    }
+    catch(iSocket::SockErr& e)
+    {
+        e.Print();
+    }
+
 	// reset the number of current asteroid and the total allowed
 	sAstCtr = 0;
 	sAstNum = AST_NUM_MIN;
@@ -901,49 +967,22 @@ void GameStatePlayUpdate(void)
 	{
 		if (AEInputCheckCurr(DIK_UP))
 		{
-#if 0
-			AEVec2 acc, u, dir;
+        MsgInput input;
+        input.type_ = NetworkMessage::INPUT;
+        input.data_.input = DIK_UP; 
 
-			// calculate the current direction vector
-			AEVec2Set	(&dir, AECos(spShip->dirCurr), AESin(spShip->dirCurr));
+        NetworkMessage netMsg;
+        netMsg << input;
+        netMsg.receiverAddress_ = client.remoteAddr_;
 
-			// calculate the dampening vector
-			AEVec2Scale(&u, &spShip->velCurr, -AEVec2Length(&spShip->velCurr) * 0.01f);//pow(SHIP_DAMP_FORWARD, (f32)(gAEFrameTime)));
-
-			// calculate the acceleration vector and add the dampening vector to it
-			//AEVec2Scale	(&acc, &dir, 0.5f * SHIP_ACCEL_FORWARD * (f32)(gAEFrameTime) * (f32)(gAEFrameTime));
-			AEVec2Scale	(&acc, &dir, SHIP_ACCEL_FORWARD);
-			AEVec2Add	(&acc, &acc, &u);
-
-			// add the velocity to the position
-			//AEVec2Scale	(&u,               &spShip->velCurr, (f32)(gAEFrameTime));
-			//AEVec2Add	(&spShip->posCurr, &spShip->posCurr, &u);
-			// add the acceleration to the position
-			AEVec2Scale	(&u,               &acc,             0.5f * (f32)(gAEFrameTime) * (f32)(gAEFrameTime));
-			AEVec2Add	(&spShip->posCurr, &spShip->posCurr, &u);
-
-			// add the acceleration to the velocity
-			AEVec2Scale	(&u,               &acc, (f32)(gAEFrameTime));
-			AEVec2Add	(&spShip->velCurr, &acc, &spShip->velCurr);
-
-			AEVec2Scale	(&u, &dir, -spShip->scale);
-			AEVec2Add	(&u, &u,   &spShip->posCurr);
-
-			sparkCreate(PTCL_EXHAUST, &u, 2, spShip->dirCurr + 0.8f * PI, spShip->dirCurr + 1.2f * PI);
-#else
-			AEVec2 pos, dir;
-
-			AEVec2Set	(&dir, AECos(spShip->dirCurr), AESin(spShip->dirCurr));
-			pos = dir;
-			AEVec2Scale	(&dir, &dir, SHIP_ACCEL_FORWARD * (f32)(gAEFrameTime));
-			AEVec2Add	(&spShip->velCurr, &spShip->velCurr, &dir);
-			AEVec2Scale	(&spShip->velCurr, &spShip->velCurr, pow(SHIP_DAMP_FORWARD, (f32)(gAEFrameTime)));
-
-			AEVec2Scale	(&pos, &pos, -spShip->scale);
-			AEVec2Add	(&pos, &pos, &spShip->posCurr);
-
-			sparkCreate(PTCL_EXHAUST, &pos, 2, spShip->dirCurr + 0.8f * PI, spShip->dirCurr + 1.2f * PI);
-#endif
+        try
+        {
+            client.udpSock_.Send(netMsg);
+        }
+        catch(iSocket::SockErr& e)
+        {
+            e.Print();
+        }
 		}
 		if (AEInputCheckCurr(DIK_DOWN))
 		{

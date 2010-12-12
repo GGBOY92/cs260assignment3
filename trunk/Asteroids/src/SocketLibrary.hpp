@@ -72,13 +72,7 @@ struct NetworkMessage
   {
     DISCON = 1000,
     JOIN,
-    SERVER_FILES,
-    REQ_FILES,
-    QUIT,
-    TRANSFER,
-    INFORM_SENDER,
-    INFORM_RECEIVER,
-    GET,
+    INPUT,
 	  ERR,
 
     // always at bottom

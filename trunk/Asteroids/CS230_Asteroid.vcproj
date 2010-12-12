@@ -226,10 +226,6 @@
 				Name="Documents"
 				>
 				<File
-					RelativePath=".\ReadMe.txt"
-					>
-				</File>
-				<File
 					RelativePath=".\src\Server.cpp"
 					>
 				</File>
@@ -245,7 +241,7 @@
 						>
 					</File>
 					<File
-						RelativePath=".\src\FileTransfer.hpp"
+						RelativePath=".\src\MessageTypes.hpp"
 						>
 					</File>
 					<File
