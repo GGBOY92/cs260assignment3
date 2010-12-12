@@ -29,6 +29,7 @@ struct Username
 
 struct MsgJoin
 {
+    MsgJoin(void) : type_(NetworkMessage::JOIN) { }
     struct Data 
     { 
         Username username_;
@@ -43,6 +44,7 @@ struct MsgInput
     MsgInput(void) : type_(NetworkMessage::INPUT) { }
     struct Data
     {
+        Data(void) : key_info_count_(0) { }
         Username username_;
         KeyInfo key_data_[KEY_INFO_BUFF_LEN];
         u32 key_info_count_;
@@ -54,6 +56,7 @@ struct MsgInput
 
 struct MsgPosUpdate
 {
+    MsgPosUpdate(void) : type_(NetworkMessage::POS_UPDATE) { }
     u32 const static buf_size_ = 1600;
 
     struct Data
