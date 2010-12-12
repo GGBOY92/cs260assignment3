@@ -57,7 +57,7 @@ struct MsgInput
 struct MsgPosUpdate
 {
     MsgPosUpdate(void) : type_(NetworkMessage::POS_UPDATE) { }
-    u32 const static buf_size_ = 1600;
+    u32 const static buf_size_ = 600;
 
     struct Data
     {
