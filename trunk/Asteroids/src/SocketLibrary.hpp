@@ -72,6 +72,7 @@ struct NetworkMessage
   {
     DISCON = 1000,
     JOIN,
+    POS_UPDATE,
     INPUT,
 	  ERR,
 
