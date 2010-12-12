@@ -23,7 +23,7 @@
 #define CLIENT_APP 1
 
 #define GAME_OBJ_NUM_MAX			32
-#define GAME_OBJ_INST_NUM_MAX		32
+#define GAME_OBJ_INST_NUM_MAX		16
 
 #define AST_NUM_MIN					2		// minimum number of asteroid alive
 #define AST_NUM_MAX					32		// maximum number of asteroid alive
