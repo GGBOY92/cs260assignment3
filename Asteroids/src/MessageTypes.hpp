@@ -23,7 +23,6 @@ struct MsgJoin
     struct Data 
     { 
         Username username_;
-        u32 udpPort_;
     };
 
     Data data_;
