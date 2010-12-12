@@ -823,7 +823,7 @@ void SendUpdate( void )
 
     for( UserTable::iterator userIt = users.begin(); userIt != users.end(); ++userIt )
     {
-        printf( "Sending update to %s\n", userIt->second->m_username.name_ );
+        //printf( "Sending update to %s\n", userIt->second->m_username.name_ );
 
         SocketAddress to_addr = userIt->second->m_address;
         net_msg.receiverAddress_ = to_addr;
