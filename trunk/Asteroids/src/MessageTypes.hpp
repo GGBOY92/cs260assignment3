@@ -28,9 +28,11 @@ struct MsgJoin
     Data data_;
     MsgType type_;
 };
+
+enum KeyState { KEY_DOWN, KEY_TRIGGERED };
+
 struct MsgInput 
 {
-    enum KeyState { KEY_DOWN, KEY_TRIGGERED };
     struct Data
     {
         u32 input;

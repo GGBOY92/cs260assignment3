@@ -19,7 +19,6 @@ void GameStatePlayUpdate(void);
 void GameStatePlayDraw(void);
 void GameStatePlayFree(void);
 void GameStatePlayUnload(void);
-
 // ---------------------------------------------------------------------------
 
 #endif // GAME_STATE_PLAY_H
