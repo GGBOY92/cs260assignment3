@@ -193,8 +193,7 @@ static u32				sScore;
 
 static f64				sGameStateChangeCtr;
 
-static f32        time = ROUND_TIME_SEC;
-static u32        round = 0;
+static f32        time = GAME_TIME_SEC;
 
 static Client client;
 
@@ -221,6 +220,8 @@ static void			sparkCreate(u32 type, AEVec2* pPos, u32 count, f32 angleMin, f32 a
 static GameObjInst*	missileAcquireTarget(GameObjInst* pMissile);
 
 #if CLIENT_APP
+
+static u32        round = 0;
 
 void SendJoinMessage(void)
 {
