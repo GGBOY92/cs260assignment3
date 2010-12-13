@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
 // Project Name		:	Asteroid Game
-// File Name		:	GameState_Menu.cpp
-// Author			:	Sun Tjen Fam
+// File Name		  :	GameState_Menu.cpp
+// Author			    :	Sun Tjen Fam
 // Creation Date	:	2008/02/05
-// Purpose			:	implementation of the 'menu' game state
-// History			:
+// Purpose			  :	implementation of the 'menu' game state
+// History			  :
 // - 2008/02/05		:	- initial implementation
 // ---------------------------------------------------------------------------
 
