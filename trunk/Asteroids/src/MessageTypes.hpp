@@ -84,6 +84,7 @@ struct MsgPosUpdate
         u32 inst_count_;
 
         double time_left_;
+        u32 round_;
     };
 
     Data data_;

@@ -25,9 +25,11 @@ extern std::vector<ResultStatus> results;
 
 const unsigned ROW_HEIGHT = 30;
 
-#define NO_PARTICLES 0
-#define NO_ROIDS 0
+#define NO_PARTICLES 1
+#define NO_EXPLOSIONS 1
 #define NO_SPARKS 1
+
+#define NO_ROIDS 0
 
 
 #define GAME_OBJ_NUM_MAX			32
@@ -74,7 +76,7 @@ const unsigned ROW_HEIGHT = 30;
 
 #define COLL_RESOLVE_SIMPLE			1
 
-#define GAME_TIME_SEC               30.0
+#define GAME_TIME_SEC               5.0
 
 #define ACTIVE(x) ( ( x->flag & FLAG_ACTIVE ) != 0 )
 
@@ -1350,6 +1352,7 @@ void resolveCollision(GameObjInst* pSrc, GameObjInst* pDst, AEVec2* pNrm)
 
 void sparkCreate(u32 type, AEVec2* pPos, u32 count, f32 angleMin, f32 angleMax, f32 srcSize, f32 velScale, AEVec2* pVelInit)
 {
+
 #if !NO_PARTICLES
 
 	f32 velRange, velMin, scaleRange, scaleMin;
@@ -1432,6 +1435,7 @@ void sparkCreate(u32 type, AEVec2* pPos, u32 count, f32 angleMin, f32 angleMax, 
     }
     
 #endif
+
 }
 
 // ---------------------------------------------------------------------------
