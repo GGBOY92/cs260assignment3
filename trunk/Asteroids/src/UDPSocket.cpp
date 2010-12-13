@@ -63,7 +63,9 @@ bool UDPSocket::Receive( NetworkMessage &rMessage )
   if( status )
   {
     Acknowledge( header, senderAddress );
-    
+ 
+    printf( "received packet is %u\n", header.packetID_ );
+
     SynPair &syn_pair = FindMakeSyn( senderAddress );
     u32 &cur_syn = syn_pair.second.m_val;
 
