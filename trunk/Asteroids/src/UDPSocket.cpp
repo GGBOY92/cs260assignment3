@@ -65,7 +65,7 @@ bool UDPSocket::Receive( NetworkMessage &rMessage )
     Acknowledge( header, senderAddress );
     
     SynPair &syn_pair = FindMakeSyn( senderAddress );
-    u32 &cur_syn = syn_pair.first.m_val;
+    u32 &cur_syn = syn_pair.second.m_val;
 
     if( ( header.packetID_ > cur_syn ) || m_accept_late )
     {
