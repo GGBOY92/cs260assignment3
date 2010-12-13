@@ -36,6 +36,9 @@ f64 static init_time = 0.0;
 f64 static live_time = 0.0;
 bool static counting_down = false;
 
+u32 static round = 0;
+u32 static user_id = 0;
+
 void ProcInput( void );
 void ProcMessage( NetworkMessage &netMessage );
 void SendToAll( NetworkMessage &net_msg );
@@ -56,7 +59,7 @@ void GameStatePlayLoad(void)
 	memset(sGameObjInstList, 0, sizeof(GameObjInst) * GAME_OBJ_INST_NUM_MAX);
 	sGameObjInstNum = 0;
 
-	spShip = 0;
+	spShip = NULL;
 
 	// load/create the mesh data
 	loadGameObjList();
@@ -69,6 +72,12 @@ void GameStatePlayLoad(void)
 
 void GameStatePlayInit(void)
 {
+    init_time = 0.0;
+    live_time = 0.0;
+    counting_down = false;
+    ++round;
+    user_id = 0;
+
     ///////////////////////
     // Socket stuff
     ///////////////////////
@@ -147,7 +156,7 @@ void GameStatePlayUpdate(void)
         if( live_time > GAME_TIME_SEC )
         {
             SendScores( true );
-            gGameStateNext = GS_RESULT;
+            gGameStateNext = GS_RESTART;
             return;
         }
     }
@@ -297,7 +306,10 @@ void GameStatePlayUpdate(void)
 					u.y = AESin(dir) * radius + pInst->posCurr.y;
 
 					//sparkCreate(PTCL_EXHAUST, &u, 1, dir + 0.8f * PI, dir + 0.9f * PI);
-					sparkCreate(PTCL_EXHAUST, &u, 1, dir + 0.40f * PI, dir + 0.60f * PI);
+#if !NO_EXPLOSIONS
+                    sparkCreate(PTCL_EXHAUST, &u, 1, dir + 0.40f * PI, dir + 0.60f * PI);
+#endif
+
 				}
 			}
 		}
@@ -412,7 +424,10 @@ void GameStatePlayUpdate(void)
 				
 				if (pDst->scale < AST_SIZE_MIN)
 				{
+
+#if !NO_EXPLOSIONS
 					sparkCreate(PTCL_EXPLOSION_M, &pDst->posCurr, (u32)(pDst->scale * 10), pSrc->dirCurr - 0.05f * PI, pSrc->dirCurr + 0.05f * PI, pDst->scale);                   
+#endif
 
                     if( pSrc->parent != NULL )
                     {
@@ -490,8 +505,12 @@ void GameStatePlayUpdate(void)
 					f32 dir = atan2f(pDst->posCurr.y - pSrc->posCurr.y, pDst->posCurr.x - pSrc->posCurr.x);
 
 					gameObjInstDestroy(pDst);
+
+#if !NO_EXPLOSIONS
 					sparkCreate(PTCL_EXPLOSION_M, &pDst->posCurr, 20, dir + 0.4f * PI, dir + 0.45f * PI);
-					sScore++;
+#endif
+
+                    sScore++;
 
 					if ((sScore % AST_SPECIAL_RATIO) == 0)
 						sSpecialCtr++;
@@ -555,9 +574,11 @@ void GameStatePlayUpdate(void)
 					&pDst->posCurr, pDst->scale, pDst->scale) == false)
 					continue;
 
+#if !NO_EXPLOSIONS
 				// create the big explosion
 				sparkCreate(PTCL_EXPLOSION_L, &pSrc->posCurr, 100, 0.0f, 2.0f * PI);
-				
+#endif	
+
 				// reset the ship position and direction
 				AEVec2Zero( &pSrc->posCurr );
 				AEVec2Zero( &pSrc->velCurr );
@@ -580,7 +601,10 @@ void GameStatePlayUpdate(void)
 
 					if (AEVec2Length(&u) < (pDst->scale * 2.0f))
 					{
+
+#if !NO_EXPLOSIONS
 						sparkCreate( PTCL_EXPLOSION_M, &pInst->posCurr, 10, -PI, PI );
+#endif	
 						gameObjInstDestroy( pInst );
 					}
 				}
@@ -667,8 +691,11 @@ void GameStatePlayDraw(void)
     }
 
 
-    sprintf(strBuffer, "Time: %.2f", GAME_TIME_SEC - live_time );
+    sprintf(strBuffer, " Time: %.2f", GAME_TIME_SEC - live_time );
     AEGfxPrint( 340, 10, -1, strBuffer);
+
+    sprintf(strBuffer, "Round: %u", round );
+    AEGfxPrint( 340, 30, -1, strBuffer);
 
 /*
 	sprintf(strBuffer, "Level: %d", AELogBase2(sAstNum));
@@ -682,8 +709,8 @@ void GameStatePlayDraw(void)
 */
 
 	// display the game over message
-	if (sShipCtr < 0)
-		AEGfxPrint(280, 260, 0xFFFFFFFF, "       GAME OVER       ");
+//	if (sShipCtr < 0)
+//		AEGfxPrint(280, 260, 0xFFFFFFFF, "       GAME OVER       ");
 
 }
 
@@ -729,6 +756,11 @@ void GameStatePlayFree(void)
 
 	// reset asteroid count
 	sAstCtr = 0;
+
+    users.clear();
+    inputs.clear();
+    user_id = 0;
+
 }
 
 // ---------------------------------------------------------------------------
@@ -747,10 +779,14 @@ void ProcMessage( NetworkMessage &netMessage )
     {
     case NetMsg::JOIN:
     {
-        static u32 id = 0;
+        if( users.size() >= MAX_PLAYERS )
+            return;
 
-        if( id == 0 )
+
+        if( user_id == 1 )
         {
+            users.begin()->second->m_p_obj->score = 0;
+
             counting_down = true;
             init_time = AEGetTime();
         }
@@ -770,7 +806,7 @@ void ProcMessage( NetworkMessage &netMessage )
 
         UserInfo *p_u_info = new UserInfo();
         p_u_info->m_address = netMessage.receiverAddress_;
-        p_u_info->m_id = id++;
+        p_u_info->m_id = user_id++;
         p_u_info->m_username = j_msg.data_.username_;
         p_u_info->m_p_obj = CreateNewShip();
 
@@ -945,6 +981,8 @@ void SendUpdate( void )
     MsgPosUpdate update_msg;
 
     update_msg.data_.time_left_ = GAME_TIME_SEC - live_time;
+    update_msg.data_.round_ = round;
+
     // comment
     u32 active_count = 0;
     NetworkObjInst *p_cur_inst = ( NetworkObjInst * ) update_msg.data_.inst_data_;
