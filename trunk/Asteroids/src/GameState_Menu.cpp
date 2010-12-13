@@ -62,7 +62,9 @@ void GameStateMenuDraw(void)
 	AEGfxPrint(10, 20, 0xFFFFFFFF, "<> Spaceships! <>");
 	AEGfxPrint(40, 60, 0xFFFFFFFF, "Play With Yourself");
 	AEGfxPrint(40, 90, 0xFFFFFFFF, "Play With Others");
-	AEGfxPrint(40, 120, 0xFFFFFFFF, "Quit");
+  AEGfxPrint(40, 120, 0xFFFFFFFF, "Quit");
+
+  AEGfxPrint(10, 570, 0xFFFFFFFF, "Steven Liss, Michael Travaglione");
 
 	if (gAEFrameCounter & 0x0008)
 		AEGfxPrint(10, 60 + 30 * sCursor, 0xFFFFFFFF, ">>");
