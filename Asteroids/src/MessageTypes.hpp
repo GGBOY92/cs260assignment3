@@ -85,6 +85,7 @@ struct MsgOutcome
     {
         ResultStatus status_data_[MAX_PLAYERS];
         u32 num_players_;
+        bool final_;
     };
 
     Data data_;

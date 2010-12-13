@@ -20,8 +20,11 @@
 // ---------------------------------------------------------------------------
 // Defines
 
-#define CLIENT_APP 0
+#define CLIENT_APP 1
 extern std::vector<ResultStatus> results;
+
+const unsigned ROW_HEIGHT = 30;
+
 #define NO_PARTICLES 1
 #define NO_ROIDS 0
 #define NO_SPARKS 1
@@ -234,7 +237,7 @@ void SendJoinMessage(void)
     {
         e.Print();
     }
-};
+}
 
 bool ProcInput(MsgInput& inputMsg)
 {
@@ -340,6 +343,27 @@ void ProcMessage(NetworkMessage& netMsg)
             }
         }
         break;
+    case NetworkMessage::OUTCOME:
+        {
+            MsgOutcome outcome;
+            netMsg >> outcome;
+
+            if(outcome.data_.final_)
+            {
+                for(unsigned i = 0; i < outcome.data_.num_players_; ++i)
+                    results.push_back(outcome.data_.status_data_[i]);
+
+                gGameStateNext = GS_RESULT;
+            }
+            else
+            {
+                results.clear();
+
+                for(unsigned i = 0; i < outcome.data_.num_players_; ++i)
+                    results.push_back(outcome.data_.status_data_[i]);
+            }
+        }
+    break;
     }
 }
 
@@ -441,6 +465,11 @@ void GameStatePlayUpdate(void)
         {
             e.Print();
         }
+    }
+
+    for(unsigned i = 0; i < outcome.data_.num_players_; ++i)
+    {
+        AEGfxPrint(xPos + (COL_WIDTH * 2), yPos, 0xFF99FF00, "WINNER");
     }
 
     client.udpSock_.Resend();
