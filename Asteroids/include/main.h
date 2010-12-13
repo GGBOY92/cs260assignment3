@@ -14,6 +14,15 @@
 #include "MessageTypes.hpp"
 #include "UDPSocket.hpp"
 
+// ******************************************************** //
+// NEED TO CHANGE THIS DEFINE IN ORDER TO RUN AS THE SERVER //
+// ******************************************************** //
+#define CLIENT_APP 1 
+
+// edit this to change default round time 
+// *** MAKING THIS CHANGE ONLY HAS AN EFFECT IF RUNNING AS THE SERVER *** //
+#define ROUND_TIME_SEC               60.0
+
 // ---------------------------------------------------------------------------
 
 #define USE_CUSTOM_GAME_STATE_MGR	1

@@ -59,7 +59,7 @@ void GameStateMenuUpdate(void)
 
 void GameStateMenuDraw(void)
 {
-	AEGfxPrint(10, 20, 0xFFFFFFFF, "<> ASTEROID <>");
+	AEGfxPrint(10, 20, 0xFFFFFFFF, "<> Spaceships! <>");
 	AEGfxPrint(40, 60, 0xFFFFFFFF, "Play With Yourself");
 	AEGfxPrint(40, 90, 0xFFFFFFFF, "Play With Others");
 	AEGfxPrint(40, 120, 0xFFFFFFFF, "Quit");

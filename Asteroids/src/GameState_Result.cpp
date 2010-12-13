@@ -15,7 +15,7 @@
 
 std::vector<ResultStatus> results;
 
-const unsigned ROW_HEIGHT = 50;
+const unsigned ROW_HEIGHT = 30;
 const unsigned COL_WIDTH = 230;
 
 // ---------------------------------------------------------------------------
@@ -43,27 +43,7 @@ void GameStateResultLoad(void)
 // ---------------------------------------------------------------------------
 
 void GameStateResultInit(void)
-{
-//     std::string larry = "Larry";
-//     std::string robert = "Robert";
-//     std::string steven = "Steven";
-// 
-//     ResultStatus status;
-//     strcpy(status.name_.name_, larry.c_str());
-//     status.score_ = 10;
-// 
-//     results.push_back(status);
-// 
-//     strcpy(status.name_.name_, steven.c_str());
-//     status.score_ = 99;
-// 
-//     results.push_back(status);
-// 
-//     strcpy(status.name_.name_, robert.c_str());
-//     status.score_ = 70;
-// 
-//     results.push_back(status);
-// 
+{ 
      std::sort(results.begin(), results.end(), ResultSorter());
 }
 
@@ -72,7 +52,7 @@ void GameStateResultInit(void)
 void GameStateResultUpdate(void)
 {
 	if ((gAEFrameCounter > 60) && (AEInputCheckTriggered(DIK_SPACE)))
-		gGameStateNext = GS_MENU;
+		gGameStateNext = GS_PLAY;
 }
 
 // ---------------------------------------------------------------------------
@@ -94,19 +74,28 @@ void GameStateResultDraw(void)
         char scoreBuffer[1000] = { 0 };
         char* pScore;
 
-        AEGfxPrint(xPos + (COL_WIDTH * 2), yPos, 0xFF99FF00, "WINNER");
+        bool first = true;
         for(std::vector<ResultStatus>::iterator it = results.begin(); it != results.end(); ++it)
         {
             AEGfxPrint(xPos, yPos, 0xFFFFFFFF, it->name_.name_);
             pScore = itoa(it->score_, scoreBuffer, 10);
             AEGfxPrint(xPos + COL_WIDTH, yPos, 0xFFFFFFFF, pScore);
 
+            if(first)
+            {
+                first = false;
+                AEGfxPrint(xPos + (COL_WIDTH * 2), yPos, 0xFF99FF00, "WINNER");
+            }
+            else
+                AEGfxPrint(xPos + (COL_WIDTH * 2), yPos, 0xFFEE0000, "LOSER");
+
+
             yPos += ROW_HEIGHT;
         }
     }
 
     if(gAEFrameCounter > 60)
-        AEGfxPrint(190, 560, 0xFFFFFFFF, "PRESS SPACE TO RETURN TO MAIN MENU");
+        AEGfxPrint(190, 560, 0xFFFFFFFF, "PRESS SPACE TO START NEXT ROUND");
 }
 
 // ---------------------------------------------------------------------------
