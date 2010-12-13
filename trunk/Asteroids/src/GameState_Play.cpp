@@ -467,9 +467,13 @@ void GameStatePlayUpdate(void)
         }
     }
 
-    for(unsigned i = 0; i < outcome.data_.num_players_; ++i)
+    unsigned yPos = 100;
+    unsigned xPos = 100;
+    for(std::vector<ResultStatus>::iterator it = results.begin(); it != results.end(); ++it)
     {
-        AEGfxPrint(xPos + (COL_WIDTH * 2), yPos, 0xFF99FF00, "WINNER");
+        AEGfxPrint(xPos, yPos, 0xFF99FF00, "WINNER");
+        yPos += ROW_HEIGHT;
+
     }
 
     client.udpSock_.Resend();
