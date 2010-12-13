@@ -49,8 +49,16 @@ protected: // classes
     void ReadMessageHeader( char const *buffer );
   };
 
+  struct Zeroed
+  {
+      Zeroed( void ) { m_val = 0; }
+      u32 m_val;
+  };
+
   typedef UDPMessageHeader MsgHdr;
 
+  typedef std::pair< SocketAddress, Zeroed > SynPair;
+  typedef std::deque< SynPair > SynTable;
   typedef std::list< SocketAddress > AddressList;
   typedef std::deque< std::pair< UDPMessageHeader, NetworkMessage > > MessageQueue;
 
@@ -77,6 +85,7 @@ private: // methods
   bool Receive( DataBuffer &data, MsgHdr &rHeader, SocketAddress &rSenderAddress );
 
   bool ValidSender( SocketAddress const &address );
+  SynPair &FindMakeSyn( SocketAddress const &addr );
 
 private: // members
 
@@ -86,12 +95,16 @@ private: // members
   // a list of sent messages that have not yet been acked
   MessageQueue sentQueue;
 
+  SynTable m_syn_table;
+
   u32 m_sent_count;
-  
+
   u32 m_wait_count;
 
   bool m_accept_any;
-  
+
+  bool m_accept_late;
+
   u32 static currentID_;
   u32 const static UDP_PACKET_SIZE = 800;
   u32 const static MAX_SEND_COUNT = 0;

@@ -3,13 +3,21 @@
 
 #include <algorithm>
 
-u32 UDPSocket::currentID_ = 0;
+u32 UDPSocket::currentID_ = 1;
 
-UDPSocket::UDPSocket() : iSocket(), m_wait_count( 0 )
+UDPSocket::UDPSocket()
+    : iSocket()
+    , m_wait_count( 0 )
+    , m_accept_any( false )
+    , m_accept_late( false )
 {}
 
 
-UDPSocket::UDPSocket( std::string const &name ) : iSocket( name ), m_wait_count( 0 )
+UDPSocket::UDPSocket( std::string const &name )
+    : iSocket( name )
+    , m_wait_count( 0 )
+    , m_accept_any( false )
+    , m_accept_late( false )
 {}
 
 
@@ -54,9 +62,21 @@ bool UDPSocket::Receive( NetworkMessage &rMessage )
 
   if( status )
   {
-    rMessage << messageBuffer;
-    rMessage.receiverAddress_ = senderAddress;
     Acknowledge( header, senderAddress );
+    
+    SynPair &syn_pair = FindMakeSyn( senderAddress );
+    u32 &cur_syn = syn_pair.first.m_val;
+
+    if( ( header.packetID_ > cur_syn ) || m_accept_late )
+    {
+        rMessage << messageBuffer;
+        rMessage.receiverAddress_ = senderAddress;
+        cur_syn = header.packetID_;
+    }
+    else
+    {
+        return false;
+    }
   }
 
   return status;
@@ -255,6 +275,20 @@ void UDPSocket::Acknowledge( MsgHdr const &header, SocketAddress ackRecipient )
 void UDPSocket::AcceptAny( void )
 {
     m_accept_any = true;
+}
+
+
+UDPSocket::SynPair &UDPSocket::FindMakeSyn( SocketAddress const &addr )
+{
+    for( u32 i = 0; i < m_syn_table.size(); ++i )
+    {
+        SynPair &r_syn = m_syn_table[i];
+        if( r_syn.first == addr )
+            return r_syn;
+    }
+
+    m_syn_table.push_front( SynPair( addr, Zeroed() ) );
+    return m_syn_table.front();
 }
 
 
