@@ -106,7 +106,7 @@ private: // members
   bool m_accept_late;
 
   u32 static currentID_;
-  u32 const static UDP_PACKET_SIZE = 800;
+  u32 const static UDP_PACKET_SIZE = 2000;
   u32 const static MAX_SEND_COUNT = 0;
   u32 const static MAX_WAIT = 0;
 };

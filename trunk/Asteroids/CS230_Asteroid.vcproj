@@ -181,6 +181,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\GameState_Single.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\GameStateMgr.cpp"
 				>
 			</File>
@@ -216,6 +220,10 @@
 			</File>
 			<File
 				RelativePath=".\include\GameState_Result.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\GameState_Single.h"
 				>
 			</File>
 			<File
