@@ -10,6 +10,7 @@
 
 const unsigned MAX_USERNAME_LEN = 20;
 const unsigned KEY_INFO_BUFF_LEN = 32;
+const unsigned MAX_PLAYERS = 8;
 
 enum KeyState { KEY_DOWN, KEY_TRIGGERED };
 
@@ -24,6 +25,13 @@ struct Username
     Username(void) { memset(name_, 0, MAX_USERNAME_LEN); }
     char name_[MAX_USERNAME_LEN];
 };
+
+struct ResultStatus
+{
+    Username name_;
+    u32 score_;
+};
+
 
 // Message types
 
@@ -63,6 +71,20 @@ struct MsgPosUpdate
     {
         char inst_data_[ buf_size_ ];
         u32 inst_count_;
+    };
+
+    Data data_;
+    MsgType type_;
+};
+
+struct MsgOutcome
+{
+    MsgOutcome(void) : type_(NetworkMessage::OUTCOME) { }
+
+    struct Data
+    {
+        ResultStatus status_data_[MAX_PLAYERS];
+        u32 num_players_;
     };
 
     Data data_;

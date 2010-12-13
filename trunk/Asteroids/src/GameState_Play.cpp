@@ -20,10 +20,13 @@
 // ---------------------------------------------------------------------------
 // Defines
 
-#define CLIENT_APP 0
+extern std::vector<ResultStatus> results;
+
+
+#define CLIENT_APP 1
 
 #define GAME_OBJ_NUM_MAX			32
-#define GAME_OBJ_INST_NUM_MAX		16
+#define GAME_OBJ_INST_NUM_MAX		32
 
 #define AST_NUM_MIN					2		// minimum number of asteroid alive
 #define AST_NUM_MAX					32		// maximum number of asteroid alive
@@ -69,24 +72,24 @@
 // ---------------------------------------------------------------------------
 enum
 {
-	// list of game object types
-	TYPE_SHIP = 0, 
-	TYPE_BULLET, 
-	TYPE_BOMB, 
-	TYPE_MISSILE, 
-	TYPE_ASTEROID, 
-	TYPE_STAR, 
+    // list of game object types
+    TYPE_SHIP = 0, 
+    TYPE_BULLET, 
+    TYPE_BOMB, 
+    TYPE_MISSILE, 
+    TYPE_ASTEROID, 
+    TYPE_STAR, 
 
-	TYPE_PTCL_WHITE, 
-	TYPE_PTCL_YELLOW, 
-	TYPE_PTCL_RED, 
+    TYPE_PTCL_WHITE, 
+    TYPE_PTCL_YELLOW, 
+    TYPE_PTCL_RED, 
 
-	TYPE_NUM,
+    TYPE_NUM,
 
-	PTCL_EXHAUST, 
-	PTCL_EXPLOSION_S, 
-	PTCL_EXPLOSION_M, 
-	PTCL_EXPLOSION_L, 
+    PTCL_EXHAUST, 
+    PTCL_EXPLOSION_S, 
+    PTCL_EXPLOSION_M, 
+    PTCL_EXPLOSION_L, 
 };
 
 // ---------------------------------------------------------------------------
@@ -99,38 +102,38 @@ enum
 
 struct GameObj
 {
-	u32				type;		// object type
-	AEGfxTriList*	pMesh;		// pbject
+    u32				type;		// object type
+    AEGfxTriList*	pMesh;		// pbject
 };
 
 // ---------------------------------------------------------------------------
 
 struct GameObjInst
 {
-	GameObj*		pObject;	// pointer to the 'original'
+    GameObj*		pObject;	// pointer to the 'original'
     u32             type;
-	u32				flag;		// bit flag or-ed together
-	f32				life;		// object 'life'
-	f32				scale;
-	AEVec2			posCurr;	// object current position
-	AEVec2			velCurr;	// object current velocity
-	f32				dirCurr;	// object current direction
+    u32				flag;		// bit flag or-ed together
+    f32				life;		// object 'life'
+    f32				scale;
+    AEVec2			posCurr;	// object current position
+    AEVec2			velCurr;	// object current velocity
+    f32				dirCurr;	// object current direction
 
-	AEMtx33			transform;	// object drawing matrix
+    AEMtx33			transform;	// object drawing matrix
 
-	// pointer to custom data specific for each object type
-	void*			pUserData;
+    // pointer to custom data specific for each object type
+    void*			pUserData;
 };
 
 
 struct NetworkObjInst
 {
-    u32             type;
-	f32				life;		// object 'life'
-	f32				scale;
-	AEVec2			posCurr;	// object current position
-	AEVec2			velCurr;	// object current velocity
-	f32				dirCurr;	// object current direction
+    short             type;
+    f32				life;		// object 'life'
+    f32				scale;
+    AEVec2			posCurr;	// object current position
+    AEVec2			velCurr;	// object current velocity
+    f32				dirCurr;	// object current direction
 };
 
 
@@ -244,7 +247,7 @@ bool ProcInput(MsgInput& inputMsg)
     {
         inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].key_ = DIK_DOWN;
         inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].state_ = KEY_DOWN;
-        
+
         ++inputMsg.data_.key_info_count_;
 
         inputDetected = true;
@@ -267,10 +270,7 @@ bool ProcInput(MsgInput& inputMsg)
 
         inputDetected = true;
     }
-    else
-    {
-        sShipRotSpeed = 0.0f;
-    }
+
     if (AEInputCheckTriggered(DIK_SPACE))
     {
         inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].key_ = DIK_SPACE;
@@ -284,7 +284,7 @@ bool ProcInput(MsgInput& inputMsg)
     {
         inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].key_ = DIK_Z;
         inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].state_ = KEY_TRIGGERED;
- 
+
         ++inputMsg.data_.key_info_count_;
 
         inputDetected = true;
@@ -308,6 +308,8 @@ void ProcMessage(NetworkMessage& netMsg)
     {
     case NetworkMessage::POS_UPDATE:
         {
+            memset(sGameObjInstList, 0, sizeof(sGameObjInstList));
+
             MsgPosUpdate posUpdate;
             netMsg >> posUpdate;
 
@@ -331,7 +333,7 @@ void ProcMessage(NetworkMessage& netMsg)
                 sGameObjInstList[i].flag = FLAG_ACTIVE;
             }
         }
-    break;
+        break;
     }
 }
 
@@ -339,21 +341,21 @@ void ProcMessage(NetworkMessage& netMsg)
 
 void GameStatePlayLoad(void)
 {
-  client.config_.LoadConfigFile();
+    client.config_.LoadConfigFile();
 
     // zero the game object list
-	memset(sGameObjList, 0, sizeof(GameObj) * GAME_OBJ_NUM_MAX);
-	sGameObjNum = 0;
+    memset(sGameObjList, 0, sizeof(GameObj) * GAME_OBJ_NUM_MAX);
+    sGameObjNum = 0;
 
     /////////////
 
-	spShip = 0;
+    spShip = 0;
 
-	// load/create the mesh data
-	loadGameObjList();
+    // load/create the mesh data
+    loadGameObjList();
 
-	// initialize the initial number of asteroid
-	sAstCtr = 0;
+    // initialize the initial number of asteroid
+    sAstCtr = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -394,20 +396,20 @@ void GameStatePlayInit(void)
 
     SendJoinMessage();
 
-	// reset the number of current asteroid and the total allowed
-	sAstCtr = 0;
-	sAstNum = AST_NUM_MIN;
+    // reset the number of current asteroid and the total allowed
+    sAstCtr = 0;
+    sAstNum = AST_NUM_MIN;
 
-	// get the time the asteroid is created
-	sAstCreationTime = AEGetTime();
+    // get the time the asteroid is created
+    sAstCreationTime = AEGetTime();
 
-	// reset the score and the number of ship
-	sScore      = 0;
-	sShipCtr    = SHIP_INITIAL_NUM;
-	sSpecialCtr = SHIP_SPECIAL_NUM;
+    // reset the score and the number of ship
+    sScore      = 0;
+    sShipCtr    = SHIP_INITIAL_NUM;
+    sSpecialCtr = SHIP_SPECIAL_NUM;
 
-	// reset the delay to switch to the result state after game over
-	sGameStateChangeCtr = 2.0f;
+    // reset the delay to switch to the result state after game over
+    sGameStateChangeCtr = 2.0f;
 }
 
 // ---------------------------------------------------------------------------
@@ -420,435 +422,435 @@ void GameStatePlayUpdate(void)
     MsgInput inputMsg;
     if(ProcInput(inputMsg))
     {
-         strcpy(inputMsg.data_.username_.name_, client.config_.username_.c_str());
-         NetworkMessage netMsg;
-         netMsg << inputMsg;
-         netMsg.receiverAddress_ = client.remoteAddr_;
-         try
-         {
-             printf("\nSending INPUT message... Input Count = %d\n", inputMsg.data_.key_info_count_);
-             client.udpSock_.Send(netMsg);
-         }
-         catch(iSocket::SockErr& e)
-         {
-             e.Print();
-         }
+        strcpy(inputMsg.data_.username_.name_, client.config_.username_.c_str());
+        NetworkMessage netMsg;
+        netMsg << inputMsg;
+        netMsg.receiverAddress_ = client.remoteAddr_;
+        try
+        {
+            printf("\nSending INPUT message... Input Count = %d\n", inputMsg.data_.key_info_count_);
+            client.udpSock_.Send(netMsg);
+        }
+        catch(iSocket::SockErr& e)
+        {
+            e.Print();
+        }
     }
 
     client.udpSock_.Resend();
 
-     // check for messages from server
+    // check for messages from server
     NetworkMessage netMsg;
     if(client.udpSock_.Receive(netMsg))
         ProcMessage(netMsg);
-
-	// ===============
-	// update physics
-	// ===============
-
-	for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
-	{
-		GameObjInst* pInst = sGameObjInstList + i;
-
-		// skip non-active object
-		if ((pInst->flag & FLAG_ACTIVE) == 0)
-			continue;
-		
-		// update the position
-		AEVec2ScaleAdd(&pInst->posCurr, &pInst->velCurr, &pInst->posCurr, (f32)(gAEFrameTime));
-	}
-
-	// ===============
-	// update objects
-	// ===============
 #if 0
-	for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
-	{
-		GameObjInst* pInst = sGameObjInstList + i;
+    // ===============
+    // update physics
+    // ===============
 
-		// skip non-active object
-		if ((pInst->flag & FLAG_ACTIVE) == 0)
-			continue;
-		
-		// check if the object is a ship
-		if (pInst->pObject->type == TYPE_SHIP)
-		{
-			// warp the ship from one end of the screen to the other
-			pInst->posCurr.x = AEWrap(pInst->posCurr.x, gAEWinMinX - SHIP_SIZE, gAEWinMaxX + SHIP_SIZE);
-			pInst->posCurr.y = AEWrap(pInst->posCurr.y, gAEWinMinY - SHIP_SIZE, gAEWinMaxY + SHIP_SIZE);
-		}
-		// check if the object is an asteroid
-		else if (pInst->pObject->type == TYPE_ASTEROID)
-		{
-			AEVec2 u;
-			f32    uLen;
+    for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
+    {
+        GameObjInst* pInst = sGameObjInstList + i;
 
-			// warp the asteroid from one end of the screen to the other
-			pInst->posCurr.x = AEWrap(pInst->posCurr.x, gAEWinMinX - AST_SIZE_MAX, gAEWinMaxX + AST_SIZE_MAX);
-			pInst->posCurr.y = AEWrap(pInst->posCurr.y, gAEWinMinY - AST_SIZE_MAX, gAEWinMaxY + AST_SIZE_MAX);
+        // skip non-active object
+        if ((pInst->flag & FLAG_ACTIVE) == 0)
+            continue;
 
-			// pull the asteroid toward the ship a little bit
-			if (spShip)
-			{
-				// apply acceleration propotional to the distance from the asteroid to the ship
-				AEVec2Sub	(&u, &spShip->posCurr, &pInst->posCurr);
-				AEVec2Scale	(&u, &u, AST_TO_SHIP_ACC * (f32)(gAEFrameTime));
-				AEVec2Add	(&pInst->velCurr, &pInst->velCurr, &u);
-			}
+        // update the position
+        AEVec2ScaleAdd(&pInst->posCurr, &pInst->velCurr, &pInst->posCurr, (f32)(gAEFrameTime));
+    }
 
-			// if the asterid velocity is more than its maximum velocity, reduce its speed
-			if ((uLen = AEVec2Length(&pInst->velCurr)) > (AST_VEL_MAX * 2.0f))
-			{
-				AEVec2Scale	(&u, &pInst->velCurr, (1.0f / uLen) * (AST_VEL_MAX * 2.0f - uLen) * pow(AST_VEL_DAMP, (f32)(gAEFrameTime)));
-				AEVec2Add	(&pInst->velCurr, &pInst->velCurr, &u);
-			}
-		}
-		// check if the object is a bullet
-		else if (pInst->pObject->type == TYPE_BULLET)
-		{
-			// kill the bullet if it gets out of the screen
-			if (!AEInRange(pInst->posCurr.x, gAEWinMinX - AST_SIZE_MAX, gAEWinMaxX + AST_SIZE_MAX) || 
-				!AEInRange(pInst->posCurr.y, gAEWinMinY - AST_SIZE_MAX, gAEWinMaxY + AST_SIZE_MAX))
-				gameObjInstDestroy(pInst);
-		}
-		// check if the object is a bomb
-		else if (pInst->pObject->type == TYPE_BOMB)
-		{
-			// adjust the life counter
-			pInst->life -= (f32)(gAEFrameTime) / BOMB_LIFE;
-			
-			if (pInst->life < 0.0f)
-			{
-				gameObjInstDestroy(pInst);
-			}
-			else
-			{
-				f32    radius = 1.0f - pInst->life;
-				AEVec2 u;
+    // ===============
+    // update objects
+    // ===============
 
-				pInst->dirCurr += 2.0f * PI * (f32)(gAEFrameTime);
+    for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
+    {
+        GameObjInst* pInst = sGameObjInstList + i;
 
-				radius =   1.0f - radius;
-				radius *=  radius;
-				radius *=  radius;
-				radius *=  radius;
-				radius *=  radius;
-				radius =   (1.0f - radius) * BOMB_RADIUS;
+        // skip non-active object
+        if ((pInst->flag & FLAG_ACTIVE) == 0)
+            continue;
 
-				// generate the particle ring
-				for (u32 j = 0; j < 10; j++)
-				{
-					//f32 dir = AERandFloat() * 2.0f * PI;
-					f32 dir = (j / 9.0f) * 2.0f * PI + pInst->life * 1.5f * 2.0f * PI;
+        // check if the object is a ship
+        if (pInst->pObject->type == TYPE_SHIP)
+        {
+            // warp the ship from one end of the screen to the other
+            pInst->posCurr.x = AEWrap(pInst->posCurr.x, gAEWinMinX - SHIP_SIZE, gAEWinMaxX + SHIP_SIZE);
+            pInst->posCurr.y = AEWrap(pInst->posCurr.y, gAEWinMinY - SHIP_SIZE, gAEWinMaxY + SHIP_SIZE);
+        }
+        // check if the object is an asteroid
+        else if (pInst->pObject->type == TYPE_ASTEROID)
+        {
+            AEVec2 u;
+            f32    uLen;
 
-					u.x = AECos(dir) * radius + pInst->posCurr.x;
-					u.y = AESin(dir) * radius + pInst->posCurr.y;
+            // warp the asteroid from one end of the screen to the other
+            pInst->posCurr.x = AEWrap(pInst->posCurr.x, gAEWinMinX - AST_SIZE_MAX, gAEWinMaxX + AST_SIZE_MAX);
+            pInst->posCurr.y = AEWrap(pInst->posCurr.y, gAEWinMinY - AST_SIZE_MAX, gAEWinMaxY + AST_SIZE_MAX);
 
-					//sparkCreate(PTCL_EXHAUST, &u, 1, dir + 0.8f * PI, dir + 0.9f * PI);
-					sparkCreate(PTCL_EXHAUST, &u, 1, dir + 0.40f * PI, dir + 0.60f * PI);
-				}
-			}
-		}
-		// check if the object is a missile
-		else if (pInst->pObject->type == TYPE_MISSILE)
-		{
-			// adjust the life counter
-			pInst->life -= (f32)(gAEFrameTime) / MISSILE_LIFE;
-			
-			if (pInst->life < 0.0f)
-			{
-				gameObjInstDestroy(pInst);
-			}
-			else
-			{
-				AEVec2 dir;
+            // pull the asteroid toward the ship a little bit
+            if (spShip)
+            {
+                // apply acceleration propotional to the distance from the asteroid to the ship
+                AEVec2Sub	(&u, &spShip->posCurr, &pInst->posCurr);
+                AEVec2Scale	(&u, &u, AST_TO_SHIP_ACC * (f32)(gAEFrameTime));
+                AEVec2Add	(&pInst->velCurr, &pInst->velCurr, &u);
+            }
 
-				if (pInst->pUserData == 0)
-				{
-					pInst->pUserData = missileAcquireTarget(pInst);
-				}
-				else
-				{
-					GameObjInst* pTarget = (GameObjInst*)(pInst->pUserData);
+            // if the asterid velocity is more than its maximum velocity, reduce its speed
+            if ((uLen = AEVec2Length(&pInst->velCurr)) > (AST_VEL_MAX * 2.0f))
+            {
+                AEVec2Scale	(&u, &pInst->velCurr, (1.0f / uLen) * (AST_VEL_MAX * 2.0f - uLen) * pow(AST_VEL_DAMP, (f32)(gAEFrameTime)));
+                AEVec2Add	(&pInst->velCurr, &pInst->velCurr, &u);
+            }
+        }
+        // check if the object is a bullet
+        else if (pInst->pObject->type == TYPE_BULLET)
+        {
+            // kill the bullet if it gets out of the screen
+            if (!AEInRange(pInst->posCurr.x, gAEWinMinX - AST_SIZE_MAX, gAEWinMaxX + AST_SIZE_MAX) || 
+                !AEInRange(pInst->posCurr.y, gAEWinMinY - AST_SIZE_MAX, gAEWinMaxY + AST_SIZE_MAX))
+                gameObjInstDestroy(pInst);
+        }
+        // check if the object is a bomb
+        else if (pInst->pObject->type == TYPE_BOMB)
+        {
+            // adjust the life counter
+            pInst->life -= (f32)(gAEFrameTime) / BOMB_LIFE;
 
-					// if the target is no longer valid, reacquire
-					if (((pTarget->flag & FLAG_ACTIVE) == 0) || (pTarget->pObject->type != TYPE_ASTEROID))
-						pInst->pUserData = missileAcquireTarget(pInst);
-				}
+            if (pInst->life < 0.0f)
+            {
+                gameObjInstDestroy(pInst);
+            }
+            else
+            {
+                f32    radius = 1.0f - pInst->life;
+                AEVec2 u;
 
-				if (pInst->pUserData)
-				{
-					GameObjInst* pTarget = (GameObjInst*)(pInst->pUserData);
-					AEVec2 u;
-					f32    uLen;
+                pInst->dirCurr += 2.0f * PI * (f32)(gAEFrameTime);
 
-					// get the vector from the missile to the target and its length
-					AEVec2Sub(&u, &pTarget->posCurr, &pInst->posCurr);
-					uLen = AEVec2Length(&u);
+                radius =   1.0f - radius;
+                radius *=  radius;
+                radius *=  radius;
+                radius *=  radius;
+                radius *=  radius;
+                radius =   (1.0f - radius) * BOMB_RADIUS;
 
-					// if the missile is 'close' to target, do nothing
-					if (uLen > 0.1f)
-					{
-						// normalize the vector from the missile to the target
-						AEVec2Scale(&u, &u, 1.0f / uLen);
+                // generate the particle ring
+                for (u32 j = 0; j < 10; j++)
+                {
+                    //f32 dir = AERandFloat() * 2.0f * PI;
+                    f32 dir = (j / 9.0f) * 2.0f * PI + pInst->life * 1.5f * 2.0f * PI;
 
-						// calculate the missile direction vector
-						AEVec2Set(&dir, AECos(pInst->dirCurr), AESin(pInst->dirCurr));
+                    u.x = AECos(dir) * radius + pInst->posCurr.x;
+                    u.y = AESin(dir) * radius + pInst->posCurr.y;
 
-						// calculate the cos and sin of the angle between the target 
-						// vector and the missile direction vector
-						f32 cosAngle = AEVec2DotProduct(&dir, &u), 
-							sinAngle = AEVec2CrossProductMag(&dir, &u), 
-							rotAngle;
+                    //sparkCreate(PTCL_EXHAUST, &u, 1, dir + 0.8f * PI, dir + 0.9f * PI);
+                    sparkCreate(PTCL_EXHAUST, &u, 1, dir + 0.40f * PI, dir + 0.60f * PI);
+                }
+            }
+        }
+        // check if the object is a missile
+        else if (pInst->pObject->type == TYPE_MISSILE)
+        {
+            // adjust the life counter
+            pInst->life -= (f32)(gAEFrameTime) / MISSILE_LIFE;
 
-						// calculate how much to rotate the missile
-						if (cosAngle < AECos(MISSILE_TURN_SPEED * (f32)(gAEFrameTime)))
-							rotAngle = MISSILE_TURN_SPEED * (f32)(gAEFrameTime);
-						else
-							rotAngle = AEACos(AEClamp(cosAngle, -1.0f, 1.0f));
+            if (pInst->life < 0.0f)
+            {
+                gameObjInstDestroy(pInst);
+            }
+            else
+            {
+                AEVec2 dir;
 
-						// rotate to the left if sine of the angle is positive and vice versa
-						pInst->dirCurr += (sinAngle > 0.0f) ? rotAngle : -rotAngle;
-					}
-				}
+                if (pInst->pUserData == 0)
+                {
+                    pInst->pUserData = missileAcquireTarget(pInst);
+                }
+                else
+                {
+                    GameObjInst* pTarget = (GameObjInst*)(pInst->pUserData);
 
-				// adjust the missile velocity
-				AEVec2Set  (&dir, AECos(pInst->dirCurr), AESin(pInst->dirCurr));
-				AEVec2Scale(&dir, &dir, MISSILE_ACCEL * (f32)(gAEFrameTime));
-				AEVec2Add  (&pInst->velCurr, &pInst->velCurr, &dir);
-				AEVec2Scale(&pInst->velCurr, &pInst->velCurr, pow(MISSILE_DAMP, (f32)(gAEFrameTime)));
+                    // if the target is no longer valid, reacquire
+                    if (((pTarget->flag & FLAG_ACTIVE) == 0) || (pTarget->pObject->type != TYPE_ASTEROID))
+                        pInst->pUserData = missileAcquireTarget(pInst);
+                }
 
-				sparkCreate(PTCL_EXHAUST, &pInst->posCurr, 1, pInst->dirCurr + 0.8f * PI, pInst->dirCurr + 1.2f * PI);
-			}
-		}
-		// check if the object is a particle
-		else if ((TYPE_PTCL_WHITE <= pInst->pObject->type) && (pInst->pObject->type <= TYPE_PTCL_RED))
-		{
-			pInst->scale   *= pow(PTCL_SCALE_DAMP, (f32)(gAEFrameTime));
-			pInst->dirCurr += 0.1f;
-			AEVec2Scale(&pInst->velCurr, &pInst->velCurr, pow(PTCL_VEL_DAMP, (f32)(gAEFrameTime)));
+                if (pInst->pUserData)
+                {
+                    GameObjInst* pTarget = (GameObjInst*)(pInst->pUserData);
+                    AEVec2 u;
+                    f32    uLen;
 
-			if (pInst->scale < PTCL_SCALE_DAMP)
-				gameObjInstDestroy(pInst);
-		}
-	}
+                    // get the vector from the missile to the target and its length
+                    AEVec2Sub(&u, &pTarget->posCurr, &pInst->posCurr);
+                    uLen = AEVec2Length(&u);
 
-	// ====================
-	// check for collision
-	// ====================
+                    // if the missile is 'close' to target, do nothing
+                    if (uLen > 0.1f)
+                    {
+                        // normalize the vector from the missile to the target
+                        AEVec2Scale(&u, &u, 1.0f / uLen);
 
-	for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
-	{
-		GameObjInst* pSrc = sGameObjInstList + i;
+                        // calculate the missile direction vector
+                        AEVec2Set(&dir, AECos(pInst->dirCurr), AESin(pInst->dirCurr));
 
-		// skip non-active object
-		if ((pSrc->flag & FLAG_ACTIVE) == 0)
-			continue;
+                        // calculate the cos and sin of the angle between the target 
+                        // vector and the missile direction vector
+                        f32 cosAngle = AEVec2DotProduct(&dir, &u), 
+                            sinAngle = AEVec2CrossProductMag(&dir, &u), 
+                            rotAngle;
 
-		if ((pSrc->pObject->type == TYPE_BULLET) || (pSrc->pObject->type == TYPE_MISSILE))
-		{
-			for (u32 j = 0; j < GAME_OBJ_INST_NUM_MAX; j++)
-			{
-				GameObjInst* pDst = sGameObjInstList + j;
+                        // calculate how much to rotate the missile
+                        if (cosAngle < AECos(MISSILE_TURN_SPEED * (f32)(gAEFrameTime)))
+                            rotAngle = MISSILE_TURN_SPEED * (f32)(gAEFrameTime);
+                        else
+                            rotAngle = AEACos(AEClamp(cosAngle, -1.0f, 1.0f));
 
-				// skip no-active and non-asteroid object
-				if (((pDst->flag & FLAG_ACTIVE) == 0) || (pDst->pObject->type != TYPE_ASTEROID))
-					continue;
+                        // rotate to the left if sine of the angle is positive and vice versa
+                        pInst->dirCurr += (sinAngle > 0.0f) ? rotAngle : -rotAngle;
+                    }
+                }
 
-				if (AETestPointToRect(&pSrc->posCurr, &pDst->posCurr, pDst->scale, pDst->scale) == false)
-					continue;
-				
-				if (pDst->scale < AST_SIZE_MIN)
-				{
-					sparkCreate(PTCL_EXPLOSION_M, &pDst->posCurr, (u32)(pDst->scale * 10), pSrc->dirCurr - 0.05f * PI, pSrc->dirCurr + 0.05f * PI, pDst->scale);
-					sScore++;
+                // adjust the missile velocity
+                AEVec2Set  (&dir, AECos(pInst->dirCurr), AESin(pInst->dirCurr));
+                AEVec2Scale(&dir, &dir, MISSILE_ACCEL * (f32)(gAEFrameTime));
+                AEVec2Add  (&pInst->velCurr, &pInst->velCurr, &dir);
+                AEVec2Scale(&pInst->velCurr, &pInst->velCurr, pow(MISSILE_DAMP, (f32)(gAEFrameTime)));
 
-					if ((sScore % AST_SPECIAL_RATIO) == 0)
-						sSpecialCtr++;
-					if ((sScore % AST_SHIP_RATIO) == 0)
-						sShipCtr++;
-					if (sScore == sAstNum * 5)
-						sAstNum = (sAstNum < AST_NUM_MAX) ? (sAstNum * 2) : sAstNum;
+                sparkCreate(PTCL_EXHAUST, &pInst->posCurr, 1, pInst->dirCurr + 0.8f * PI, pInst->dirCurr + 1.2f * PI);
+            }
+        }
+        // check if the object is a particle
+        else if ((TYPE_PTCL_WHITE <= pInst->pObject->type) && (pInst->pObject->type <= TYPE_PTCL_RED))
+        {
+            pInst->scale   *= pow(PTCL_SCALE_DAMP, (f32)(gAEFrameTime));
+            pInst->dirCurr += 0.1f;
+            AEVec2Scale(&pInst->velCurr, &pInst->velCurr, pow(PTCL_VEL_DAMP, (f32)(gAEFrameTime)));
 
-					// destroy the asteroid
-					gameObjInstDestroy(pDst);
-				}
-				else
-				{
-					sparkCreate(PTCL_EXPLOSION_S, &pSrc->posCurr, 10, pSrc->dirCurr + 0.9f * PI, pSrc->dirCurr + 1.1f * PI);
+            if (pInst->scale < PTCL_SCALE_DAMP)
+                gameObjInstDestroy(pInst);
+        }
+    }
 
-					// impart some of the bullet/missile velocity to the asteroid
-					AEVec2Scale(&pSrc->velCurr, &pSrc->velCurr, 0.01f * (1.0f - pDst->scale / AST_SIZE_MAX));
-					AEVec2Add  (&pDst->velCurr, &pDst->velCurr, &pSrc->velCurr);
+    // ====================
+    // check for collision
+    // ====================
 
-					// split the asteroid to 4
-					if ((pSrc->pObject->type == TYPE_MISSILE) || ((pDst->life -= 1.0f) < 0.0f))
-						astCreate(pDst);
-				}
+    for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
+    {
+        GameObjInst* pSrc = sGameObjInstList + i;
 
-				// destroy the bullet
-				gameObjInstDestroy(pSrc);
+        // skip non-active object
+        if ((pSrc->flag & FLAG_ACTIVE) == 0)
+            continue;
 
-				break;
-			}
-		}
-		else if (TYPE_BOMB == pSrc->pObject->type)
-		{
-			f32 radius = 1.0f - pSrc->life;
+        if ((pSrc->pObject->type == TYPE_BULLET) || (pSrc->pObject->type == TYPE_MISSILE))
+        {
+            for (u32 j = 0; j < GAME_OBJ_INST_NUM_MAX; j++)
+            {
+                GameObjInst* pDst = sGameObjInstList + j;
 
-			pSrc->dirCurr += 2.0f * PI * (f32)(gAEFrameTime);
+                // skip no-active and non-asteroid object
+                if (((pDst->flag & FLAG_ACTIVE) == 0) || (pDst->pObject->type != TYPE_ASTEROID))
+                    continue;
 
-			radius =   1.0f - radius;
-			radius *=  radius;
-			radius *=  radius;
-			radius *=  radius;
-			radius *=  radius;
-			radius *=  radius;
-			radius =   (1.0f - radius) * BOMB_RADIUS;
+                if (AETestPointToRect(&pSrc->posCurr, &pDst->posCurr, pDst->scale, pDst->scale) == false)
+                    continue;
 
-			// check collision
-			for (u32 j = 0; j < GAME_OBJ_INST_NUM_MAX; j++)
-			{
-				GameObjInst* pDst = sGameObjInstList + j;
+                if (pDst->scale < AST_SIZE_MIN)
+                {
+                    sparkCreate(PTCL_EXPLOSION_M, &pDst->posCurr, (u32)(pDst->scale * 10), pSrc->dirCurr - 0.05f * PI, pSrc->dirCurr + 0.05f * PI, pDst->scale);
+                    sScore++;
 
-				if (((pDst->flag & FLAG_ACTIVE) == 0) || (pDst->pObject->type != TYPE_ASTEROID))
-					continue;
+                    if ((sScore % AST_SPECIAL_RATIO) == 0)
+                        sSpecialCtr++;
+                    if ((sScore % AST_SHIP_RATIO) == 0)
+                        sShipCtr++;
+                    if (sScore == sAstNum * 5)
+                        sAstNum = (sAstNum < AST_NUM_MAX) ? (sAstNum * 2) : sAstNum;
 
-				if (AECalcDistPointToRect(&pSrc->posCurr, &pDst->posCurr, pDst->scale, pDst->scale) > radius)
-					continue;
+                    // destroy the asteroid
+                    gameObjInstDestroy(pDst);
+                }
+                else
+                {
+                    sparkCreate(PTCL_EXPLOSION_S, &pSrc->posCurr, 10, pSrc->dirCurr + 0.9f * PI, pSrc->dirCurr + 1.1f * PI);
 
-				if (pDst->scale < AST_SIZE_MIN)
-				{
-					f32 dir = atan2f(pDst->posCurr.y - pSrc->posCurr.y, pDst->posCurr.x - pSrc->posCurr.x);
+                    // impart some of the bullet/missile velocity to the asteroid
+                    AEVec2Scale(&pSrc->velCurr, &pSrc->velCurr, 0.01f * (1.0f - pDst->scale / AST_SIZE_MAX));
+                    AEVec2Add  (&pDst->velCurr, &pDst->velCurr, &pSrc->velCurr);
 
-					gameObjInstDestroy(pDst);
-					sparkCreate(PTCL_EXPLOSION_M, &pDst->posCurr, 20, dir + 0.4f * PI, dir + 0.45f * PI);
-					sScore++;
+                    // split the asteroid to 4
+                    if ((pSrc->pObject->type == TYPE_MISSILE) || ((pDst->life -= 1.0f) < 0.0f))
+                        astCreate(pDst);
+                }
 
-					if ((sScore % AST_SPECIAL_RATIO) == 0)
-						sSpecialCtr++;
-					if ((sScore % AST_SHIP_RATIO) == 0)
-						sShipCtr++;
-					if (sScore == sAstNum * 5)
-						sAstNum = (sAstNum < AST_NUM_MAX) ? (sAstNum * 2) : sAstNum;
-				}
-				else
-				{
-					// split the asteroid to 4
-					astCreate(pDst);
-				}
-			}
-		}
-		else if (pSrc->pObject->type == TYPE_ASTEROID)
-		{
-			for (u32 j = 0; j < GAME_OBJ_INST_NUM_MAX; j++)
-			{
-				GameObjInst* pDst = sGameObjInstList + j;
-				f32          d;
-				AEVec2       nrm, u;
+                // destroy the bullet
+                gameObjInstDestroy(pSrc);
 
-				// skip no-active and non-asteroid object
-				if ((pSrc == pDst) || ((pDst->flag & FLAG_ACTIVE) == 0)  || (pDst->pObject->type != TYPE_ASTEROID))
-					continue;
+                break;
+            }
+        }
+        else if (TYPE_BOMB == pSrc->pObject->type)
+        {
+            f32 radius = 1.0f - pSrc->life;
 
-				// check if the object rectangle overlap
-				d = AECalcDistRectToRect(
-					&pSrc->posCurr, pSrc->scale, pSrc->scale, 
-					&pDst->posCurr, pDst->scale, pDst->scale, 
-					&nrm);
-				
-				if (d >= 0.0f)
-					continue;
-				
-				// adjust object position so that they do not overlap
-				AEVec2Scale	(&u, &nrm, d * 0.25f);
-				AEVec2Sub	(&pSrc->posCurr, &pSrc->posCurr, &u);
-				AEVec2Add	(&pDst->posCurr, &pDst->posCurr, &u);
+            pSrc->dirCurr += 2.0f * PI * (f32)(gAEFrameTime);
 
-				// calculate new object velocities
-				resolveCollision(pSrc, pDst, &nrm);
-			}
-		}
-		else if (pSrc->pObject->type == TYPE_SHIP)
-		{
-			for (u32 j = 0; j < GAME_OBJ_INST_NUM_MAX; j++)
-			{
-				GameObjInst* pDst = sGameObjInstList + j;
+            radius =   1.0f - radius;
+            radius *=  radius;
+            radius *=  radius;
+            radius *=  radius;
+            radius *=  radius;
+            radius *=  radius;
+            radius =   (1.0f - radius) * BOMB_RADIUS;
 
-				// skip no-active and non-asteroid object
-				if ((pSrc == pDst) || ((pDst->flag & FLAG_ACTIVE) == 0) || (pDst->pObject->type != TYPE_ASTEROID))
-					continue;
+            // check collision
+            for (u32 j = 0; j < GAME_OBJ_INST_NUM_MAX; j++)
+            {
+                GameObjInst* pDst = sGameObjInstList + j;
 
-				// check if the object rectangle overlap
-				if (AETestRectToRect(
-					&pSrc->posCurr, pSrc->scale, pSrc->scale, 
-					&pDst->posCurr, pDst->scale, pDst->scale) == false)
-					continue;
+                if (((pDst->flag & FLAG_ACTIVE) == 0) || (pDst->pObject->type != TYPE_ASTEROID))
+                    continue;
 
-				// create the big explosion
-				sparkCreate(PTCL_EXPLOSION_L, &pSrc->posCurr, 100, 0.0f, 2.0f * PI);
-				
-				// reset the ship position and direction
-				AEVec2Zero(&spShip->posCurr);
-				AEVec2Zero(&spShip->velCurr);
-				spShip->dirCurr = 0.0f;
+                if (AECalcDistPointToRect(&pSrc->posCurr, &pDst->posCurr, pDst->scale, pDst->scale) > radius)
+                    continue;
 
-				sSpecialCtr = SHIP_SPECIAL_NUM;
+                if (pDst->scale < AST_SIZE_MIN)
+                {
+                    f32 dir = atan2f(pDst->posCurr.y - pSrc->posCurr.y, pDst->posCurr.x - pSrc->posCurr.x);
 
-				// destroy all asteroid near the ship so that you do not die as soon as the ship reappear
-				for (u32 j = 0; j < GAME_OBJ_INST_NUM_MAX; j++)
-				{
-					GameObjInst* pInst = sGameObjInstList + j;
-					AEVec2		 u;
+                    gameObjInstDestroy(pDst);
+                    sparkCreate(PTCL_EXPLOSION_M, &pDst->posCurr, 20, dir + 0.4f * PI, dir + 0.45f * PI);
+                    sScore++;
 
-					// skip no-active and non-asteroid object
-					if (((pInst->flag & FLAG_ACTIVE) == 0) || (pInst->pObject->type != TYPE_ASTEROID))
-						continue;
+                    if ((sScore % AST_SPECIAL_RATIO) == 0)
+                        sSpecialCtr++;
+                    if ((sScore % AST_SHIP_RATIO) == 0)
+                        sShipCtr++;
+                    if (sScore == sAstNum * 5)
+                        sAstNum = (sAstNum < AST_NUM_MAX) ? (sAstNum * 2) : sAstNum;
+                }
+                else
+                {
+                    // split the asteroid to 4
+                    astCreate(pDst);
+                }
+            }
+        }
+        else if (pSrc->pObject->type == TYPE_ASTEROID)
+        {
+            for (u32 j = 0; j < GAME_OBJ_INST_NUM_MAX; j++)
+            {
+                GameObjInst* pDst = sGameObjInstList + j;
+                f32          d;
+                AEVec2       nrm, u;
 
-					AEVec2Sub(&u, &pInst->posCurr, &spShip->posCurr);
+                // skip no-active and non-asteroid object
+                if ((pSrc == pDst) || ((pDst->flag & FLAG_ACTIVE) == 0)  || (pDst->pObject->type != TYPE_ASTEROID))
+                    continue;
 
-					if (AEVec2Length(&u) < (spShip->scale * 10.0f))
-					{
-						sparkCreate		  (PTCL_EXPLOSION_M, &pInst->posCurr, 10, -PI, PI);
-						gameObjInstDestroy(pInst);
-					}
-				}
+                // check if the object rectangle overlap
+                d = AECalcDistRectToRect(
+                    &pSrc->posCurr, pSrc->scale, pSrc->scale, 
+                    &pDst->posCurr, pDst->scale, pDst->scale, 
+                    &nrm);
 
-				// reduce the ship counter
-				sShipCtr--;
-				
-				// if counter is less than 0, game over
-				if (sShipCtr < 0)
-				{
-					sGameStateChangeCtr = 2.0;
-					gameObjInstDestroy(spShip);
-					spShip = 0;
-				}
+                if (d >= 0.0f)
+                    continue;
 
-				break;
-			}
-		}
-	}
+                // adjust object position so that they do not overlap
+                AEVec2Scale	(&u, &nrm, d * 0.25f);
+                AEVec2Sub	(&pSrc->posCurr, &pSrc->posCurr, &u);
+                AEVec2Add	(&pDst->posCurr, &pDst->posCurr, &u);
+
+                // calculate new object velocities
+                resolveCollision(pSrc, pDst, &nrm);
+            }
+        }
+        else if (pSrc->pObject->type == TYPE_SHIP)
+        {
+            for (u32 j = 0; j < GAME_OBJ_INST_NUM_MAX; j++)
+            {
+                GameObjInst* pDst = sGameObjInstList + j;
+
+                // skip no-active and non-asteroid object
+                if ((pSrc == pDst) || ((pDst->flag & FLAG_ACTIVE) == 0) || (pDst->pObject->type != TYPE_ASTEROID))
+                    continue;
+
+                // check if the object rectangle overlap
+                if (AETestRectToRect(
+                    &pSrc->posCurr, pSrc->scale, pSrc->scale, 
+                    &pDst->posCurr, pDst->scale, pDst->scale) == false)
+                    continue;
+
+                // create the big explosion
+                sparkCreate(PTCL_EXPLOSION_L, &pSrc->posCurr, 100, 0.0f, 2.0f * PI);
+
+                // reset the ship position and direction
+                AEVec2Zero(&spShip->posCurr);
+                AEVec2Zero(&spShip->velCurr);
+                spShip->dirCurr = 0.0f;
+
+                sSpecialCtr = SHIP_SPECIAL_NUM;
+
+                // destroy all asteroid near the ship so that you do not die as soon as the ship reappear
+                for (u32 j = 0; j < GAME_OBJ_INST_NUM_MAX; j++)
+                {
+                    GameObjInst* pInst = sGameObjInstList + j;
+                    AEVec2		 u;
+
+                    // skip no-active and non-asteroid object
+                    if (((pInst->flag & FLAG_ACTIVE) == 0) || (pInst->pObject->type != TYPE_ASTEROID))
+                        continue;
+
+                    AEVec2Sub(&u, &pInst->posCurr, &spShip->posCurr);
+
+                    if (AEVec2Length(&u) < (spShip->scale * 10.0f))
+                    {
+                        sparkCreate		  (PTCL_EXPLOSION_M, &pInst->posCurr, 10, -PI, PI);
+                        gameObjInstDestroy(pInst);
+                    }
+                }
+
+                // reduce the ship counter
+                sShipCtr--;
+
+                // if counter is less than 0, game over
+                if (sShipCtr < 0)
+                {
+                    sGameStateChangeCtr = 2.0;
+                    gameObjInstDestroy(spShip);
+                    spShip = 0;
+                }
+
+                break;
+            }
+        }
+    }
 #endif
-	// =====================================
-	// calculate the matrix for all objects
-	// =====================================
+    // =====================================
+    // calculate the matrix for all objects
+    // =====================================
 
-	for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
-	{
-		GameObjInst* pInst = sGameObjInstList + i;
-		AEMtx33		 m;
+    for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
+    {
+        GameObjInst* pInst = sGameObjInstList + i;
+        AEMtx33		 m;
 
-		// skip non-active object
-		if ((pInst->flag & FLAG_ACTIVE) == 0)
-			continue;
-		
-		AEMtx33Scale		(&pInst->transform, pInst->scale,     pInst->scale);
-		AEMtx33Rot			(&m,                pInst->dirCurr);
-		AEMtx33Concat		(&pInst->transform, &m,               &pInst->transform);
-		AEMtx33Trans		(&m,                pInst->posCurr.x, pInst->posCurr.y);
-		AEMtx33Concat		(&pInst->transform, &m,               &pInst->transform);
-	}
+        // skip non-active object
+        if ((pInst->flag & FLAG_ACTIVE) == 0)
+            continue;
+
+        AEMtx33Scale		(&pInst->transform, pInst->scale,     pInst->scale);
+        AEMtx33Rot			(&m,                pInst->dirCurr);
+        AEMtx33Concat		(&pInst->transform, &m,               &pInst->transform);
+        AEMtx33Trans		(&m,                pInst->posCurr.x, pInst->posCurr.y);
+        AEMtx33Concat		(&pInst->transform, &m,               &pInst->transform);
+    }
 }
 
 
@@ -856,57 +858,50 @@ void GameStatePlayUpdate(void)
 
 void GameStatePlayDraw(void)
 {
-	s8 strBuffer[1024];
+    s8 strBuffer[1024];
 
-	// draw all object in the list
-	for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
-	{
-		GameObjInst* pInst = sGameObjInstList + i;
+    // draw all object in the list
+    for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
+    {
+        GameObjInst* pInst = sGameObjInstList + i;
 
-		// skip non-active object
-		if ((pInst->flag & FLAG_ACTIVE) == 0)
-			continue;
-		
-		AEGfxSetTransform	(&sGameObjInstList[i].transform);
-		AEGfxTriDraw		(sGameObjInstList[i].pObject->pMesh);
-	}
+        // skip non-active object
+        if ((pInst->flag & FLAG_ACTIVE) == 0)
+            continue;
 
-	sprintf(strBuffer, "Score: %d", sScore);
-	AEGfxPrint(10, 10, -1, strBuffer);
+        AEGfxSetTransform	(&sGameObjInstList[i].transform);
+        AEGfxTriDraw		(sGameObjInstList[i].pObject->pMesh);
+    }
 
-	sprintf(strBuffer, "Level: %d", AELogBase2(sAstNum));
-	AEGfxPrint(10, 30, -1, strBuffer);
+    sprintf(strBuffer, "Score: %d", sScore);
+    AEGfxPrint(10, 10, -1, strBuffer);
 
-	sprintf(strBuffer, "Ship Left: %d", sShipCtr >= 0 ? sShipCtr : 0);
-	AEGfxPrint(600, 10, -1, strBuffer);
+    sprintf(strBuffer, "Level: %d", AELogBase2(sAstNum));
+    AEGfxPrint(10, 30, -1, strBuffer);
 
-	sprintf(strBuffer, "Special:   %d", sSpecialCtr);
-	AEGfxPrint(600, 30, -1, strBuffer);
-
-	// display the game over message
-	if (sShipCtr < 0)
-		AEGfxPrint(280, 260, 0xFFFFFFFF, "       GAME OVER       ");
+    sprintf(strBuffer, "Special:   %d", sSpecialCtr);
+    AEGfxPrint(600, 10, -1, strBuffer);
 }
 
 // ---------------------------------------------------------------------------
 
 void GameStatePlayFree(void)
 {
-	// kill all object in the list
-	for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
-		gameObjInstDestroy(sGameObjInstList + i);
+    // kill all object in the list
+    for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
+        gameObjInstDestroy(sGameObjInstList + i);
 
-	// reset asteroid count
-	sAstCtr = 0;
+    // reset asteroid count
+    sAstCtr = 0;
 }
 
 // ---------------------------------------------------------------------------
 
 void GameStatePlayUnload(void)
 {
-	// free all mesh
-	for (u32 i = 0; i < sGameObjNum; i++)
-		AEGfxTriFree(sGameObjList[i].pMesh);
+    // free all mesh
+    for (u32 i = 0; i < sGameObjNum; i++)
+        AEGfxTriFree(sGameObjList[i].pMesh);
 }
 
 #else
@@ -920,145 +915,145 @@ void GameStatePlayUnload(void)
 
 static void loadGameObjList()
 {
-	GameObj* pObj;
+    GameObj* pObj;
 
-	// ================
-	// create the ship
-	// ================
+    // ================
+    // create the ship
+    // ================
 
-	pObj		= sGameObjList + sGameObjNum++;
-	pObj->type	= TYPE_SHIP;
+    pObj		= sGameObjList + sGameObjNum++;
+    pObj->type	= TYPE_SHIP;
 
-	AEGfxTriStart();
-	AEGfxTriAdd(
-		-0.5f, -0.5f, 0xFFFF0000, 
-		 0.5f,  0.0f, 0xFFFFFFFF, 
-		-0.5f,  0.5f, 0xFFFF0000);
+    AEGfxTriStart();
+    AEGfxTriAdd(
+        -0.5f, -0.5f, 0xFFFF0000, 
+        0.5f,  0.0f, 0xFFFFFFFF, 
+        -0.5f,  0.5f, 0xFFFF0000);
 
-	pObj->pMesh = AEGfxTriEnd();
-	AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
+    pObj->pMesh = AEGfxTriEnd();
+    AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
 
-	// ==================
-	// create the bullet
-	// ==================
+    // ==================
+    // create the bullet
+    // ==================
 
-	pObj		= sGameObjList + sGameObjNum++;
-	pObj->type	= TYPE_BULLET;
+    pObj		= sGameObjList + sGameObjNum++;
+    pObj->type	= TYPE_BULLET;
 
-	AEGfxTriStart();
-	AEGfxTriAdd(
-		-1.0f,  0.2f, 0x00FFFF00, 
-		-1.0f, -0.2f, 0x00FFFF00, 
-		 1.0f, -0.2f, 0xFFFFFF00);
-	AEGfxTriAdd(
-		-1.0f,  0.2f, 0x00FFFF00, 
-		 1.0f, -0.2f, 0xFFFFFF00, 
-		 1.0f,  0.2f, 0xFFFFFF00);
+    AEGfxTriStart();
+    AEGfxTriAdd(
+        -1.0f,  0.2f, 0x00FFFF00, 
+        -1.0f, -0.2f, 0x00FFFF00, 
+        1.0f, -0.2f, 0xFFFFFF00);
+    AEGfxTriAdd(
+        -1.0f,  0.2f, 0x00FFFF00, 
+        1.0f, -0.2f, 0xFFFFFF00, 
+        1.0f,  0.2f, 0xFFFFFF00);
 
-	pObj->pMesh = AEGfxTriEnd();
-	AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
+    pObj->pMesh = AEGfxTriEnd();
+    AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
 
-	// ==================
-	// create the bomb
-	// ==================
+    // ==================
+    // create the bomb
+    // ==================
 
-	pObj		= sGameObjList + sGameObjNum++;
-	pObj->type	= TYPE_BOMB;
+    pObj		= sGameObjList + sGameObjNum++;
+    pObj->type	= TYPE_BOMB;
 
-	AEGfxTriStart();
-	AEGfxTriAdd(
-		-1.0f,  1.0f, 0xFFFF8000, 
-		-1.0f, -1.0f, 0xFFFF8000, 
-		 1.0f, -1.0f, 0xFFFF8000);
-	AEGfxTriAdd(
-		-1.0f,  1.0f, 0xFFFF8000, 
-		 1.0f, -1.0f, 0xFFFF8000, 
-		 1.0f,  1.0f, 0xFFFF8000);
+    AEGfxTriStart();
+    AEGfxTriAdd(
+        -1.0f,  1.0f, 0xFFFF8000, 
+        -1.0f, -1.0f, 0xFFFF8000, 
+        1.0f, -1.0f, 0xFFFF8000);
+    AEGfxTriAdd(
+        -1.0f,  1.0f, 0xFFFF8000, 
+        1.0f, -1.0f, 0xFFFF8000, 
+        1.0f,  1.0f, 0xFFFF8000);
 
-	pObj->pMesh = AEGfxTriEnd();
-	AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
+    pObj->pMesh = AEGfxTriEnd();
+    AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
 
-	// ==================
-	// create the missile
-	// ==================
+    // ==================
+    // create the missile
+    // ==================
 
-	pObj		= sGameObjList + sGameObjNum++;
-	pObj->type	= TYPE_MISSILE;
+    pObj		= sGameObjList + sGameObjNum++;
+    pObj->type	= TYPE_MISSILE;
 
-	AEGfxTriStart();
-	AEGfxTriAdd(
-		-1.0f, -0.5f, 0xFFFF0000, 
-		 1.0f,  0.0f, 0xFFFFFF00, 
-		-1.0f,  0.5f, 0xFFFF0000);
+    AEGfxTriStart();
+    AEGfxTriAdd(
+        -1.0f, -0.5f, 0xFFFF0000, 
+        1.0f,  0.0f, 0xFFFFFF00, 
+        -1.0f,  0.5f, 0xFFFF0000);
 
-	pObj->pMesh = AEGfxTriEnd();
-	AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
+    pObj->pMesh = AEGfxTriEnd();
+    AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
 
-	// ====================
-	// create the asteroid
-	// ====================
+    // ====================
+    // create the asteroid
+    // ====================
 
-	pObj		= sGameObjList + sGameObjNum++;
-	pObj->type	= TYPE_ASTEROID;
+    pObj		= sGameObjList + sGameObjNum++;
+    pObj->type	= TYPE_ASTEROID;
 
-	AEGfxTriStart();
-	AEGfxTriAdd(
-		-0.5f, -0.5f, 0xFF808080, 
-		 0.5f,  0.5f, 0xFF808080, 
-		-0.5f,  0.5f, 0xFF808080);
-	AEGfxTriAdd(
-		-0.5f, -0.5f, 0xFF808080, 
-		 0.5f, -0.5f, 0xFF808080, 
-		 0.5f,  0.5f, 0xFF808080);
+    AEGfxTriStart();
+    AEGfxTriAdd(
+        -0.5f, -0.5f, 0xFF808080, 
+        0.5f,  0.5f, 0xFF808080, 
+        -0.5f,  0.5f, 0xFF808080);
+    AEGfxTriAdd(
+        -0.5f, -0.5f, 0xFF808080, 
+        0.5f, -0.5f, 0xFF808080, 
+        0.5f,  0.5f, 0xFF808080);
 
-	pObj->pMesh = AEGfxTriEnd();
-	AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
+    pObj->pMesh = AEGfxTriEnd();
+    AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
 
-	// ====================
-	// create the star
-	// ====================
+    // ====================
+    // create the star
+    // ====================
 
-	pObj		= sGameObjList + sGameObjNum++;
-	pObj->type	= TYPE_STAR;
+    pObj		= sGameObjList + sGameObjNum++;
+    pObj->type	= TYPE_STAR;
 
-	AEGfxTriStart();
-	AEGfxTriAdd(
-		-0.5f, -0.5f, 0xFF8080FF, 
-		 0.5f,  0.5f, 0xFF8080FF, 
-		-0.5f,  0.5f, 0xFF8080FF);
-	AEGfxTriAdd(
-		-0.5f, -0.5f, 0xFF8080FF, 
-		 0.5f, -0.5f, 0xFF8080FF, 
-		 0.5f,  0.5f, 0xFF8080FF);
+    AEGfxTriStart();
+    AEGfxTriAdd(
+        -0.5f, -0.5f, 0xFF8080FF, 
+        0.5f,  0.5f, 0xFF8080FF, 
+        -0.5f,  0.5f, 0xFF8080FF);
+    AEGfxTriAdd(
+        -0.5f, -0.5f, 0xFF8080FF, 
+        0.5f, -0.5f, 0xFF8080FF, 
+        0.5f,  0.5f, 0xFF8080FF);
 
-	pObj->pMesh = AEGfxTriEnd();
-	AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
+    pObj->pMesh = AEGfxTriEnd();
+    AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
 
-	// ================
-	// create the ptcl
-	// ================
+    // ================
+    // create the ptcl
+    // ================
 
-	for (u32 i = 0; i < 3; i++)
-	{
-		u32 color = (i == 0) ? (0xFFFFFFFF) : (
-					(i == 1) ? (0xFFFFFF00) : (0xFFFF0000));
+    for (u32 i = 0; i < 3; i++)
+    {
+        u32 color = (i == 0) ? (0xFFFFFFFF) : (
+            (i == 1) ? (0xFFFFFF00) : (0xFFFF0000));
 
-		pObj		= sGameObjList + sGameObjNum++;
-		pObj->type	= TYPE_PTCL_WHITE + i;
+        pObj		= sGameObjList + sGameObjNum++;
+        pObj->type	= TYPE_PTCL_WHITE + i;
 
-		AEGfxTriStart();
-		AEGfxTriAdd(
-			-1.0f * (3 - i), -0.5f * (3 - i), color, 
-			 1.0f * (3 - i),  0.5f * (3 - i), color, 
-			-1.0f * (3 - i),  0.5f * (3 - i), color);
-		AEGfxTriAdd(
-			-1.0f * (3 - i), -0.5f * (3 - i), color, 
-			 1.0f * (3 - i), -0.5f * (3 - i), color, 
-			 1.0f * (3 - i),  0.5f * (3 - i), color);
+        AEGfxTriStart();
+        AEGfxTriAdd(
+            -1.0f * (3 - i), -0.5f * (3 - i), color, 
+            1.0f * (3 - i),  0.5f * (3 - i), color, 
+            -1.0f * (3 - i),  0.5f * (3 - i), color);
+        AEGfxTriAdd(
+            -1.0f * (3 - i), -0.5f * (3 - i), color, 
+            1.0f * (3 - i), -0.5f * (3 - i), color, 
+            1.0f * (3 - i),  0.5f * (3 - i), color);
 
-		pObj->pMesh = AEGfxTriEnd();
-		AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
-	}
+        pObj->pMesh = AEGfxTriEnd();
+        AE_ASSERT_MESG(pObj->pMesh, "fail to create object!!");
+    }
 }
 
 
@@ -1074,160 +1069,160 @@ GameObjInst *CreateNewShip( void )
 
 GameObjInst* gameObjInstCreate(u32 type, f32 scale, AEVec2* pPos, AEVec2* pVel, f32 dir, bool forceCreate)
 {
-	AEVec2 zero = { 0.0f, 0.0f };
+    AEVec2 zero = { 0.0f, 0.0f };
 
-	AE_ASSERT_PARM(type < sGameObjNum);
-	
-	// loop through the object instance list to find a non-used object instance
-	for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
-	{
-		GameObjInst* pInst = sGameObjInstList + i;
+    AE_ASSERT_PARM(type < sGameObjNum);
 
-		// check if current instance is not used
-		if (pInst->flag == 0)
-		{
-			// it is not used => use it to create the new instance
-			pInst->pObject	 = sGameObjList + type;
+    // loop through the object instance list to find a non-used object instance
+    for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
+    {
+        GameObjInst* pInst = sGameObjInstList + i;
+
+        // check if current instance is not used
+        if (pInst->flag == 0)
+        {
+            // it is not used => use it to create the new instance
+            pInst->pObject	 = sGameObjList + type;
             pInst->type      = type;
-			pInst->flag		 = FLAG_ACTIVE;
-			pInst->life		 = 1.0f;
-			pInst->scale	 = scale;
-			pInst->posCurr	 = pPos ? *pPos : zero;
-			pInst->velCurr	 = pVel ? *pVel : zero;
-			pInst->dirCurr	 = dir;
-			pInst->pUserData = 0;
+            pInst->flag		 = FLAG_ACTIVE;
+            pInst->life		 = 1.0f;
+            pInst->scale	 = scale;
+            pInst->posCurr	 = pPos ? *pPos : zero;
+            pInst->velCurr	 = pVel ? *pVel : zero;
+            pInst->dirCurr	 = dir;
+            pInst->pUserData = 0;
 
-			// keep track the number of asteroid
-			if (pInst->pObject->type == TYPE_ASTEROID)
-				sAstCtr++;
-			
-			// return the newly created instance
-			return pInst;
-		}
-	}
+            // keep track the number of asteroid
+            if (pInst->pObject->type == TYPE_ASTEROID)
+                sAstCtr++;
 
-	if (forceCreate)
-	{
-		f32          scaleMin = FLT_MAX;
-		GameObjInst* pDst     = 0;
+            // return the newly created instance
+            return pInst;
+        }
+    }
 
-		// loop through the object instance list to find the smallest particle
-		for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
-		{
-			GameObjInst* pInst = sGameObjInstList + i;
+    if (forceCreate)
+    {
+        f32          scaleMin = FLT_MAX;
+        GameObjInst* pDst     = 0;
 
-			// check if current instance is a red particle
-			if ((TYPE_PTCL_RED <= pInst->pObject->type) && (pInst->pObject->type <= TYPE_PTCL_WHITE) && (pInst->scale < scaleMin))
-			{
-				scaleMin = pInst->scale;
-				pDst     = pInst;
-			}
-		}
+        // loop through the object instance list to find the smallest particle
+        for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
+        {
+            GameObjInst* pInst = sGameObjInstList + i;
 
-		if (pDst)
-		{
-			pDst->pObject	 = sGameObjList + type;
+            // check if current instance is a red particle
+            if ((TYPE_PTCL_RED <= pInst->pObject->type) && (pInst->pObject->type <= TYPE_PTCL_WHITE) && (pInst->scale < scaleMin))
+            {
+                scaleMin = pInst->scale;
+                pDst     = pInst;
+            }
+        }
+
+        if (pDst)
+        {
+            pDst->pObject	 = sGameObjList + type;
             pDst->type       = type;
-			pDst->flag		 = FLAG_ACTIVE;
-			pDst->life		 = 1.0f;
-			pDst->scale	 = scale;
-			pDst->posCurr	 = pPos ? *pPos : zero;
-			pDst->velCurr	 = pVel ? *pVel : zero;
-			pDst->dirCurr	 = dir;
-			pDst->pUserData = 0;
+            pDst->flag		 = FLAG_ACTIVE;
+            pDst->life		 = 1.0f;
+            pDst->scale	 = scale;
+            pDst->posCurr	 = pPos ? *pPos : zero;
+            pDst->velCurr	 = pVel ? *pVel : zero;
+            pDst->dirCurr	 = dir;
+            pDst->pUserData = 0;
 
-			// keep track the number of asteroid
-			if (pDst->pObject->type == TYPE_ASTEROID)
-				sAstCtr++;
-			
-			// return the newly created instance
-			return pDst;
-		}
-	}
+            // keep track the number of asteroid
+            if (pDst->pObject->type == TYPE_ASTEROID)
+                sAstCtr++;
 
-	// cannot find empty slot => return 0
-	return 0;
+            // return the newly created instance
+            return pDst;
+        }
+    }
+
+    // cannot find empty slot => return 0
+    return 0;
 }
 
 // ---------------------------------------------------------------------------
 
 void gameObjInstDestroy(GameObjInst* pInst)
 {
-	// if instance is destroyed before, just return
-	if (pInst->flag == 0)
-		return;
+    // if instance is destroyed before, just return
+    if (pInst->flag == 0)
+        return;
 
-	// zero out the flag
-	pInst->flag = 0;
-	
-	// keep track the number of asteroid
-	if (pInst->pObject->type == TYPE_ASTEROID)
-		sAstCtr--;
+    // zero out the flag
+    pInst->flag = 0;
+
+    // keep track the number of asteroid
+    if (pInst->pObject->type == TYPE_ASTEROID)
+        sAstCtr--;
 }
 
 // ---------------------------------------------------------------------------
 
 GameObjInst* astCreate(GameObjInst* pSrc)
 {
-	GameObjInst* pInst;
-	AEVec2		 pos, vel;
-	f32			 t, angle, size;
+    GameObjInst* pInst;
+    AEVec2		 pos, vel;
+    f32			 t, angle, size;
 
-	if (pSrc)
-	{
-		f32		posOffset = pSrc->scale * 0.25f;
-		f32		velOffset = (AST_SIZE_MAX - pSrc->scale + 1.0f) * 0.25f;
-		f32		scaleNew  = pSrc->scale * 0.5f;
+    if (pSrc)
+    {
+        f32		posOffset = pSrc->scale * 0.25f;
+        f32		velOffset = (AST_SIZE_MAX - pSrc->scale + 1.0f) * 0.25f;
+        f32		scaleNew  = pSrc->scale * 0.5f;
 
-		sparkCreate(PTCL_EXPLOSION_L, &pSrc->posCurr, 5, 0.0f * PI - 0.01f * PI, 0.0f * PI + 0.01f * PI, 0.0f, pSrc->scale / AST_SIZE_MAX, &pSrc->velCurr);
-		sparkCreate(PTCL_EXPLOSION_L, &pSrc->posCurr, 5, 0.5f * PI - 0.01f * PI, 0.5f * PI + 0.01f * PI, 0.0f, pSrc->scale / AST_SIZE_MAX, &pSrc->velCurr);
-		sparkCreate(PTCL_EXPLOSION_L, &pSrc->posCurr, 5, 1.0f * PI - 0.01f * PI, 1.0f * PI + 0.01f * PI, 0.0f, pSrc->scale / AST_SIZE_MAX, &pSrc->velCurr);
-		sparkCreate(PTCL_EXPLOSION_L, &pSrc->posCurr, 5, 1.5f * PI - 0.01f * PI, 1.5f * PI + 0.01f * PI, 0.0f, pSrc->scale / AST_SIZE_MAX, &pSrc->velCurr);
+        sparkCreate(PTCL_EXPLOSION_L, &pSrc->posCurr, 5, 0.0f * PI - 0.01f * PI, 0.0f * PI + 0.01f * PI, 0.0f, pSrc->scale / AST_SIZE_MAX, &pSrc->velCurr);
+        sparkCreate(PTCL_EXPLOSION_L, &pSrc->posCurr, 5, 0.5f * PI - 0.01f * PI, 0.5f * PI + 0.01f * PI, 0.0f, pSrc->scale / AST_SIZE_MAX, &pSrc->velCurr);
+        sparkCreate(PTCL_EXPLOSION_L, &pSrc->posCurr, 5, 1.0f * PI - 0.01f * PI, 1.0f * PI + 0.01f * PI, 0.0f, pSrc->scale / AST_SIZE_MAX, &pSrc->velCurr);
+        sparkCreate(PTCL_EXPLOSION_L, &pSrc->posCurr, 5, 1.5f * PI - 0.01f * PI, 1.5f * PI + 0.01f * PI, 0.0f, pSrc->scale / AST_SIZE_MAX, &pSrc->velCurr);
 
-		pInst = astCreate(0);
-		pInst->scale = scaleNew;
-		AEVec2Set(&pInst->posCurr, pSrc->posCurr.x - posOffset, pSrc->posCurr.y - posOffset);
-		AEVec2Set(&pInst->velCurr, pSrc->velCurr.x - velOffset, pSrc->velCurr.y - velOffset);
+        pInst = astCreate(0);
+        pInst->scale = scaleNew;
+        AEVec2Set(&pInst->posCurr, pSrc->posCurr.x - posOffset, pSrc->posCurr.y - posOffset);
+        AEVec2Set(&pInst->velCurr, pSrc->velCurr.x - velOffset, pSrc->velCurr.y - velOffset);
 
-		pInst = astCreate(0);
-		pInst->scale = scaleNew;
-		AEVec2Set(&pInst->posCurr, pSrc->posCurr.x + posOffset, pSrc->posCurr.y - posOffset);
-		AEVec2Set(&pInst->velCurr, pSrc->velCurr.x + velOffset, pSrc->velCurr.y - velOffset);
+        pInst = astCreate(0);
+        pInst->scale = scaleNew;
+        AEVec2Set(&pInst->posCurr, pSrc->posCurr.x + posOffset, pSrc->posCurr.y - posOffset);
+        AEVec2Set(&pInst->velCurr, pSrc->velCurr.x + velOffset, pSrc->velCurr.y - velOffset);
 
-		pInst = astCreate(0);
-		pInst->scale = scaleNew;
-		AEVec2Set(&pInst->posCurr, pSrc->posCurr.x - posOffset, pSrc->posCurr.y + posOffset);
-		AEVec2Set(&pInst->velCurr, pSrc->velCurr.x - velOffset, pSrc->velCurr.y + velOffset);
+        pInst = astCreate(0);
+        pInst->scale = scaleNew;
+        AEVec2Set(&pInst->posCurr, pSrc->posCurr.x - posOffset, pSrc->posCurr.y + posOffset);
+        AEVec2Set(&pInst->velCurr, pSrc->velCurr.x - velOffset, pSrc->velCurr.y + velOffset);
 
-		pSrc->scale = scaleNew;
-		AEVec2Set(&pSrc->posCurr, pSrc->posCurr.x + posOffset, pSrc->posCurr.y + posOffset);
-		AEVec2Set(&pSrc->velCurr, pSrc->velCurr.x + velOffset, pSrc->velCurr.y + velOffset);
-		
-		return pSrc;
-	}
+        pSrc->scale = scaleNew;
+        AEVec2Set(&pSrc->posCurr, pSrc->posCurr.x + posOffset, pSrc->posCurr.y + posOffset);
+        AEVec2Set(&pSrc->velCurr, pSrc->velCurr.x + velOffset, pSrc->velCurr.y + velOffset);
 
-	// pick a random angle and velocity magnitude
-	angle = AERandFloat() * 2.0f * PI;
-	size  = AERandFloat() * (AST_SIZE_MAX - AST_SIZE_MIN) + AST_SIZE_MIN;
+        return pSrc;
+    }
 
-	// pick a random position along the top or left edge
-	if ((t = AERandFloat()) < 0.5f)
-		AEVec2Set(&pos, gAEWinMinX + (t * 2.0f) * (gAEWinMaxX - gAEWinMinX), gAEWinMinY - size * 0.5f);
-	else
-		AEVec2Set(&pos, gAEWinMinX - size * 0.5f, gAEWinMinY + ((t - 0.5f) * 2.0f) * (gAEWinMaxY - gAEWinMinY));
+    // pick a random angle and velocity magnitude
+    angle = AERandFloat() * 2.0f * PI;
+    size  = AERandFloat() * (AST_SIZE_MAX - AST_SIZE_MIN) + AST_SIZE_MIN;
 
-	// calculate the velocity vector
-	AEVec2Set	(&vel, AECos(angle), AESin(angle));
-	AEVec2Scale	(&vel, &vel, AERandFloat() * (AST_VEL_MAX - AST_VEL_MIN) + AST_VEL_MIN);
+    // pick a random position along the top or left edge
+    if ((t = AERandFloat()) < 0.5f)
+        AEVec2Set(&pos, gAEWinMinX + (t * 2.0f) * (gAEWinMaxX - gAEWinMinX), gAEWinMinY - size * 0.5f);
+    else
+        AEVec2Set(&pos, gAEWinMinX - size * 0.5f, gAEWinMinY + ((t - 0.5f) * 2.0f) * (gAEWinMaxY - gAEWinMinY));
 
-	// create the object instance
-	pInst = gameObjInstCreate(TYPE_ASTEROID, size, &pos, &vel, 0.0f, true);
-	AE_ASSERT(pInst);
+    // calculate the velocity vector
+    AEVec2Set	(&vel, AECos(angle), AESin(angle));
+    AEVec2Scale	(&vel, &vel, AERandFloat() * (AST_VEL_MAX - AST_VEL_MIN) + AST_VEL_MIN);
 
-	// set the life based on the size
-	pInst->life = size / AST_SIZE_MAX * AST_LIFE_MAX;
+    // create the object instance
+    pInst = gameObjInstCreate(TYPE_ASTEROID, size, &pos, &vel, 0.0f, true);
+    AE_ASSERT(pInst);
 
-	return pInst;
+    // set the life based on the size
+    pInst->life = size / AST_SIZE_MAX * AST_LIFE_MAX;
+
+    return pInst;
 }
 
 // ---------------------------------------------------------------------------
@@ -1236,72 +1231,72 @@ void resolveCollision(GameObjInst* pSrc, GameObjInst* pDst, AEVec2* pNrm)
 {
 #if COLL_RESOLVE_SIMPLE
 
-	f32 ma = pSrc->scale * pSrc->scale, 
-		mb = pDst->scale * pDst->scale, 
-		e  = COLL_COEF_OF_RESTITUTION;
+    f32 ma = pSrc->scale * pSrc->scale, 
+        mb = pDst->scale * pDst->scale, 
+        e  = COLL_COEF_OF_RESTITUTION;
 
-	if (pNrm->y == 0)// EPSILON)
-	{
-		// calculate the relative velocity of the 1st object againts the 2nd object along the x-axis
-		f32 velRel = pSrc->velCurr.x - pDst->velCurr.x;
+    if (pNrm->y == 0)// EPSILON)
+    {
+        // calculate the relative velocity of the 1st object againts the 2nd object along the x-axis
+        f32 velRel = pSrc->velCurr.x - pDst->velCurr.x;
 
-		// if the object is separating, do nothing
-		if((velRel * pNrm->x) >= 0.0f)
-			return;
+        // if the object is separating, do nothing
+        if((velRel * pNrm->x) >= 0.0f)
+            return;
 
-		pSrc->velCurr.x = (ma * pSrc->velCurr.x + mb * (pDst->velCurr.x - e * velRel)) / (ma + mb);
-		pDst->velCurr.x = pSrc->velCurr.x + e * velRel;
-	}
-	else
-	{
-		// calculate the relative velocity of the 1st object againts the 2nd object along the y-axis
-		f32 velRel = pSrc->velCurr.y - pDst->velCurr.y;
+        pSrc->velCurr.x = (ma * pSrc->velCurr.x + mb * (pDst->velCurr.x - e * velRel)) / (ma + mb);
+        pDst->velCurr.x = pSrc->velCurr.x + e * velRel;
+    }
+    else
+    {
+        // calculate the relative velocity of the 1st object againts the 2nd object along the y-axis
+        f32 velRel = pSrc->velCurr.y - pDst->velCurr.y;
 
-		// if the object is separating, do nothing
-		if((velRel * pNrm->y) >= 0.0f)
-			return;
+        // if the object is separating, do nothing
+        if((velRel * pNrm->y) >= 0.0f)
+            return;
 
-		pSrc->velCurr.y = (ma * pSrc->velCurr.y + mb * (pDst->velCurr.y - e * velRel)) / (ma + mb);
-		pDst->velCurr.y = pSrc->velCurr.y + e * velRel;
-	}
+        pSrc->velCurr.y = (ma * pSrc->velCurr.y + mb * (pDst->velCurr.y - e * velRel)) / (ma + mb);
+        pDst->velCurr.y = pSrc->velCurr.y + e * velRel;
+    }
 
 #else
 
-	f32		ma = pSrc->scale * pSrc->scale, 
-			mb = pDst->scale * pDst->scale, 
-			e  = COLL_COEF_OF_RESTITUTION;
-	AEVec2	u;
-	AEVec2	velSrc, velDst;
-	f32		velRel;
+    f32		ma = pSrc->scale * pSrc->scale, 
+        mb = pDst->scale * pDst->scale, 
+        e  = COLL_COEF_OF_RESTITUTION;
+    AEVec2	u;
+    AEVec2	velSrc, velDst;
+    f32		velRel;
 
-	// calculate the relative velocity of the 1st object againts the 2nd object
-	AEVec2Sub(&u, &pSrc->velCurr, &pDst->velCurr);
+    // calculate the relative velocity of the 1st object againts the 2nd object
+    AEVec2Sub(&u, &pSrc->velCurr, &pDst->velCurr);
 
-	// if the object is separating, do nothing
-	if(AEVec2DotProduct(&u, pNrm) > 0.0f)
-		return;
+    // if the object is separating, do nothing
+    if(AEVec2DotProduct(&u, pNrm) > 0.0f)
+        return;
 
-	// calculate the side vector (pNrm rotated by 90 degree)
-	AEVec2Set(&u, -pNrm->y, pNrm->x);
-	
-	// tranform the object velocities to the plane space
-	velSrc.x	=	AEVec2DotProduct(&pSrc->velCurr, &u);
-	velSrc.y	=	AEVec2DotProduct(&pSrc->velCurr, pNrm);
-	velDst.x	=	AEVec2DotProduct(&pDst->velCurr, &u);
-	velDst.y	=	AEVec2DotProduct(&pDst->velCurr, pNrm);
+    // calculate the side vector (pNrm rotated by 90 degree)
+    AEVec2Set(&u, -pNrm->y, pNrm->x);
 
-	// calculate the relative velocity along the y axis
-	velRel		=	velSrc.y - velDst.y;
+    // tranform the object velocities to the plane space
+    velSrc.x	=	AEVec2DotProduct(&pSrc->velCurr, &u);
+    velSrc.y	=	AEVec2DotProduct(&pSrc->velCurr, pNrm);
+    velDst.x	=	AEVec2DotProduct(&pDst->velCurr, &u);
+    velDst.y	=	AEVec2DotProduct(&pDst->velCurr, pNrm);
 
-	// resolve collision along the Y axis
-	velSrc.y = (ma * velSrc.y + mb * (velDst.y - e * velRel)) / (ma + mb);
-	velDst.y = velSrc.y + e * velRel;
+    // calculate the relative velocity along the y axis
+    velRel		=	velSrc.y - velDst.y;
 
-	// tranform back the velocity from the normal space to the world space
-	AEVec2Scale		(&pSrc->velCurr, pNrm, velSrc.y);
-	AEVec2ScaleAdd	(&pSrc->velCurr, &u, &pSrc->velCurr, velSrc.x);
-	AEVec2Scale		(&pDst->velCurr, pNrm, velDst.y);
-	AEVec2ScaleAdd	(&pDst->velCurr, &u, &pDst->velCurr, velDst.x);
+    // resolve collision along the Y axis
+    velSrc.y = (ma * velSrc.y + mb * (velDst.y - e * velRel)) / (ma + mb);
+    velDst.y = velSrc.y + e * velRel;
+
+    // tranform back the velocity from the normal space to the world space
+    AEVec2Scale		(&pSrc->velCurr, pNrm, velSrc.y);
+    AEVec2ScaleAdd	(&pSrc->velCurr, &u, &pSrc->velCurr, velSrc.x);
+    AEVec2Scale		(&pDst->velCurr, pNrm, velDst.y);
+    AEVec2ScaleAdd	(&pDst->velCurr, &u, &pDst->velCurr, velDst.x);
 
 #endif // COLL_RESOLVE_SIMPLE
 }
@@ -1310,122 +1305,122 @@ void resolveCollision(GameObjInst* pSrc, GameObjInst* pDst, AEVec2* pNrm)
 
 void sparkCreate(u32 type, AEVec2* pPos, u32 count, f32 angleMin, f32 angleMax, f32 srcSize, f32 velScale, AEVec2* pVelInit)
 {
-	f32 velRange, velMin, scaleRange, scaleMin;
+    f32 velRange, velMin, scaleRange, scaleMin;
 
-	if (type == PTCL_EXHAUST)
-	{
-		velRange   = velScale * 30.0f;
-		velMin     = velScale * 10.0f;
-		scaleRange = 0.0f;
-		scaleMin   = 0.4f;
+    if (type == PTCL_EXHAUST)
+    {
+        velRange   = velScale * 30.0f;
+        velMin     = velScale * 10.0f;
+        scaleRange = 0.0f;
+        scaleMin   = 0.4f;
 
-		for (u32 i = 0; i < count; i++)
-		{
-			f32		t		= AERandFloat() * 2.0f - 1.0f;
-			f32		dir		= angleMin + AERandFloat() * (angleMax - angleMin);
-			f32		velMag	= velMin + fabs(t) * velRange;
-			AEVec2	vel;
+        for (u32 i = 0; i < count; i++)
+        {
+            f32		t		= AERandFloat() * 2.0f - 1.0f;
+            f32		dir		= angleMin + AERandFloat() * (angleMax - angleMin);
+            f32		velMag	= velMin + fabs(t) * velRange;
+            AEVec2	vel;
 
-			AEVec2Set	(&vel, AECos(dir), AESin(dir));
-			AEVec2Scale	(&vel, &vel, velMag);
+            AEVec2Set	(&vel, AECos(dir), AESin(dir));
+            AEVec2Scale	(&vel, &vel, velMag);
 
-			if (pVelInit)
-				AEVec2Add(&vel, &vel, pVelInit);
-			
-			gameObjInstCreate(
-				(fabs(t) < 0.2f) ? (TYPE_PTCL_YELLOW) : (TYPE_PTCL_RED), 
-				t * scaleRange + scaleMin, 
-				pPos, &vel, AERandFloat() * 2.0f * PI, false);
-		}
-	}
-	else if ((PTCL_EXPLOSION_S <= type) && (type <= PTCL_EXPLOSION_L))
-	{
-		if (type == PTCL_EXPLOSION_S)
-		{
-			velRange   = 50.0f;
-			velMin     = 20.0f;
-			scaleRange = 0.5f;
-			scaleMin   = 0.2f;
-		}
-		else if (type == PTCL_EXPLOSION_M)
-		{
-			velRange   = 100.0f;
-			velMin     = 50.0f;
-			scaleRange = 0.5f;
-			scaleMin   = 0.5f;
-		}
-		else
-		{
-			velRange   = 150.0f;
-			velMin     = 20.0f;
-			scaleRange = 1.0f;
-			scaleMin   = 0.5f;
-		}
+            if (pVelInit)
+                AEVec2Add(&vel, &vel, pVelInit);
 
-		velRange *= velScale;
-		velMin   *= velScale;
+            gameObjInstCreate(
+                (fabs(t) < 0.2f) ? (TYPE_PTCL_YELLOW) : (TYPE_PTCL_RED), 
+                t * scaleRange + scaleMin, 
+                pPos, &vel, AERandFloat() * 2.0f * PI, false);
+        }
+    }
+    else if ((PTCL_EXPLOSION_S <= type) && (type <= PTCL_EXPLOSION_L))
+    {
+        if (type == PTCL_EXPLOSION_S)
+        {
+            velRange   = 50.0f;
+            velMin     = 20.0f;
+            scaleRange = 0.5f;
+            scaleMin   = 0.2f;
+        }
+        else if (type == PTCL_EXPLOSION_M)
+        {
+            velRange   = 100.0f;
+            velMin     = 50.0f;
+            scaleRange = 0.5f;
+            scaleMin   = 0.5f;
+        }
+        else
+        {
+            velRange   = 150.0f;
+            velMin     = 20.0f;
+            scaleRange = 1.0f;
+            scaleMin   = 0.5f;
+        }
 
-		for (u32 i = 0; i < count; i++)
-		{
-			f32		dir		= angleMin + (angleMax - angleMin) * AERandFloat();
-			f32		t		= AERandFloat();
-			f32		velMag	= t * velRange + velMin;
-			AEVec2	vel;
-			AEVec2	pos;
+        velRange *= velScale;
+        velMin   *= velScale;
 
-			AEVec2Set(&pos, pPos->x + (AERandFloat() - 0.5f) * srcSize, pPos->y + (AERandFloat() - 0.5f) * srcSize);
+        for (u32 i = 0; i < count; i++)
+        {
+            f32		dir		= angleMin + (angleMax - angleMin) * AERandFloat();
+            f32		t		= AERandFloat();
+            f32		velMag	= t * velRange + velMin;
+            AEVec2	vel;
+            AEVec2	pos;
 
-			AEVec2Set	(&vel, AECos(dir), AESin(dir));
-			AEVec2Scale	(&vel, &vel, velMag);
+            AEVec2Set(&pos, pPos->x + (AERandFloat() - 0.5f) * srcSize, pPos->y + (AERandFloat() - 0.5f) * srcSize);
 
-			if (pVelInit)
-				AEVec2Add(&vel, &vel, pVelInit);
-			
-			gameObjInstCreate(
-				(t < 0.25f) ? (TYPE_PTCL_WHITE)  : (
-				(t < 0.50f) ? (TYPE_PTCL_YELLOW) : (TYPE_PTCL_RED)), 
-				t * scaleRange + scaleMin, 
-				&pos, &vel, AERandFloat() * 2.0f * PI, false);
-		}
-	}
+            AEVec2Set	(&vel, AECos(dir), AESin(dir));
+            AEVec2Scale	(&vel, &vel, velMag);
+
+            if (pVelInit)
+                AEVec2Add(&vel, &vel, pVelInit);
+
+            gameObjInstCreate(
+                (t < 0.25f) ? (TYPE_PTCL_WHITE)  : (
+                (t < 0.50f) ? (TYPE_PTCL_YELLOW) : (TYPE_PTCL_RED)), 
+                t * scaleRange + scaleMin, 
+                &pos, &vel, AERandFloat() * 2.0f * PI, false);
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
 
 GameObjInst* missileAcquireTarget(GameObjInst* pMissile)
 {
-	AEVec2		 dir, u;
-	f32			 uLen, angleMin = AECos(0.25f * PI), minDist = FLT_MAX;
-	GameObjInst* pTarget = 0;
+    AEVec2		 dir, u;
+    f32			 uLen, angleMin = AECos(0.25f * PI), minDist = FLT_MAX;
+    GameObjInst* pTarget = 0;
 
-	AEVec2Set(&dir, AECos(pMissile->dirCurr), AESin(pMissile->dirCurr));
+    AEVec2Set(&dir, AECos(pMissile->dirCurr), AESin(pMissile->dirCurr));
 
-	for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
-	{
-		GameObjInst* pInst = sGameObjInstList + i;
+    for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
+    {
+        GameObjInst* pInst = sGameObjInstList + i;
 
-		if (((pInst->flag & FLAG_ACTIVE) == 0) || (pInst->pObject->type != TYPE_ASTEROID))
-			continue;
+        if (((pInst->flag & FLAG_ACTIVE) == 0) || (pInst->pObject->type != TYPE_ASTEROID))
+            continue;
 
-		AEVec2Sub(&u, &pInst->posCurr, &pMissile->posCurr);
-		uLen = AEVec2Length(&u);
+        AEVec2Sub(&u, &pInst->posCurr, &pMissile->posCurr);
+        uLen = AEVec2Length(&u);
 
-		if (uLen < 1.0f)
-			continue;
+        if (uLen < 1.0f)
+            continue;
 
-		AEVec2Scale(&u, &u, 1.0f / uLen);
+        AEVec2Scale(&u, &u, 1.0f / uLen);
 
-		if (AEVec2DotProduct(&dir, &u) < angleMin)
-			continue;
-		
-		if (uLen < minDist)
-		{
-			minDist = uLen;
-			pTarget = pInst;
-		}
-	}
+        if (AEVec2DotProduct(&dir, &u) < angleMin)
+            continue;
 
-	return pTarget;
+        if (uLen < minDist)
+        {
+            minDist = uLen;
+            pTarget = pInst;
+        }
+    }
+
+    return pTarget;
 }
 
 // ---------------------------------------------------------------------------

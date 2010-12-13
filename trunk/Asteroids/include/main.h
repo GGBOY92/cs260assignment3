@@ -7,10 +7,11 @@
 // History			:
 // - 2007/02/05		:	- initial implementation
 // ---------------------------------------------------------------------------
-
 #ifndef MAIN_H
 #define MAIN_H
 
+#include <vector>
+#include "MessageTypes.hpp"
 #include "UDPSocket.hpp"
 
 // ---------------------------------------------------------------------------
