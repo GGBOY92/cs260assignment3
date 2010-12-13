@@ -42,6 +42,8 @@ public: // methods
   void Shutdown( void );
   void Close( void );
 
+  u32 PendingBytes( void );
+
 protected: // methods
 
   bool ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 bufferOffset = 0 );

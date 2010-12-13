@@ -86,6 +86,16 @@ bool iSocket::ReceiveUntil( char *buffer, u32 recvCount, u32 bufferSize, u32 buf
 }
 
 
+u32 iSocket::PendingBytes( void )
+{
+    ULONG count = 0;
+    if( ioctlsocket( socket_, FIONREAD, &count ) == 0 )
+        return count;
+    else
+        return 333333;
+}
+
+
 iSocket::SocketErrExcep::SocketErrExcep( int eCode, char const *msg, std::string const &socketName )
   : WinSockErrExcep( eCode, msg_ ), socketName_( socketName )
 {

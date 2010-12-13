@@ -120,6 +120,8 @@ void GameStatePlayUpdate(void)
 
     NetworkMessage netMessage;
 
+    printf( "pending bytes are %u\n", p_main_socket->PendingBytes() );
+
     while( p_main_socket->Receive( netMessage ) )
         ProcMessage( netMessage );
 
