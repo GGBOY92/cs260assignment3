@@ -44,27 +44,27 @@ void GameStateResultLoad(void)
 
 void GameStateResultInit(void)
 {
-    std::string larry = "Larry";
-    std::string robert = "Robert";
-    std::string steven = "Steven";
-
-    ResultStatus status;
-    strcpy(status.name_.name_, larry.c_str());
-    status.score_ = 10;
-
-    results.push_back(status);
-
-    strcpy(status.name_.name_, steven.c_str());
-    status.score_ = 99;
-
-    results.push_back(status);
-
-    strcpy(status.name_.name_, robert.c_str());
-    status.score_ = 70;
-
-    results.push_back(status);
-
-    std::sort(results.begin(), results.end(), ResultSorter());
+//     std::string larry = "Larry";
+//     std::string robert = "Robert";
+//     std::string steven = "Steven";
+// 
+//     ResultStatus status;
+//     strcpy(status.name_.name_, larry.c_str());
+//     status.score_ = 10;
+// 
+//     results.push_back(status);
+// 
+//     strcpy(status.name_.name_, steven.c_str());
+//     status.score_ = 99;
+// 
+//     results.push_back(status);
+// 
+//     strcpy(status.name_.name_, robert.c_str());
+//     status.score_ = 70;
+// 
+//     results.push_back(status);
+// 
+     std::sort(results.begin(), results.end(), ResultSorter());
 }
 
 // ---------------------------------------------------------------------------
