@@ -31,7 +31,7 @@ const unsigned ROW_HEIGHT = 30;
 
 
 #define GAME_OBJ_NUM_MAX			32
-#define GAME_OBJ_INST_NUM_MAX		1024
+#define GAME_OBJ_INST_NUM_MAX		128
 
 #define AST_NUM_MIN					2		// minimum number of asteroid alive
 #define AST_NUM_MAX					32		// maximum number of asteroid alive
@@ -139,7 +139,7 @@ struct GameObjInst
 
 struct NetworkObjInst
 {
-    short             type;
+    short           type;
     f32				life;		// object 'life'
     f32				scale;
     AEVec2			posCurr;	// object current position
