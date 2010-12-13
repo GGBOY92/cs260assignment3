@@ -183,7 +183,7 @@ void GameStatePlayUpdate(void)
     static u32 i = 0;
     i++;
 
-    if( i % 60 == 0 )
+    if( i % 15 == 0 )
         SendScores();
 
 	// ==================================

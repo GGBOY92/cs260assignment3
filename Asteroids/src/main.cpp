@@ -45,7 +45,15 @@ int WINAPI WinMain(HINSTANCE instanceH, HINSTANCE prevInstanceH, LPSTR command_l
 	addGameState();
 #endif
 
+#if CLIENT_APP
+
 	GameStateMgrInit(GS_MENU);
+
+#else
+
+	GameStateMgrInit(GS_PLAY);
+
+#endif
 
 	while(gGameStateCurr != GS_QUIT)
 	{
