@@ -96,12 +96,16 @@ void GameStatePlayInit(void)
 	
  //   AE_ASSERT(spShip);
 
+#if !NO_ROIDS
+
 	// get the time the asteroid is created
 	sAstCreationTime = AEGetTime();
 	
 	// generate the initial asteroid
 	for (u32 i = 0; i < sAstNum; i++)
 		astCreate(0);
+
+#endif
 
 	// reset the score and the number of ship
 	sScore      = 0;
@@ -120,10 +124,17 @@ void GameStatePlayUpdate(void)
 
     NetworkMessage netMessage;
 
-    printf( "pending bytes are %u\n", p_main_socket->PendingBytes() );
+//    printf( "pending bytes are %u\n", p_main_socket->PendingBytes() );
 
-    while( p_main_socket->Receive( netMessage ) )
-        ProcMessage( netMessage );
+    try
+    {
+        while( p_main_socket->Receive( netMessage ) )
+            ProcMessage( netMessage );
+    }
+    catch( iSocket::SockErr err )
+    {
+        err.Print();
+    }
 
     ProcInput();
     SendUpdate();
@@ -131,6 +142,8 @@ void GameStatePlayUpdate(void)
 	// ==================================
 	// create new asteroids if necessary
 	// ==================================
+
+#if !NO_ROIDS
 
 	if ((sAstCtr < sAstNum) && ((AEGetTime() - sAstCreationTime) > AST_CREATE_DELAY))
 	{
@@ -140,6 +153,8 @@ void GameStatePlayUpdate(void)
 		// create an asteroid
 		astCreate(0);
 	}
+
+#endif
 
 	// ===============
 	// update physics
@@ -360,7 +375,10 @@ void GameStatePlayUpdate(void)
 				if (pDst->scale < AST_SIZE_MIN)
 				{
 					sparkCreate(PTCL_EXPLOSION_M, &pDst->posCurr, (u32)(pDst->scale * 10), pSrc->dirCurr - 0.05f * PI, pSrc->dirCurr + 0.05f * PI, pDst->scale);
-					sScore++;
+					
+                    if( pDst->parent != NULL && ACTIVE( pDst ) )
+                        ++( pDst->score );
+                    
 
 					if ((sScore % AST_SPECIAL_RATIO) == 0)
 						sSpecialCtr++;
@@ -475,7 +493,9 @@ void GameStatePlayUpdate(void)
 				GameObjInst* pDst = sGameObjInstList + j;
 
 				// skip no-active and non-asteroid object
-				if ((pSrc == pDst) || ((pDst->flag & FLAG_ACTIVE) == 0) || (pDst->pObject->type != TYPE_ASTEROID))
+				if ( ( pSrc == pDst )
+                    || ( ( pDst->flag & FLAG_ACTIVE) == 0 )
+                    || ( pDst->pObject->type != TYPE_ASTEROID) )
 					continue;
 
 				// check if the object rectangle overlap
@@ -488,9 +508,9 @@ void GameStatePlayUpdate(void)
 				sparkCreate(PTCL_EXPLOSION_L, &pSrc->posCurr, 100, 0.0f, 2.0f * PI);
 				
 				// reset the ship position and direction
-				AEVec2Zero(&pDst->posCurr);
-				AEVec2Zero(&pDst->velCurr);
-				pDst->dirCurr = 0.0f;
+				AEVec2Zero( &pSrc->posCurr );
+				AEVec2Zero( &pSrc->velCurr );
+				pSrc->dirCurr = 0.0f;
 
 				sSpecialCtr = SHIP_SPECIAL_NUM;
 
@@ -501,21 +521,23 @@ void GameStatePlayUpdate(void)
 					AEVec2		 u;
 
 					// skip no-active and non-asteroid object
-					if (((pInst->flag & FLAG_ACTIVE) == 0) || (pInst->pObject->type != TYPE_ASTEROID))
+					if (((pInst->flag & FLAG_ACTIVE) == 0)
+                        || (pInst->pObject->type != TYPE_ASTEROID))
 						continue;
 
 					AEVec2Sub(&u, &pInst->posCurr, &pDst->posCurr);
 
-					if (AEVec2Length(&u) < (pDst->scale * 10.0f))
+					if (AEVec2Length(&u) < (pDst->scale * 2.0f))
 					{
-						sparkCreate		  (PTCL_EXPLOSION_M, &pInst->posCurr, 10, -PI, PI);
-						gameObjInstDestroy(pInst);
+						sparkCreate( PTCL_EXPLOSION_M, &pInst->posCurr, 10, -PI, PI );
+						gameObjInstDestroy( pInst );
 					}
 				}
 
 				// reduce the ship counter
-				sShipCtr--;
+				//sShipCtr--;
 				
+                /*
 				// if counter is less than 0, game over
 				if (sShipCtr < 0)
 				{
@@ -523,6 +545,7 @@ void GameStatePlayUpdate(void)
 					gameObjInstDestroy(spShip);
 					spShip = 0;
 				}
+                */
 
 				break;
 			}
@@ -548,12 +571,22 @@ void GameStatePlayUpdate(void)
 		AEMtx33Trans		(&m,                pInst->posCurr.x, pInst->posCurr.y);
 		AEMtx33Concat		(&pInst->transform, &m,               &pInst->transform);
 	}
+
+    /*
+    for( u32 i = 0; i < users.size(); ++i )
+    {
+        UserInfo &user = users[i];
+
+        ResultStat
+    }
+    */
 }
 
 // ---------------------------------------------------------------------------
 
 void GameStatePlayDraw(void)
 {
+
 	s8 strBuffer[1024];
 
 	// draw all object in the list
@@ -584,6 +617,7 @@ void GameStatePlayDraw(void)
 	// display the game over message
 	if (sShipCtr < 0)
 		AEGfxPrint(280, 260, 0xFFFFFFFF, "       GAME OVER       ");
+
 }
 
 // ---------------------------------------------------------------------------
@@ -713,8 +747,10 @@ void ProcInput( void )
 			AEVec2Scale	(&pos, &pos, -spShip->scale);
 			AEVec2Add	(&pos, &pos, &spShip->posCurr);
 
+#if !NO_SPARKS
 			sparkCreate(PTCL_EXHAUST, &pos, 2, spShip->dirCurr + 0.8f * PI, spShip->dirCurr + 1.2f * PI);
-		}
+#endif
+        }
 		if ( inputIt->m_key == DIK_DOWN )
 		{
 			AEVec2 dir;
@@ -750,7 +786,7 @@ void ProcInput( void )
 			AEVec2Set	(&vel, AECos(spShip->dirCurr), AESin(spShip->dirCurr));
 			AEVec2Scale	(&vel, &vel, BULLET_SPEED);
 			
-			gameObjInstCreate(TYPE_BULLET, 1.0f, &spShip->posCurr, &vel, spShip->dirCurr, true);
+			gameObjInstCreate(TYPE_BULLET, 1.0f, &spShip->posCurr, &vel, spShip->dirCurr, true, spShip );
 		}
 	    if ( inputIt->m_key == DIK_Z && ( sSpecialCtr >= BOMB_COST ) )
 		{

@@ -20,10 +20,12 @@
 // ---------------------------------------------------------------------------
 // Defines
 
+#define CLIENT_APP 0
 extern std::vector<ResultStatus> results;
+#define NO_PARTICLES 1
+#define NO_ROIDS 0
+#define NO_SPARKS 1
 
-
-#define CLIENT_APP 1
 
 #define GAME_OBJ_NUM_MAX			32
 #define GAME_OBJ_INST_NUM_MAX		32
@@ -69,6 +71,8 @@ extern std::vector<ResultStatus> results;
 
 #define COLL_RESOLVE_SIMPLE			1
 
+#define ACTIVE(x) ( ( x->flag & FLAG_ACTIVE ) == 0 )
+
 // ---------------------------------------------------------------------------
 enum
 {
@@ -112,17 +116,19 @@ struct GameObjInst
 {
     GameObj*		pObject;	// pointer to the 'original'
     u32             type;
-    u32				flag;		// bit flag or-ed together
-    f32				life;		// object 'life'
-    f32				scale;
-    AEVec2			posCurr;	// object current position
-    AEVec2			velCurr;	// object current velocity
-    f32				dirCurr;	// object current direction
+	u32				flag;		// bit flag or-ed together
+    u32             score;
+	f32				life;		// object 'life'
+	f32				scale;
+	AEVec2			posCurr;	// object current position
+	AEVec2			velCurr;	// object current velocity
+	f32				dirCurr;	// object current direction
 
     AEMtx33			transform;	// object drawing matrix
 
-    // pointer to custom data specific for each object type
-    void*			pUserData;
+    GameObjInst*    parent;
+	// pointer to custom data specific for each object type
+	void*			pUserData;
 };
 
 
@@ -192,7 +198,7 @@ static void			loadGameObjList();
 
 // function to create/destroy a game object object
 GameObjInst *CreateNewShip( void );
-static GameObjInst*	gameObjInstCreate (u32 type, f32 scale, AEVec2* pPos, AEVec2* pVel, f32 dir, bool forceCreate);
+static GameObjInst*	gameObjInstCreate (u32 type, f32 scale, AEVec2* pPos, AEVec2* pVel, f32 dir, bool forceCreate, GameObjInst *parent = NULL );
 static void			gameObjInstDestroy(GameObjInst* pInst);
 
 // function to create asteroid
@@ -1067,7 +1073,7 @@ GameObjInst *CreateNewShip( void )
 
 // ---------------------------------------------------------------------------
 
-GameObjInst* gameObjInstCreate(u32 type, f32 scale, AEVec2* pPos, AEVec2* pVel, f32 dir, bool forceCreate)
+GameObjInst* gameObjInstCreate(u32 type, f32 scale, AEVec2* pPos, AEVec2* pVel, f32 dir, bool forceCreate, GameObjInst *parent )
 {
     AEVec2 zero = { 0.0f, 0.0f };
 
@@ -1084,13 +1090,15 @@ GameObjInst* gameObjInstCreate(u32 type, f32 scale, AEVec2* pPos, AEVec2* pVel, 
             // it is not used => use it to create the new instance
             pInst->pObject	 = sGameObjList + type;
             pInst->type      = type;
-            pInst->flag		 = FLAG_ACTIVE;
-            pInst->life		 = 1.0f;
-            pInst->scale	 = scale;
-            pInst->posCurr	 = pPos ? *pPos : zero;
-            pInst->velCurr	 = pVel ? *pVel : zero;
-            pInst->dirCurr	 = dir;
-            pInst->pUserData = 0;
+            pInst->score      = 0;
+			pInst->flag		 = FLAG_ACTIVE;
+			pInst->life		 = 1.0f;
+			pInst->scale	 = scale;
+			pInst->posCurr	 = pPos ? *pPos : zero;
+			pInst->velCurr	 = pVel ? *pVel : zero;
+			pInst->dirCurr	 = dir;
+            pInst->parent    = NULL;
+			pInst->pUserData = NULL;
 
             // keep track the number of asteroid
             if (pInst->pObject->type == TYPE_ASTEROID)
@@ -1123,13 +1131,15 @@ GameObjInst* gameObjInstCreate(u32 type, f32 scale, AEVec2* pPos, AEVec2* pVel, 
         {
             pDst->pObject	 = sGameObjList + type;
             pDst->type       = type;
-            pDst->flag		 = FLAG_ACTIVE;
-            pDst->life		 = 1.0f;
-            pDst->scale	 = scale;
-            pDst->posCurr	 = pPos ? *pPos : zero;
-            pDst->velCurr	 = pVel ? *pVel : zero;
-            pDst->dirCurr	 = dir;
-            pDst->pUserData = 0;
+            pDst->score      = 0;
+			pDst->flag		 = FLAG_ACTIVE;
+			pDst->life		 = 1.0f;
+			pDst->scale	 = scale;
+			pDst->posCurr	 = pPos ? *pPos : zero;
+			pDst->velCurr	 = pVel ? *pVel : zero;
+			pDst->dirCurr	 = dir;
+            pDst->parent     = NULL;
+			pDst->pUserData  = NULL;
 
             // keep track the number of asteroid
             if (pDst->pObject->type == TYPE_ASTEROID)
@@ -1305,7 +1315,9 @@ void resolveCollision(GameObjInst* pSrc, GameObjInst* pDst, AEVec2* pNrm)
 
 void sparkCreate(u32 type, AEVec2* pPos, u32 count, f32 angleMin, f32 angleMax, f32 srcSize, f32 velScale, AEVec2* pVelInit)
 {
-    f32 velRange, velMin, scaleRange, scaleMin;
+#if !NO_PARTICLES
+
+	f32 velRange, velMin, scaleRange, scaleMin;
 
     if (type == PTCL_EXHAUST)
     {
@@ -1383,6 +1395,8 @@ void sparkCreate(u32 type, AEVec2* pPos, u32 count, f32 angleMin, f32 angleMax, 
                 &pos, &vel, AERandFloat() * 2.0f * PI, false);
         }
     }
+    
+#endif
 }
 
 // ---------------------------------------------------------------------------
