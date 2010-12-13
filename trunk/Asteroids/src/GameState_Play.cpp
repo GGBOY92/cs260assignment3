@@ -74,7 +74,7 @@ const unsigned ROW_HEIGHT = 30;
 
 #define COLL_RESOLVE_SIMPLE			1
 
-#define GAME_TIME_SEC               4.0
+#define GAME_TIME_SEC               30.0
 
 #define ACTIVE(x) ( ( x->flag & FLAG_ACTIVE ) != 0 )
 
