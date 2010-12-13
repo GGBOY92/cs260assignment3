@@ -5,11 +5,18 @@ struct UserInfo
     SocketAddress m_address;
     u32 m_id;
     GameObjInst *m_p_obj;
+
+    bool operator ==( UserInfo const &rhs )
+    {
+        return ( m_username == rhs.m_username );
+    }
 };
 
 typedef std::map< std::string, UserInfo * > UserTable;
 UserTable users;
 
+typedef std::vector< ResultStatus > ScoreList;
+ScoreList scores;
 
 struct InputInfo
 {
@@ -25,9 +32,15 @@ InputList inputs;
 UDPSocket *p_main_socket;
 char *local_address;
 
+f64 static init_time = 0.0;
+f64 static live_time = 0.0;
+bool static counting_down = false;
+
 void ProcInput( void );
 void ProcMessage( NetworkMessage &netMessage );
+void SendToAll( NetworkMessage &net_msg );
 void SendUpdate( void );
+void SendScores( bool final = false );
 
 // ---------------------------------------------------------------------------
 //     SERVER CODE
@@ -35,6 +48,30 @@ void SendUpdate( void );
 
 void GameStatePlayLoad(void)
 {
+	// zero the game object list
+	memset(sGameObjList, 0, sizeof(GameObj) * GAME_OBJ_NUM_MAX);
+	sGameObjNum = 0;
+
+	// zero the game object instance list
+	memset(sGameObjInstList, 0, sizeof(GameObjInst) * GAME_OBJ_INST_NUM_MAX);
+	sGameObjInstNum = 0;
+
+	spShip = 0;
+
+	// load/create the mesh data
+	loadGameObjList();
+
+	// initialize the initial number of asteroid
+	sAstCtr = NULL;
+}
+
+// ---------------------------------------------------------------------------
+
+void GameStatePlayInit(void)
+{
+    ///////////////////////
+    // Socket stuff
+    ///////////////////////
     try
     {
         StartWinSock();
@@ -66,28 +103,11 @@ void GameStatePlayLoad(void)
 
     p_main_socket->AcceptAny();
 
-	// zero the game object list
-	memset(sGameObjList, 0, sizeof(GameObj) * GAME_OBJ_NUM_MAX);
-	sGameObjNum = 0;
 
-	// zero the game object instance list
-	memset(sGameObjInstList, 0, sizeof(GameObjInst) * GAME_OBJ_INST_NUM_MAX);
-	sGameObjInstNum = 0;
-
-	spShip = 0;
-
-	// load/create the mesh data
-	loadGameObjList();
-
-	// initialize the initial number of asteroid
-	sAstCtr = NULL;
-}
-
-// ---------------------------------------------------------------------------
-
-void GameStatePlayInit(void)
-{
-	// reset the number of current asteroid and the total allowed
+    ///////////////////////
+    // Other stuff
+    ///////////////////////
+    // reset the number of current asteroid and the total allowed
 	sAstCtr = 0;
 	sAstNum = AST_NUM_MIN;
 
@@ -120,6 +140,18 @@ void GameStatePlayInit(void)
 
 void GameStatePlayUpdate(void)
 {
+    if( counting_down )
+    {
+        live_time = AEGetTime() - init_time;
+
+        if( live_time > GAME_TIME_SEC )
+        {
+            SendScores( true );
+            gGameStateNext = GS_RESULT;
+            return;
+        }
+    }
+
     p_main_socket->Resend();
 
     NetworkMessage netMessage;
@@ -138,6 +170,12 @@ void GameStatePlayUpdate(void)
 
     ProcInput();
     SendUpdate();
+
+    static u32 i = 0;
+    i++;
+
+    if( i % 60 == 0 )
+        SendScores();
 
 	// ==================================
 	// create new asteroids if necessary
@@ -167,7 +205,7 @@ void GameStatePlayUpdate(void)
 		// skip non-active object
 		if ((pInst->flag & FLAG_ACTIVE) == 0)
 			continue;
-		
+
 		// update the position
 		AEVec2ScaleAdd(&pInst->posCurr, &pInst->velCurr, &pInst->posCurr, (f32)(gAEFrameTime));
 	}
@@ -374,11 +412,16 @@ void GameStatePlayUpdate(void)
 				
 				if (pDst->scale < AST_SIZE_MIN)
 				{
-					sparkCreate(PTCL_EXPLOSION_M, &pDst->posCurr, (u32)(pDst->scale * 10), pSrc->dirCurr - 0.05f * PI, pSrc->dirCurr + 0.05f * PI, pDst->scale);
-					
-                    if( pDst->parent != NULL && ACTIVE( pDst ) )
-                        ++( pDst->score );
-                    
+					sparkCreate(PTCL_EXPLOSION_M, &pDst->posCurr, (u32)(pDst->scale * 10), pSrc->dirCurr - 0.05f * PI, pSrc->dirCurr + 0.05f * PI, pDst->scale);                   
+
+                    if( pSrc->parent != NULL )
+                    {
+                        if( ( pSrc->parent->flag & FLAG_ACTIVE ) != 0 )
+                        {
+                            ( pSrc->parent->score ) += 10;
+                        }
+                    }
+
 
 					if ((sScore % AST_SPECIAL_RATIO) == 0)
 						sSpecialCtr++;
@@ -392,6 +435,14 @@ void GameStatePlayUpdate(void)
 				}
 				else
 				{
+                    if( pSrc->parent != NULL )
+                    {
+                        if( ( pSrc->parent->flag & FLAG_ACTIVE ) != 0 )
+                        {
+                            ++( pSrc->parent->score );
+                        }
+                    }
+
 					sparkCreate(PTCL_EXPLOSION_S, &pSrc->posCurr, 10, pSrc->dirCurr + 0.9f * PI, pSrc->dirCurr + 1.1f * PI);
 
 					// impart some of the bullet/missile velocity to the asteroid
@@ -572,21 +623,26 @@ void GameStatePlayUpdate(void)
 		AEMtx33Concat		(&pInst->transform, &m,               &pInst->transform);
 	}
 
-    /*
-    for( u32 i = 0; i < users.size(); ++i )
+    scores.clear();
+    
+    for( UserTable::iterator userIt = users.begin(); userIt != users.end(); ++userIt )
     {
-        UserInfo &user = users[i];
+        UserInfo *user = userIt->second;
 
-        ResultStat
+        ResultStatus result;
+
+        result.name_ = user->m_username;
+        result.score_ = user->m_p_obj->score;
+
+        scores.push_back( result );
     }
-    */
+    
 }
 
 // ---------------------------------------------------------------------------
 
 void GameStatePlayDraw(void)
 {
-
 	s8 strBuffer[1024];
 
 	// draw all object in the list
@@ -602,9 +658,19 @@ void GameStatePlayDraw(void)
 		AEGfxTriDraw		(sGameObjInstList[i].pObject->pMesh);
 	}
 
-	sprintf(strBuffer, "Score: %d", sScore);
-	AEGfxPrint(10, 10, -1, strBuffer);
+    for( u32 i = 0; i < scores.size(); ++i )
+    {
+        u32 cur_score = scores[i].score_;
+        Username &cur_name = scores[i].name_;
+        sprintf(strBuffer, "%s: %u", cur_name.name_, cur_score );
+	    AEGfxPrint( 10, i * 20 + 10, -1, strBuffer);
+    }
 
+
+    sprintf(strBuffer, "Time: %.2f", GAME_TIME_SEC - live_time );
+    AEGfxPrint( 340, 10, -1, strBuffer);
+
+/*
 	sprintf(strBuffer, "Level: %d", AELogBase2(sAstNum));
 	AEGfxPrint(10, 30, -1, strBuffer);
 
@@ -613,6 +679,7 @@ void GameStatePlayDraw(void)
 
 	sprintf(strBuffer, "Special:   %d", sSpecialCtr);
 	AEGfxPrint(600, 30, -1, strBuffer);
+*/
 
 	// display the game over message
 	if (sShipCtr < 0)
@@ -624,6 +691,38 @@ void GameStatePlayDraw(void)
 
 void GameStatePlayFree(void)
 {
+
+    try
+    {
+        p_main_socket->Shutdown();
+    }
+    catch( iSocket::SockErr e )
+    {
+        e.Print();
+    }
+
+
+    try
+    {
+        p_main_socket->Close();
+    }
+    catch( iSocket::SockErr e )
+    {
+        e.Print();
+    }
+
+    delete p_main_socket;
+
+    try
+    {
+        CloseWinSock();
+    }
+    catch( WSErr e )
+    {
+        e.Print();
+    }
+
+
 	// kill all object in the list
 	for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
 		gameObjInstDestroy(sGameObjInstList + i);
@@ -649,6 +748,12 @@ void ProcMessage( NetworkMessage &netMessage )
     case NetMsg::JOIN:
     {
         static u32 id = 0;
+
+        if( id == 0 )
+        {
+            counting_down = true;
+            init_time = AEGetTime();
+        }
 
         MsgJoin j_msg;
         netMessage >> j_msg;
@@ -818,6 +923,16 @@ void ProcInput( void )
 			
 			gameObjInstCreate(TYPE_MISSILE, 1.0f, &pos, &vel, dir, true);
 		}
+        if ( inputIt->m_key == DIK_Q )
+        {
+            std::string name = std::string( inputIt->m_p_user->m_username.name_ );
+            UserTable::iterator userIt = users.find( name );
+
+            userIt->second->m_p_obj->flag = 0;
+            delete userIt->second;
+
+            users.erase( userIt );
+        }
         }
 	}
     }
@@ -829,6 +944,7 @@ void SendUpdate( void )
 {
     MsgPosUpdate update_msg;
 
+    update_msg.data_.time_left_ = GAME_TIME_SEC - live_time;
     // comment
     u32 active_count = 0;
     NetworkObjInst *p_cur_inst = ( NetworkObjInst * ) update_msg.data_.inst_data_;
@@ -859,12 +975,34 @@ void SendUpdate( void )
     net_msg << update_msg;
     net_msg.type_ = NetMsg::POS_UPDATE;
 
+    SendToAll( net_msg );
+}
+
+void SendScores( bool final )
+{
+    MsgOutcome out_msg;
+    out_msg.data_.num_players_ = scores.size();
+    out_msg.data_.final_ = final;
+
+    u32 i = 0;
+    for( ScoreList::iterator scoreIt = scores.begin(); scoreIt != scores.end(); ++scoreIt )
+    {
+        out_msg.data_.status_data_[i] = *scoreIt;
+        ++i;
+    }
+
+    NetworkMessage net_msg;
+    net_msg << out_msg;
+    SendToAll( net_msg );
+}
+
+void SendToAll( NetworkMessage &net_msg )
+{
     for( UserTable::iterator userIt = users.begin(); userIt != users.end(); ++userIt )
     {
-        //printf( "Sending update to %s\n", userIt->second->m_username.name_ );
-
         SocketAddress to_addr = userIt->second->m_address;
         net_msg.receiverAddress_ = to_addr;
         p_main_socket->Send( net_msg );
     }
 }
+

@@ -13,6 +13,7 @@
 #include "GameStateMgr.h"
 
 #include "GameState_Play.h"
+#include "GameState_Single.h"
 #include "GameState_Menu.h"
 #include "GameState_Result.h"
 #include "GameState_Platform.h"
@@ -68,6 +69,16 @@ void GameStateMgrUpdate()
 		GameStateFree	= GameStatePlayFree;
 		GameStateUnload	= GameStatePlayUnload;
 		break;
+
+	case GS_SINGLE:
+		GameStateLoad	= GameStateSingleLoad;
+		GameStateInit	= GameStateSingleInit;
+		GameStateUpdate	= GameStateSingleUpdate;
+		GameStateDraw	= GameStateSingleDraw;
+		GameStateFree	= GameStateSingleFree;
+		GameStateUnload	= GameStateSingleUnload;
+		break;
+
 
 	case GS_MENU:
 		GameStateLoad	= GameStateMenuLoad;

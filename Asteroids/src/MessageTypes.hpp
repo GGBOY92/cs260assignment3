@@ -24,6 +24,17 @@ struct Username
 {
     Username(void) { memset(name_, 0, MAX_USERNAME_LEN); }
     char name_[MAX_USERNAME_LEN];
+
+    bool operator ==( Username const &rhs )
+    {
+        u32 len1 = strlen( name_ );
+        u32 len2 = strlen( rhs.name_ );
+
+        if( len1 != len2 )
+            return false;
+
+        return ( strcmp( name_, rhs.name_ ) == 0 );
+    }
 };
 
 struct ResultStatus
@@ -71,6 +82,8 @@ struct MsgPosUpdate
     {
         char inst_data_[ buf_size_ ];
         u32 inst_count_;
+
+        double time_left_;
     };
 
     Data data_;

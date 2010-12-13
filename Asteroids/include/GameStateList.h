@@ -18,8 +18,9 @@ enum
 {
 	// list of all game states
 	GS_PLAY    = 0, 
+    GS_SINGLE,
 	GS_MENU, 
-	GS_RESULT, 
+	GS_RESULT,
 	
 	// special game state. Do not change
 	GS_RESTART,

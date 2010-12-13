@@ -42,12 +42,14 @@ void GameStateMenuUpdate(void)
 	if(AEInputCheckTriggered(DIK_DOWN))
 		sCursor++;
 	
-	sCursor = (sCursor < 0) ? 0 : ((sCursor > 1) ? 1 : sCursor);
+	sCursor = (sCursor < 0) ? 0 : ((sCursor > 2) ? 2 : sCursor);
 
 	if(AEInputCheckTriggered(DIK_SPACE))
 	{
 		if (sCursor == 0)
-			gGameStateNext = GS_PLAY;
+			gGameStateNext = GS_SINGLE;
+        else if (sCursor == 1)
+            gGameStateNext = GS_PLAY;
 		else
 			gGameStateNext = GS_QUIT;
 	}
@@ -58,8 +60,9 @@ void GameStateMenuUpdate(void)
 void GameStateMenuDraw(void)
 {
 	AEGfxPrint(10, 20, 0xFFFFFFFF, "<> ASTEROID <>");
-	AEGfxPrint(40, 60, 0xFFFFFFFF, "Start Game");
-	AEGfxPrint(40, 90, 0xFFFFFFFF, "Quit");
+	AEGfxPrint(40, 60, 0xFFFFFFFF, "Play With Yourself");
+	AEGfxPrint(40, 90, 0xFFFFFFFF, "Play With Others");
+	AEGfxPrint(40, 120, 0xFFFFFFFF, "Quit");
 
 	if (gAEFrameCounter & 0x0008)
 		AEGfxPrint(10, 60 + 30 * sCursor, 0xFFFFFFFF, ">>");

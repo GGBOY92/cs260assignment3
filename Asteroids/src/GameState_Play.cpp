@@ -20,18 +20,18 @@
 // ---------------------------------------------------------------------------
 // Defines
 
-#define CLIENT_APP 1
+#define CLIENT_APP 0
 extern std::vector<ResultStatus> results;
 
 const unsigned ROW_HEIGHT = 30;
 
-#define NO_PARTICLES 1
+#define NO_PARTICLES 0
 #define NO_ROIDS 0
 #define NO_SPARKS 1
 
 
 #define GAME_OBJ_NUM_MAX			32
-#define GAME_OBJ_INST_NUM_MAX		32
+#define GAME_OBJ_INST_NUM_MAX		1024
 
 #define AST_NUM_MIN					2		// minimum number of asteroid alive
 #define AST_NUM_MAX					32		// maximum number of asteroid alive
@@ -74,7 +74,9 @@ const unsigned ROW_HEIGHT = 30;
 
 #define COLL_RESOLVE_SIMPLE			1
 
-#define ACTIVE(x) ( ( x->flag & FLAG_ACTIVE ) == 0 )
+#define GAME_TIME_SEC               4.0
+
+#define ACTIVE(x) ( ( x->flag & FLAG_ACTIVE ) != 0 )
 
 // ---------------------------------------------------------------------------
 enum
@@ -1130,7 +1132,7 @@ GameObjInst* gameObjInstCreate(u32 type, f32 scale, AEVec2* pPos, AEVec2* pVel, 
 			pInst->posCurr	 = pPos ? *pPos : zero;
 			pInst->velCurr	 = pVel ? *pVel : zero;
 			pInst->dirCurr	 = dir;
-            pInst->parent    = NULL;
+            pInst->parent    = parent;
 			pInst->pUserData = NULL;
 
             // keep track the number of asteroid
@@ -1171,7 +1173,7 @@ GameObjInst* gameObjInstCreate(u32 type, f32 scale, AEVec2* pPos, AEVec2* pVel, 
 			pDst->posCurr	 = pPos ? *pPos : zero;
 			pDst->velCurr	 = pVel ? *pVel : zero;
 			pDst->dirCurr	 = dir;
-            pDst->parent     = NULL;
+            pDst->parent     = parent;
 			pDst->pUserData  = NULL;
 
             // keep track the number of asteroid
