@@ -20,7 +20,6 @@
 // ---------------------------------------------------------------------------
 // Defines
 
-#define CLIENT_APP 0
 extern std::vector<ResultStatus> results;
 
 const unsigned ROW_HEIGHT = 30;
@@ -75,8 +74,6 @@ const unsigned ROW_HEIGHT = 30;
 #define COLL_COEF_OF_RESTITUTION	1.0f	// collision coefficient of restitution
 
 #define COLL_RESOLVE_SIMPLE			1
-
-#define GAME_TIME_SEC               5.0
 
 #define ACTIVE(x) ( ( x->flag & FLAG_ACTIVE ) != 0 )
 
@@ -196,6 +193,9 @@ static u32				sScore;
 
 static f64				sGameStateChangeCtr;
 
+static f32        time = ROUND_TIME_SEC;
+static u32        round = 0;
+
 static Client client;
 
 // ---------------------------------------------------------------------------
@@ -302,6 +302,17 @@ bool ProcInput(MsgInput& inputMsg)
 
         inputDetected = true;
     }
+    if (AEInputCheckTriggered(DIK_Q))
+    {
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].key_ = DIK_Q;
+        inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].state_ = KEY_TRIGGERED;
+
+        ++inputMsg.data_.key_info_count_;
+
+        gGameStateNext = GS_QUIT;
+
+        inputDetected = true;
+    }
     if (AEInputCheckTriggered(DIK_X) && (sSpecialCtr >= MISSILE_COST))
     {
         inputMsg.data_.key_data_[inputMsg.data_.key_info_count_].key_ = DIK_X;
@@ -329,6 +340,9 @@ void ProcMessage(NetworkMessage& netMsg)
             size_t size = sizeof(sGameObjInstList); 
             sGameObjInstNum = posUpdate.data_.inst_count_;
 
+            time = posUpdate.data_.time_left_;
+            round = posUpdate.data_.round_;
+
             NetworkObjInst currInst;
             for(unsigned i = 0; i < posUpdate.data_.inst_count_; ++i)
             {
@@ -351,6 +365,8 @@ void ProcMessage(NetworkMessage& netMsg)
         {
             MsgOutcome outcome;
             netMsg >> outcome;
+
+            results.clear();
 
             if(outcome.data_.final_)
             {
@@ -471,13 +487,19 @@ void GameStatePlayUpdate(void)
         }
     }
 
-    unsigned yPos = 100;
-    unsigned xPos = 100;
+    char buffer[1000] = { 0 };
+    sprintf(buffer, "TIME LEFT: %.2f", time);
+    AEGfxPrint(300, 10, 0xFFFFFFFF, buffer);
+    sprintf(buffer, "Round: %u", round);
+    AEGfxPrint(350, 30, 0xFFFFFFFF, buffer);
+
+    unsigned yPos = 10;
+    unsigned xPos = 10;
     for(std::vector<ResultStatus>::iterator it = results.begin(); it != results.end(); ++it)
     {
-        AEGfxPrint(xPos, yPos, 0xFF99FF00, "WINNER");
+        sprintf(buffer, "%s:    Score: %u", it->name_.name_, it->score_);
+        AEGfxPrint(xPos, yPos, 0xFFFFFFFF, buffer);
         yPos += ROW_HEIGHT;
-
     }
 
     client.udpSock_.Resend();
@@ -915,21 +937,17 @@ void GameStatePlayDraw(void)
         AEGfxSetTransform	(&sGameObjInstList[i].transform);
         AEGfxTriDraw		(sGameObjInstList[i].pObject->pMesh);
     }
-
-    sprintf(strBuffer, "Score: %d", sScore);
-    AEGfxPrint(10, 10, -1, strBuffer);
-
-    sprintf(strBuffer, "Level: %d", AELogBase2(sAstNum));
-    AEGfxPrint(10, 30, -1, strBuffer);
-
-    sprintf(strBuffer, "Special:   %d", sSpecialCtr);
-    AEGfxPrint(600, 10, -1, strBuffer);
 }
 
 // ---------------------------------------------------------------------------
 
 void GameStatePlayFree(void)
 {
+    client.udpSock_.Shutdown();
+    client.udpSock_.Close();
+
+    CloseWinSock();
+
     // kill all object in the list
     for (u32 i = 0; i < GAME_OBJ_INST_NUM_MAX; i++)
         gameObjInstDestroy(sGameObjInstList + i);
@@ -1127,15 +1145,15 @@ GameObjInst* gameObjInstCreate(u32 type, f32 scale, AEVec2* pPos, AEVec2* pVel, 
             // it is not used => use it to create the new instance
             pInst->pObject	 = sGameObjList + type;
             pInst->type      = type;
-            pInst->score      = 0;
-			pInst->flag		 = FLAG_ACTIVE;
-			pInst->life		 = 1.0f;
-			pInst->scale	 = scale;
-			pInst->posCurr	 = pPos ? *pPos : zero;
-			pInst->velCurr	 = pVel ? *pVel : zero;
-			pInst->dirCurr	 = dir;
+            pInst->score     = 0;
+			      pInst->flag		   = FLAG_ACTIVE;
+			      pInst->life		   = 1.0f;
+			      pInst->scale	   = scale;
+			      pInst->posCurr	 = pPos ? *pPos : zero;
+			      pInst->velCurr	 = pVel ? *pVel : zero;
+			      pInst->dirCurr	 = dir;
             pInst->parent    = parent;
-			pInst->pUserData = NULL;
+			      pInst->pUserData = NULL;
 
             // keep track the number of asteroid
             if (pInst->pObject->type == TYPE_ASTEROID)
